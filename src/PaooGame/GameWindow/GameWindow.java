@@ -67,7 +67,7 @@ public class GameWindow
             /// randate) va recomand sa constrangeti deocamdata jucatorul
             /// sa se joace in fereastra stabilitata de voi. Puteti reveni asupra
             /// urmatorului apel ulterior.
-        wndFrame.setResizable(false);
+        wndFrame.setResizable(true);
             /// Recomand ca fereastra sa apara in centrul ecranului. Pentru orice
             /// alte pozitie se va apela "wndFrame.setLocation(x, y)" etc.
         wndFrame.setLocationRelativeTo(null);
