@@ -4,6 +4,7 @@ import PaooGame.States.State;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Arrays;
 
 /**
  * Clasa care traduce actiunile tastaturii.
@@ -71,5 +72,22 @@ public class KeyManager implements KeyListener {
         if(State.getState() != null) {
             State.getState().onKeyTyped(e.getKeyChar());
         }
+    }
+
+    public void resetKeys() {
+        Arrays.fill(keys, false);
+
+        up = false;
+        down = false;
+        left = false;
+        right = false;
+
+        shift = false;
+        j = false;
+        k = false;
+        l = false;
+
+        enter = false;
+        escape = false;
     }
 }

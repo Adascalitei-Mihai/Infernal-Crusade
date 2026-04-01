@@ -81,7 +81,7 @@ public class TextBox {
         g.setColor(Color.BLACK);
         g.drawRect(x, y, width, height);
 
-        g.setFont(new Font("Arial", Font.BOLD, 24)); // 3
+        g.setFont(new Font("Monospaced", Font.BOLD, 24)); // 3
         g.drawString(text, x + 10, y + 35); // un mic offset
 
         if (isFocused && (System.currentTimeMillis() / 500) % 2 == 0) { // 4

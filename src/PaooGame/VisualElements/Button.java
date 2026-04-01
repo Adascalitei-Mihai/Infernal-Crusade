@@ -42,7 +42,7 @@ public class Button {
 
     public void Draw(Graphics g, Color c, int size) {
         g.setColor(c);
-        g.setFont(new Font("Arial", Font.BOLD, size));
+        g.setFont(new Font("Monospaced", Font.BOLD, size));
 
         FontMetrics fm = g.getFontMetrics();
         String text = getText();

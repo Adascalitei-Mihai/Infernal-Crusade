@@ -55,7 +55,7 @@ public class Game implements Runnable
      */
     private void InitGame()
     {
-        wnd = new GameWindow("Infernal Crusaders", 800, 600); // 1
+        wnd = new GameWindow("Infernal Crusaders", 1000, 800); // 1
         wnd.BuildGameWindow();
 
         wnd.getCanvas().addKeyListener(keyManager); // 2

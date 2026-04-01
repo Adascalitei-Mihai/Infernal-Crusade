@@ -51,11 +51,9 @@ public class StartMenu extends State {
      */
     @Override
     public void Update() {
-        int rightMargin = 200;
-        int bottomMargin = 250;
+        this.labelX = this.game.getWidth() - BOX_WIDTH - 200;
+        this.labelY = this.game.getHeight() - 250;
 
-        this.labelX = this.game.getWidth() - BOX_WIDTH - rightMargin;
-        this.labelY = this.game.getHeight() - bottomMargin;
         nameInput.setPosition(this.labelX, this.labelY + 20);
         quitBtn.setPosition(this.labelX, this.labelY + 80);
 
@@ -67,6 +65,10 @@ public class StartMenu extends State {
 
         if(quitBtn.getHovered()) {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            if(this.game.getMouseManager().isLeftPressed()) {
+                this.game.StopGame();
+            }
         }
         else if (nameInput.getFocus()){
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.TEXT_CURSOR));
@@ -75,22 +77,15 @@ public class StartMenu extends State {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if(this.game.getMouseManager().isLeftPressed()) {
-
-            if(quitBtn.getHovered()) {
-                this.game.StopGame();
-            }
-        }
-
         if(this.game.getKeyManager().enter) {
             String playerName = nameInput.getText();
 
             if(!playerName.trim().isEmpty()) {
                 System.out.println("Jucator: " + playerName);
-            }
 
-            game.setPlayerName(playerName);
-            State.setState(new MainMenu(this.game, "New Game"));
+                game.setPlayerName(playerName);
+                State.setState(new MainMenu(this.game, "New Game"));
+            }
         }
 
         if(this.game.getKeyManager().escape) {
@@ -109,7 +104,7 @@ public class StartMenu extends State {
         g.drawImage(Assets.startMenuBg, 0, 0, this.game.getWidth(), this.game.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
-        g.setFont(new Font("Arial", Font.BOLD, TEXT_SIZE));
+        g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));
         g.drawString("Introdu numele: ", labelX, labelY);
 
         nameInput.Draw(g);
