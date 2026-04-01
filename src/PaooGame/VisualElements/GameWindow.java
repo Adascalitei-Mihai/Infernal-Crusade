@@ -66,23 +66,23 @@ public class GameWindow {
      * Getter pentru latimea ferestrei.
      * @return Latimea actuala.
      */
-    public int GetWndWidth() { return canvas.getWidth(); }
+    public int getWndWidth() { return canvas.getWidth(); }
 
     /**
      * Getter pentru inaltimea ferestrei.
      * @return Inaltimea actuala.
      */
-    public int GetWndHeight() { return canvas.getHeight(); }
+    public int getWndHeight() { return canvas.getHeight(); }
 
     /**
      * Getter pentru fereastra.
      * @return Fereastra actuala.
      */
-    public JFrame GetFrame() {return wndFrame; }
+    public JFrame getFrame() {return wndFrame; }
 
     /**
      * Getter pentru panza ferestrei.
      * @return Panza actuala.
      */
-    public Canvas GetCanvas() { return canvas; }
+    public Canvas getCanvas() { return canvas; }
 }

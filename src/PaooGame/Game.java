@@ -56,9 +56,9 @@ public class Game implements Runnable
         wnd = new GameWindow("Infernal Crusaders", 800, 600); // 1
         wnd.BuildGameWindow();
 
-        wnd.GetCanvas().addKeyListener(keyManager); // 2
-        wnd.GetCanvas().addMouseListener(mouseManager);
-        wnd.GetCanvas().addMouseMotionListener(mouseManager);
+        wnd.getCanvas().addKeyListener(keyManager); // 2
+        wnd.getCanvas().addMouseListener(mouseManager);
+        wnd.getCanvas().addMouseMotionListener(mouseManager);
 
         Assets.Init(); // 3
 
@@ -124,8 +124,8 @@ public class Game implements Runnable
         if(runState) {
             runState = false;
 
-            if(wnd != null && wnd.GetFrame() != null) {
-                wnd.GetFrame().dispose();
+            if(wnd != null && wnd.getFrame() != null) {
+                wnd.getFrame().dispose();
             }
         }
     }
@@ -152,10 +152,10 @@ public class Game implements Runnable
      * 6. Eliberam grafica folosita pentru a desena.
      */
     private void Draw() {
-        bs = wnd.GetCanvas().getBufferStrategy();
+        bs = wnd.getCanvas().getBufferStrategy();
         if(bs == null) { // 1
             try {
-                wnd.GetCanvas().createBufferStrategy(3);
+                wnd.getCanvas().createBufferStrategy(3);
                 return;
             }
             catch (Exception e) {
@@ -164,7 +164,7 @@ public class Game implements Runnable
         }
 
         g = bs.getDrawGraphics(); // 2
-        g.clearRect(0, 0, wnd.GetWndWidth(), wnd.GetWndHeight()); // 3
+        g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight()); // 3
 
         if(State.getState() != null) { // 4
             State.getState().Draw(g);
@@ -195,7 +195,7 @@ public class Game implements Runnable
      * @return Latimea ferestrei actuale.
      */
     public int getWidth() {
-        return wnd.GetWndWidth();
+        return wnd.getWndWidth();
     }
 
     /**
@@ -203,6 +203,8 @@ public class Game implements Runnable
      * @return Inaltimea ferestrei actuale.
      */
     public int getHeight() {
-        return wnd.GetWndHeight();
+        return wnd.getWndHeight();
     }
+
+    public GameWindow getWnd() { return wnd; }
 }
