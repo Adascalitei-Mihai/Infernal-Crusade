@@ -1,4 +1,4 @@
-package PaooGame.VisualElements;
+package PaooGame.Graphics;
 
 import javax.swing.*;
 import java.awt.*;

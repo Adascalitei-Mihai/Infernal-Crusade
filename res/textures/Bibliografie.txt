@@ -23,3 +23,5 @@
 [12] Pimen, „Dark Spell Effect,” itch.io. [Online]. Disponibil la: https://pimen.itch.io/dark-spell-effect. [Accesat: 31-Mar-2026].
 
 [13] Deep-Fold, „Space Background Generator,” itch.io. [Online]. Disponibil la: https://deep-fold.itch.io/space-background-generator. [Accesat: 31-Mar-2026].
+
+Interface: https://bdragon1727.itch.io/basic-pixel-health-bar-and-scroll-bar

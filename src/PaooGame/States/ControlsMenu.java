@@ -42,7 +42,8 @@ public class ControlsMenu extends State {
             this.game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             if(this.game.getMouseManager().isLeftPressed()) {
-                State.setState(new MainMenu(this.game, "New Game"));
+                State.setState(new MainMenu(game,
+                        (game.getCurrLevel() == 1 && game.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }
         else {

@@ -81,10 +81,10 @@ public class StartMenu extends State {
             String playerName = nameInput.getText();
 
             if(!playerName.trim().isEmpty()) {
-                System.out.println("Jucator: " + playerName);
+                game.playerLogin(playerName.trim());
 
-                game.setPlayerName(playerName);
-                State.setState(new MainMenu(this.game, "New Game"));
+                State.setState(new MainMenu(game,
+                        (game.getCurrLevel() == 1 && game.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }
 

@@ -65,9 +65,8 @@ public class MainMenu extends State {
         int mx = this.game.getMouseManager().getMouseX();
         int my = this.game.getMouseManager().getMouseY();
 
-        boolean hasClicked = this.game.getMouseManager().isLeftReleased();
+        boolean isRealased = this.game.getMouseManager().isLeftReleased();
         int hoveredIndex = -1;
-
         for (int i = 0; i < btns.length; i++) {
             btns[i].setPosition(this.btnsX, this.btnsY + i * (BOX_HEIGTH + 10));
             btns[i].checkHover(mx, my);
@@ -81,7 +80,7 @@ public class MainMenu extends State {
         if (hoveredIndex != -1) {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if (hasClicked) {
+            if (isRealased) {
                 handleButtonClick(hoveredIndex);
             }
         } else {
@@ -95,10 +94,22 @@ public class MainMenu extends State {
 
     private void handleButtonClick(int index) {
         switch (index) {
-            case 0 -> State.setState(null);
-            case 1, 2 -> btns[index].changeState();
-            case 3 -> State.setState(new ControlsMenu(this.game));
-            case 4 -> this.game.StopGame();
+            case 0:
+                State.setState(null);
+                break;
+            case 1:
+                if(game.getBestScore() != 0) {
+                    btns[1].changeState();
+                }
+                break;
+            case 2:
+                btns[2].changeState();
+                break;
+            case 3:
+                State.setState(new ControlsMenu(this.game));
+                break;
+            case 4:
+                this.game.StopGame();
         }
     }
 
@@ -109,8 +120,8 @@ public class MainMenu extends State {
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));
 
-        g.drawString("Your best score: ----", scoreX, scoreY);
-        g.drawString("Global best score: ----", scoreX, scoreY + TEXT_SIZE + 5);
+        g.drawString("Your best score: " + game.getBestScore(), scoreX, scoreY);
+        g.drawString("Global best score: " + game.getGlobalScore(), scoreX, scoreY + TEXT_SIZE + 5);
 
         for (Button btn : btns) {
             btn.Draw(g, TEXT_COLOR, TEXT_SIZE);
