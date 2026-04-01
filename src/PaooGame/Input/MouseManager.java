@@ -10,6 +10,7 @@ import java.awt.event.MouseMotionListener;
 public class MouseManager implements MouseListener, MouseMotionListener {
 
     private boolean leftPressed, rightPressed;
+    private boolean leftReleased;
     private int mouseX, mouseY;
 
     /**
@@ -24,6 +25,13 @@ public class MouseManager implements MouseListener, MouseMotionListener {
      */
     public boolean isLeftPressed() { return leftPressed; }
 
+    public boolean isLeftReleased() {
+        if (leftReleased) {
+            leftReleased = false;
+            return true;
+        }
+        return false;
+    }
     /**
      * Getter pentru verificarea apasarii butonului din dreapta.
      * @return Adevarat / Fals.
@@ -48,8 +56,12 @@ public class MouseManager implements MouseListener, MouseMotionListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) leftPressed = true;
-        else if (e.getButton() == MouseEvent.BUTTON3) rightPressed = true;
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftPressed = true;
+        }
+        else if (e.getButton() == MouseEvent.BUTTON3) {
+            rightPressed = true;
+        }
     }
 
     /**
@@ -58,8 +70,13 @@ public class MouseManager implements MouseListener, MouseMotionListener {
      */
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) leftPressed = false;
-        else if (e.getButton() == MouseEvent.BUTTON3) rightPressed = false;
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftPressed = false;
+            leftReleased = true;
+        }
+        else if (e.getButton() == MouseEvent.BUTTON3) {
+            rightPressed = false;
+        }
     }
 
     /**

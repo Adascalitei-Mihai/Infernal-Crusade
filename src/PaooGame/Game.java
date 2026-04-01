@@ -23,6 +23,8 @@ public class Game implements Runnable
     private BufferStrategy bs;
     private Graphics g;
 
+    private String playerName;
+    private int currChkp;
 
     private KeyManager keyManager;
     private MouseManager mouseManager;
@@ -178,25 +180,19 @@ public class Game implements Runnable
      * Getter pentru managerul de taste.
      * @return Managerul de taste actual.
      */
-    public KeyManager getKeyManager() {
-        return keyManager;
-    }
+    public KeyManager getKeyManager() { return keyManager; }
 
     /**
      * Getter pentru managerul de mouse.
      * @return Managerul de mouse actual.
      */
-    public MouseManager getMouseManager() {
-        return mouseManager;
-    }
+    public MouseManager getMouseManager() { return mouseManager; }
 
     /**
      * Getter pentru latimea ferestrei.
      * @return Latimea ferestrei actuale.
      */
-    public int getWidth() {
-        return wnd.getWndWidth();
-    }
+    public int getWidth() { return wnd.getWndWidth(); }
 
     /**
      * Getter pentru inaltimea ferestrei.
@@ -207,4 +203,6 @@ public class Game implements Runnable
     }
 
     public GameWindow getWnd() { return wnd; }
+    public void setPlayerName(String name) { this.playerName = name; }
+    public void setCurrChkp(int chkp) { this.currChkp = chkp; }
 }

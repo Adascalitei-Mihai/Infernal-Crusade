@@ -14,12 +14,12 @@ public class StartMenu extends State {
     private final TextBox nameInput;
     private final Button quitBtn;
 
+    private int labelX, labelY;
+
     private final static int BOX_WIDTH = 300;
     private final static int BOX_HEIGTH = 50;
-
-    private int labelX, labelY;
-    private final static Color menuColor = new Color(255, 140, 0);
-    private final static int textSize = 36;
+    private final static Color TEXT_COLOR = new Color(255, 140, 0);
+    private final static int TEXT_SIZE = 36;
 
     /**
      * Constructor care primeste jocul si creeaza o caseta text.
@@ -88,6 +88,9 @@ public class StartMenu extends State {
             if(!playerName.trim().isEmpty()) {
                 System.out.println("Jucator: " + playerName);
             }
+
+            game.setPlayerName(playerName);
+            State.setState(new MainMenu(this.game, "New Game"));
         }
 
         if(this.game.getKeyManager().escape) {
@@ -105,11 +108,11 @@ public class StartMenu extends State {
     public void Draw(Graphics g) {
         g.drawImage(Assets.startMenuBg, 0, 0, this.game.getWidth(), this.game.getHeight(), null);
 
-        g.setColor(menuColor);
-        g.setFont(new Font("Arial", Font.BOLD, textSize));
+        g.setColor(TEXT_COLOR);
+        g.setFont(new Font("Arial", Font.BOLD, TEXT_SIZE));
         g.drawString("Introdu numele: ", labelX, labelY);
 
         nameInput.Draw(g);
-        quitBtn.Draw(g, menuColor, textSize);
+        quitBtn.Draw(g, TEXT_COLOR, TEXT_SIZE);
     }
 }
