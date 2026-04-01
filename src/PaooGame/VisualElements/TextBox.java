@@ -42,8 +42,8 @@ public class TextBox {
      * @param mouseY Coordonata pe Oy.
      */
     public void checkHover(int mouseX, int mouseY) {
-        this.isFocused = (mouseX >= this.x && mouseX <= this.x + this.width) &&
-                (mouseY >= this.y && mouseY <= this.y + this.height);
+        isFocused = (mouseX >= x && mouseX <= x + width) &&
+                (mouseY >= y && mouseY <= y + height);
     }
 
     /**

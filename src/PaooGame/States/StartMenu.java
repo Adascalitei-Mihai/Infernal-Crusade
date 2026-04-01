@@ -27,6 +27,7 @@ public class StartMenu extends State {
      */
     public StartMenu(Game game) {
         super(game);
+
         nameInput = new TextBox(0, 0, BOX_WIDTH, BOX_HEIGTH);
         quitBtn = new Button(0, 0, BOX_WIDTH, BOX_HEIGTH,
                 new String[]{"Quit (ESC)"});
@@ -51,14 +52,14 @@ public class StartMenu extends State {
      */
     @Override
     public void Update() {
-        this.labelX = this.game.getWidth() - BOX_WIDTH - 200;
-        this.labelY = this.game.getHeight() - 250;
+        labelX = game.getWidth() - BOX_WIDTH - 200;
+        labelY = game.getHeight() - 250;
 
-        nameInput.setPosition(this.labelX, this.labelY + 20);
-        quitBtn.setPosition(this.labelX, this.labelY + 80);
+        nameInput.setPosition(labelX, labelY + 20);
+        quitBtn.setPosition(labelX, labelY + 80);
 
-        int mx = this.game.getMouseManager().getMouseX();
-        int my = this.game.getMouseManager().getMouseY();
+        int mx = game.getMouseManager().getMouseX();
+        int my = game.getMouseManager().getMouseY();
 
         quitBtn.checkHover(mx, my);
         nameInput.checkHover(mx, my);
@@ -66,8 +67,8 @@ public class StartMenu extends State {
         if(quitBtn.getHovered()) {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if(this.game.getMouseManager().isLeftPressed()) {
-                this.game.StopGame();
+            if(game.getMouseManager().isLeftPressed()) {
+                game.StopGame();
             }
         }
         else if (nameInput.getFocus()){
@@ -77,7 +78,7 @@ public class StartMenu extends State {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if(this.game.getKeyManager().enter) {
+        if(game.getKeyManager().enter) {
             String playerName = nameInput.getText();
 
             if(!playerName.trim().isEmpty()) {
@@ -88,8 +89,8 @@ public class StartMenu extends State {
             }
         }
 
-        if(this.game.getKeyManager().escape) {
-            this.game.StopGame();
+        if(game.getKeyManager().escape) {
+            game.StopGame();
         }
     }
 
@@ -101,7 +102,7 @@ public class StartMenu extends State {
      */
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.startMenuBg, 0, 0, this.game.getWidth(), this.game.getHeight(), null);
+        g.drawImage(Assets.startMenuBg, 0, 0, game.getWidth(), game.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));

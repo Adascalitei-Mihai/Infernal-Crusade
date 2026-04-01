@@ -23,12 +23,12 @@ public class MainMenu extends State {
     public MainMenu(Game game, String startText) {
         super(game);
 
-        this.btnsX = (this.game.getWidth() - BOX_WIDTH) / 2;
+        btnsX = (game.getWidth() - BOX_WIDTH) / 2;
         int totalHeight = BTN_COUNT * (BOX_HEIGTH + 10);
-        this.btnsY = (this.game.getHeight() - totalHeight) / 2;
+        btnsY = (game.getHeight() - totalHeight) / 2;
 
-        this.scoreX = 10;
-        this.scoreY = this.game.getHeight() - TEXT_SIZE * 2 + 10;
+        scoreX = 10;
+        scoreY = game.getHeight() - TEXT_SIZE * 2 + 10;
 
         btns = new Button[] {
                 new Button(btnsX, btnsY, BOX_WIDTH, BOX_HEIGTH,
@@ -55,20 +55,20 @@ public class MainMenu extends State {
 
     @Override
     public void Update() {
-        this.btnsX = (this.game.getWidth() - BOX_WIDTH) / 2;
+        btnsX = (game.getWidth() - BOX_WIDTH) / 2;
         int totalHeight = btns.length * (BOX_HEIGTH + 10);
-        this.btnsY = (this.game.getHeight() - totalHeight) / 2;
+        btnsY = (game.getHeight() - totalHeight) / 2;
 
-        this.scoreX = 10;
-        this.scoreY = this.game.getHeight() - TEXT_SIZE * 2 + 10;
+        scoreX = 10;
+        scoreY = game.getHeight() - TEXT_SIZE * 2 + 10;
 
-        int mx = this.game.getMouseManager().getMouseX();
-        int my = this.game.getMouseManager().getMouseY();
+        int mx = game.getMouseManager().getMouseX();
+        int my = game.getMouseManager().getMouseY();
 
-        boolean isRealased = this.game.getMouseManager().isLeftReleased();
+        boolean isRealased = game.getMouseManager().isLeftReleased();
         int hoveredIndex = -1;
         for (int i = 0; i < btns.length; i++) {
-            btns[i].setPosition(this.btnsX, this.btnsY + i * (BOX_HEIGTH + 10));
+            btns[i].setPosition(btnsX, btnsY + i * (BOX_HEIGTH + 10));
             btns[i].checkHover(mx, my);
 
             if (btns[i].getHovered()) {
@@ -87,8 +87,8 @@ public class MainMenu extends State {
             game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if (this.game.getKeyManager().escape) {
-            this.game.StopGame();
+        if (game.getKeyManager().escape) {
+            game.StopGame();
         }
     }
 
@@ -106,16 +106,16 @@ public class MainMenu extends State {
                 btns[2].changeState();
                 break;
             case 3:
-                State.setState(new ControlsMenu(this.game));
+                State.setState(new ControlsMenu(game));
                 break;
             case 4:
-                this.game.StopGame();
+                game.StopGame();
         }
     }
 
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.mainMenuBg, 0, 0, this.game.getWidth(), this.game.getHeight(), null);
+        g.drawImage(Assets.mainMenuBg, 0, 0, game.getWidth(), game.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));

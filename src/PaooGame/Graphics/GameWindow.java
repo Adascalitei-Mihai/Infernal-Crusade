@@ -21,10 +21,10 @@ public class GameWindow {
      * @param height Inaltimea ferestrei.
      */
     public GameWindow(String title, int width, int height) {
-        this.wndTitle    = title;
-        this.wndWidth    = width;
-        this.wndHeight   = height;
-        this.wndFrame    = null;
+        wndTitle = title;
+        wndWidth = width;
+        wndHeight = height;
+        wndFrame = null;
     }
 
     /**
@@ -44,22 +44,22 @@ public class GameWindow {
     public void BuildGameWindow()
     {
 
-        if(this.wndFrame != null) { // 1
+        if(wndFrame != null) { // 1
             return;
         }
-        this.wndFrame = new JFrame(this.wndTitle); // 2
-        this.wndFrame.setSize(this.wndWidth, this.wndHeight); // 3
-        this.wndFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 4
-        this.wndFrame.setResizable(true); // 5
-        this.wndFrame.setLocationRelativeTo(null); // 6
-        this.wndFrame.setVisible(true); // 7
+        wndFrame = new JFrame(wndTitle); // 2
+        wndFrame.setSize(wndWidth, wndHeight); // 3
+        wndFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 4
+        wndFrame.setResizable(true); // 5
+        wndFrame.setLocationRelativeTo(null); // 6
+        wndFrame.setVisible(true); // 7
 
-        this.canvas = new Canvas(); // 8
-        this.canvas.setPreferredSize(new Dimension(this.wndWidth, this.wndHeight)); // 9
-        this.canvas.setMaximumSize(new Dimension(this.wndWidth, this.wndHeight)); 
-        this.canvas.setMinimumSize(new Dimension(this.wndWidth, this.wndHeight));
-        this.wndFrame.add(this.canvas); // 10
-        this.wndFrame.pack(); // 11
+        canvas = new Canvas(); // 8
+        canvas.setPreferredSize(new Dimension(wndWidth, wndHeight)); // 9
+        canvas.setMaximumSize(new Dimension(wndWidth, wndHeight));
+        canvas.setMinimumSize(new Dimension(wndWidth, wndHeight));
+        wndFrame.add(canvas); // 10
+        wndFrame.pack(); // 11
     }
 
     /**

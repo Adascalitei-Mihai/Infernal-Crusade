@@ -20,7 +20,7 @@ public class Button {
         this.width = width;
         this.height = height;
 
-        this.state = 0;
+        state = 0;
         this.textStates = textStates;
     }
 
@@ -30,12 +30,12 @@ public class Button {
     }
 
     public void checkHover(int mouseX, int mouseY) {
-        this.isHovered = (mouseX >= this.x && mouseX <= this.x + this.width) &&
-                (mouseY >= this.y && mouseY <= this.y + this.height);
+        isHovered = (mouseX >= x && mouseX <= x + width) &&
+                (mouseY >= y && mouseY <= y + height);
     }
 
     public void changeState() {
-        if(this.isHovered) {
+        if(isHovered) {
             state = (state + 1) % textStates.length;
         }
     }
@@ -53,7 +53,7 @@ public class Button {
         g.drawString(text, textX, textY);
     }
 
-    public String getText() { return this.textStates[this.state]; }
-    public int getState() { return this.state; }
-    public boolean getHovered() { return this.isHovered; }
+    public String getText() { return textStates[state]; }
+    public int getState() { return state; }
+    public boolean getHovered() { return isHovered; }
 }

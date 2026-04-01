@@ -19,46 +19,46 @@ public class ControlsMenu extends State {
     public ControlsMenu(Game game) {
         super(game);
 
-        this.btnX = this.game.getWidth() - BOX_WIDTH;
-        this.btnY = 10;
+        btnX = game.getWidth() - BOX_WIDTH;
+        btnY = 10;
 
-        returnBtn = new Button(this.btnX, this.btnY, BOX_WIDTH, BOX_HEIGTH,
+        returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGTH,
                 new String[]{"Return (ESC)"});
     }
 
     @Override
     public void Update() {
-        this.btnX = this.game.getWidth() - BOX_WIDTH;
-        this.btnY = 5;
+        btnX = game.getWidth() - BOX_WIDTH;
+        btnY = 5;
 
-        returnBtn.setPosition(this.btnX, this.btnY);
+        returnBtn.setPosition(btnX, btnY);
 
         returnBtn.checkHover(
-                this.game.getMouseManager().getMouseX(),
-                this.game.getMouseManager().getMouseY()
+                game.getMouseManager().getMouseX(),
+                game.getMouseManager().getMouseY()
         );
 
         if(returnBtn.getHovered()) {
-            this.game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
+            game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if(this.game.getMouseManager().isLeftPressed()) {
+            if(game.getMouseManager().isLeftPressed()) {
                 State.setState(new MainMenu(game,
                         (game.getCurrLevel() == 1 && game.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }
         else {
-            this.game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if(this.game.getKeyManager().escape) {
-            this.game.getKeyManager().resetKeys();
-            State.setState(new MainMenu(this.game, "New Game"));
+        if(game.getKeyManager().escape) {
+            game.getKeyManager().resetKeys();
+            State.setState(new MainMenu(game, "New Game"));
         }
     }
 
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.controlsMenuBg, 0, 0, this.game.getWidth(), this.game.getHeight(), null);
+        g.drawImage(Assets.controlsMenuBg, 0, 0, game.getWidth(), game.getHeight(), null);
 
         returnBtn.Draw(g, TEXT_COLOR, TEXT_SIZE);
     }
