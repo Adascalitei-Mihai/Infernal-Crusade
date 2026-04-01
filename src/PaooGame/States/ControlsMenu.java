@@ -2,7 +2,6 @@ package PaooGame.States;
 
 import PaooGame.Game;
 import PaooGame.Graphics.Assets;
-import PaooGame.Main;
 import PaooGame.VisualElements.Button;
 
 import java.awt.*;

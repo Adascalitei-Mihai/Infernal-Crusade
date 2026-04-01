@@ -95,7 +95,7 @@ public class MainMenu extends State {
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
-                State.setState(null);
+                State.setState(new PlayState(game));
                 break;
             case 1:
                 if(game.getBestScore() != 0) {

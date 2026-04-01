@@ -18,9 +18,8 @@ public class ImageLoader {
     public static BufferedImage LoadImage(String path) {
         URL resourceUrl = ImageLoader.class.getResource(path);
         if (resourceUrl == null) {
-            throw new IllegalArgumentException("Eroare: path imagine invalid");
+            throw new IllegalArgumentException("Eroare: path imagine invalid: " + path);
         }
-
         try {
             return ImageIO.read(resourceUrl);
         }
