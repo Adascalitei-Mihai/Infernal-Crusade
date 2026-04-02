@@ -1,4 +1,31 @@
 package PaooGame.Entities;
 
-public class Entity {
+import PaooGame.Game;
+
+import java.awt.*;
+
+public abstract class Entity {
+    protected Game game;
+    protected float x, y;
+    protected int width, height;
+    protected Rectangle bounds;
+    protected boolean active = true;
+
+    public Entity(Game game, float x, float y, int width, int height) {
+        this.game = game;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+        this.bounds = new Rectangle(0, 0, width, height);
+    }
+
+    public abstract void Update();
+    public abstract void Draw(Graphics g);
+    public abstract void onInteraction(Entity e);
+
+    public Rectangle getCollisionBounds(float xOffset, float yOffset) {
+        return new Rectangle((int)(x + bounds.x + xOffset), (int)(y + bounds.y + yOffset), bounds.width, bounds.height);
+    }
 }

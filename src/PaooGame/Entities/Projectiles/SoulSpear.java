@@ -1,4 +1,4 @@
 package PaooGame.Entities.Projectiles;
 
-public class Soul {
+public class SoulSpear {
 }
