@@ -39,4 +39,6 @@ public abstract class Entity {
     public void setHeight(int height) { this.height = height; }
     public int getWidth() { return width; }
     public void setWidth(int width) { this.width = width; }
+    public Rectangle getBounds() { return bounds; }
+    public void setBounds(Rectangle bounds) { this.bounds = bounds; }
 }

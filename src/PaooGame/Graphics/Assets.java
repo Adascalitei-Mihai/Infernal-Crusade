@@ -15,23 +15,42 @@ public class Assets {
 
     public static HashMap<String, BufferedImage[]> Dante;
     public static BufferedImage[] worldTiles = new BufferedImage[5000];
-    public static BufferedImage bgMuntiSpate, bgMunti, bgPadureCeata, bgPadureClara, bgIarba, bgArena;
-
+    public static BufferedImage[] bg;
+    public static BufferedImage[] chkp;
+    public static BufferedImage[] spear_opening, spear_closing;
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
      */
     public static void Init() {
         InitMenus();
         InitDante();
+
+        SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
+        spear_closing = new BufferedImage[]{
+                spearSheet.crop(0, 0),
+                spearSheet.crop(1, 0),
+                spearSheet.crop(2,0),
+                spearSheet.crop(5, 0),
+                spearSheet.crop(6, 0)
+        };
+        spear_opening = new BufferedImage[]{
+                spearSheet.crop(6, 0),
+                spearSheet.crop(5, 0),
+                spearSheet.crop(2,0),
+                spearSheet.crop(1, 0),
+                spearSheet.crop(0, 0)
+        };
     }
 
     public static void InitL1() {
-        bgMuntiSpate = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer5.png");
-        bgMunti = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer4.png");
-        bgPadureCeata = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer2.png");
-        bgPadureClara = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer1.png");
-        bgIarba = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer3.png");
-        bgArena = ImageLoader.LoadImage("/textures/Maps/L1/fundal_arena.png");
+        bg = new BufferedImage[]{
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer5.png"),
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer4.png"),
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer2.png"),
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer1.png"),
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer3.png"),
+                ImageLoader.LoadImage("/textures/Maps/L1/fundal_arena.png")
+        };
         
         SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
         fillTiles(snowSheet, 1, 11, 121);
@@ -45,8 +64,13 @@ public class Assets {
         SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
         fillTiles(allSheet, 2458, 64, 2176);
 
-        SpriteSheet checkSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/checkpoint.png"), 16, 16);
-        fillTiles(checkSheet, 4634, 4, 16);
+        SpriteSheet checkSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/checkpoint.png"), 32, 32);
+        chkp = new BufferedImage[]{
+                checkSheet.crop(0,0),
+                checkSheet.crop(0, 1),
+                checkSheet.crop(1, 0),
+                checkSheet.crop(1, 1)
+        };
     }
 
     /**

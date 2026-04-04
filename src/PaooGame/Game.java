@@ -1,6 +1,7 @@
 package PaooGame;
 
 import PaooGame.Database.DatabaseManager;
+import PaooGame.Entities.Creatures.Dante;
 import PaooGame.Graphics.GameWindow;
 import PaooGame.Graphics.Assets;
 
@@ -38,6 +39,8 @@ public class Game implements Runnable
 
     private int bestScore;
     private int globalScore;
+
+    private Dante dante;
     /**
      * Constructor cu parametrii, acesta: <br>
      * 1. Indica thread-ului ca inca nu ruleaza. <br>
@@ -244,4 +247,6 @@ public class Game implements Runnable
     public void setBestScore(int bestScore) { this.bestScore = bestScore; }
     public int getGlobalScore() { return globalScore; }
     public void setGlobalScore(int globalScore) { this.globalScore = globalScore; }
+    public Dante getDante() { return dante; }
+    public void setDante(Dante dante) { this.dante = dante; }
 }
