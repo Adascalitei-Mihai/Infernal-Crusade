@@ -2,6 +2,7 @@ package PaooGame.States;
 
 import PaooGame.Game;
 import PaooGame.Graphics.Assets;
+import PaooGame.Handler;
 import PaooGame.VisualElements.Button;
 import PaooGame.VisualElements.TextBox;
 
@@ -25,8 +26,8 @@ public class StartMenu extends State {
      * Constructor care primeste jocul si creeaza o caseta text.
      * @param game Instanta jocului actual.
      */
-    public StartMenu(Game game) {
-        super(game);
+    public StartMenu(Handler handler) {
+        super(handler);
 
         nameInput = new TextBox(0, 0, BOX_WIDTH, BOX_HEIGTH);
         quitBtn = new Button(0, 0, BOX_WIDTH, BOX_HEIGTH,
@@ -52,45 +53,45 @@ public class StartMenu extends State {
      */
     @Override
     public void Update() {
-        labelX = game.getWidth() - BOX_WIDTH - 200;
-        labelY = game.getHeight() - 250;
+        labelX = handler.getWidth() - BOX_WIDTH - 200;
+        labelY = handler.getHeight() - 250;
 
         nameInput.setPosition(labelX, labelY + 20);
         quitBtn.setPosition(labelX, labelY + 80);
 
-        int mx = game.getMouseManager().getMouseX();
-        int my = game.getMouseManager().getMouseY();
+        int mx = handler.getMouseManager().getMouseX();
+        int my = handler.getMouseManager().getMouseY();
 
         quitBtn.checkHover(mx, my);
         nameInput.checkHover(mx, my);
 
         if(quitBtn.getHovered()) {
-            game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
+            handler.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if(game.getMouseManager().isLeftPressed()) {
-                game.StopGame();
+            if(handler.getMouseManager().isLeftPressed()) {
+                handler.StopGame();
             }
         }
         else if (nameInput.getFocus()){
-            game.getWnd().getFrame().setCursor(new Cursor(Cursor.TEXT_CURSOR));
+            handler.getWnd().getFrame().setCursor(new Cursor(Cursor.TEXT_CURSOR));
         }
         else {
-            game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            handler.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if(game.getKeyManager().enter) {
+        if(handler.getKeyManager().enter) {
             String playerName = nameInput.getText();
 
             if(!playerName.trim().isEmpty()) {
-                game.playerLogin(playerName.trim());
+                handler.playerLogin(playerName.trim());
 
-                State.setState(new MainMenu(game,
-                        (game.getCurrLevel() == 1 && game.getCurrChkp() == 0) ? "New Game" : "Continue"));
+                State.setState(new MainMenu(handler,
+                        (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }
 
-        if(game.getKeyManager().escape) {
-            game.StopGame();
+        if(handler.getKeyManager().escape) {
+            handler.StopGame();
         }
     }
 
@@ -102,7 +103,7 @@ public class StartMenu extends State {
      */
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.startMenuBg, 0, 0, game.getWidth(), game.getHeight(), null);
+        g.drawImage(Assets.startMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));

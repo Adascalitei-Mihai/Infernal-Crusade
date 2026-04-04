@@ -2,6 +2,7 @@ package PaooGame.States;
 
 import PaooGame.Game;
 import PaooGame.Graphics.Assets;
+import PaooGame.Handler;
 import PaooGame.VisualElements.Button;
 
 import java.awt.*;
@@ -20,15 +21,15 @@ public class MainMenu extends State {
     private final static int TEXT_SIZE = 30;
     private final static int BTN_COUNT = 5;
 
-    public MainMenu(Game game, String startText) {
-        super(game);
+    public MainMenu(Handler handler, String startText) {
+        super(handler);
 
-        btnsX = (game.getWidth() - BOX_WIDTH) / 2;
+        btnsX = (handler.getWidth() - BOX_WIDTH) / 2;
         int totalHeight = BTN_COUNT * (BOX_HEIGTH + 10);
-        btnsY = (game.getHeight() - totalHeight) / 2;
+        btnsY = (handler.getHeight() - totalHeight) / 2;
 
         scoreX = 10;
-        scoreY = game.getHeight() - TEXT_SIZE * 2 + 10;
+        scoreY = handler.getHeight() - TEXT_SIZE * 2 + 10;
 
         btns = new Button[] {
                 new Button(btnsX, btnsY, BOX_WIDTH, BOX_HEIGTH,
@@ -55,17 +56,17 @@ public class MainMenu extends State {
 
     @Override
     public void Update() {
-        btnsX = (game.getWidth() - BOX_WIDTH) / 2;
+        btnsX = (handler.getWidth() - BOX_WIDTH) / 2;
         int totalHeight = btns.length * (BOX_HEIGTH + 10);
-        btnsY = (game.getHeight() - totalHeight) / 2;
+        btnsY = (handler.getHeight() - totalHeight) / 2;
 
         scoreX = 10;
-        scoreY = game.getHeight() - TEXT_SIZE * 2 + 10;
+        scoreY = handler.getHeight() - TEXT_SIZE * 2 + 10;
 
-        int mx = game.getMouseManager().getMouseX();
-        int my = game.getMouseManager().getMouseY();
+        int mx = handler.getMouseManager().getMouseX();
+        int my = handler.getMouseManager().getMouseY();
 
-        boolean isRealased = game.getMouseManager().isLeftReleased();
+        boolean isRealased = handler.getMouseManager().isLeftReleased();
         int hoveredIndex = -1;
         for (int i = 0; i < btns.length; i++) {
             btns[i].setPosition(btnsX, btnsY + i * (BOX_HEIGTH + 10));
@@ -78,27 +79,27 @@ public class MainMenu extends State {
 
 
         if (hoveredIndex != -1) {
-            game.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
+            handler.getWnd().getFrame().setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             if (isRealased) {
                 handleButtonClick(hoveredIndex);
             }
         } else {
-            game.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            handler.getWnd().getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if (game.getKeyManager().escape) {
-            game.StopGame();
+        if (handler.getKeyManager().escape) {
+            handler.StopGame();
         }
     }
 
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
-                State.setState(new PlayState(game));
+                State.setState(new PlayState(handler));
                 break;
             case 1:
-                if(game.getBestScore() != 0) {
+                if(handler.getBestScore() != 0) {
                     btns[1].changeState();
                 }
                 break;
@@ -106,22 +107,22 @@ public class MainMenu extends State {
                 btns[2].changeState();
                 break;
             case 3:
-                State.setState(new ControlsMenu(game));
+                State.setState(new ControlsMenu(handler));
                 break;
             case 4:
-                game.StopGame();
+                handler.StopGame();
         }
     }
 
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.mainMenuBg, 0, 0, game.getWidth(), game.getHeight(), null);
+        g.drawImage(Assets.mainMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));
 
-        g.drawString("Your best score: " + game.getBestScore(), scoreX, scoreY);
-        g.drawString("Global best score: " + game.getGlobalScore(), scoreX, scoreY + TEXT_SIZE + 5);
+        g.drawString("Your best score: " + handler.getBestScore(), scoreX, scoreY);
+        g.drawString("Global best score: " + handler.getGlobalScore(), scoreX, scoreY + TEXT_SIZE + 5);
 
         for (Button btn : btns) {
             btn.Draw(g, TEXT_COLOR, TEXT_SIZE);

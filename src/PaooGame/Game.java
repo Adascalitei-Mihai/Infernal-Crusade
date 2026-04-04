@@ -2,6 +2,7 @@ package PaooGame;
 
 import PaooGame.Database.DatabaseManager;
 import PaooGame.Entities.Creatures.Dante;
+import PaooGame.Graphics.GameCamera;
 import PaooGame.Graphics.GameWindow;
 import PaooGame.Graphics.Assets;
 
@@ -41,6 +42,9 @@ public class Game implements Runnable
     private int globalScore;
 
     private Dante dante;
+    private Handler handler;
+    private GameCamera gameCamera;
+
     /**
      * Constructor cu parametrii, acesta: <br>
      * 1. Indica thread-ului ca inca nu ruleaza. <br>
@@ -77,6 +81,9 @@ public class Game implements Runnable
         dbManager = new DatabaseManager();
         dbManager.connect("jdbc:sqlite:database/game.db");
         globalScore = dbManager.getGlobalBestScore(NR_CHKPTS);
+
+        handler = new Handler(this);
+        gameCamera = new GameCamera(handler, 0, 0);
 
         Assets.Init(); // 3
         State.setState(new StartMenu(this)); // 4

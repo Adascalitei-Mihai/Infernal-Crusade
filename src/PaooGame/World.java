@@ -1,8 +1,7 @@
-package PaooGame.Graphics;
+package PaooGame;
 
 import PaooGame.Entities.Creatures.Dante;
 import PaooGame.Entities.EntityManager;
-import PaooGame.Game;
 import PaooGame.Tiles.Tile;
 
 import java.awt.*;
@@ -48,6 +47,9 @@ public class World {
         entityManager.Draw(g);
     }
 
-    public Tile getTile(int x, int y) {
-    }
+    public Tile getTile(int x, int y) { return null; }
+    public int getWidth() { return width; }
+    public void setWidth(int width) { this.width = width; }
+    public int getHeight() { return height;}
+    public void setHeight(int height) { this.height = height; }
 }

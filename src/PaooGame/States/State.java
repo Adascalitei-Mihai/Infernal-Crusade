@@ -1,6 +1,7 @@
 package PaooGame.States;
 
 import PaooGame.Game;
+import PaooGame.Handler;
 
 import java.awt.*;
 
@@ -22,14 +23,14 @@ public abstract class State {
      */
     public static State getState() { return currentState; }
 
-    protected Game game;
+    protected Handler handler;
 
     /**
      * Constructor, primeste referinta la joc.
      * @param game Instanta jocului actual.
      */
-    public State(Game game) {
-        this.game = game;
+    public State(Handler handler) {
+        this.handler = handler;
     }
 
     /**

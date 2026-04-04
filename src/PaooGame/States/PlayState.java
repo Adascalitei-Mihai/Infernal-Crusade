@@ -2,14 +2,13 @@ package PaooGame.States;
 
 import PaooGame.Game;
 import PaooGame.Graphics.Assets;
+import PaooGame.Handler;
+
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class PlayState extends State {
 
-    public PlayState(Game game) {
-        super(game);
-    }
+    public PlayState(Handler handler) { super(handler); }
 
     @Override
     public void Update() {
