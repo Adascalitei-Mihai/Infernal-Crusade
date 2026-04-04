@@ -1,7 +1,11 @@
 package PaooGame.Graphics;
 
+import PaooGame.Entities.Creatures.Dante;
+
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+
+import static PaooGame.Entities.Creatures.Dante.DEFAULT_WIDTH;
 
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.
@@ -12,12 +16,18 @@ public class Assets {
     public static BufferedImage controlsMenuBg;
 
     public static HashMap<String, BufferedImage[]> Dante;
+
+
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
      */
     public static void Init() {
         InitMenus();
         InitDante();
+    }
+
+    public static void InitL1() {
+        BufferedImage platforms = ImageLoader.LoadImage("/textures/Tiles/L1/Snow platform tileset.png");
     }
 
     /**
@@ -31,14 +41,14 @@ public class Assets {
     public static void InitDante() {
         Dante = new HashMap<>();
 
-        Dante.put("Idle", loadDanteAnim("Idle.png", 6, 128));
-        Dante.put("Run", loadDanteAnim("Run.png", 8, 128));
-        Dante.put("Jump", loadDanteAnim("Jump.png", 2, 128));
-        Dante.put("Fall", loadDanteAnim("Fall.png", 2, 128));
-        Dante.put("Attack1", loadDanteAnim("Attack1.png", 4, 128));
-        Dante.put("Attack2", loadDanteAnim("Attack2.png", 4, 128));
-        Dante.put("Hit", loadDanteAnim("Hit.png", 3, 128));
-        Dante.put("Death", loadDanteAnim("Death.png", 10,128));
+        Dante.put("Idle", loadDanteAnim("Idle.png", 6, 32));
+        Dante.put("Run", loadDanteAnim("Run.png", 8, 32));
+        Dante.put("Jump", loadDanteAnim("Jump.png", 2, 32));
+        Dante.put("Fall", loadDanteAnim("Fall.png", 2, 32));
+        Dante.put("Attack1", loadDanteAnim("Attack1.png", 4, 32));
+        Dante.put("Attack2", loadDanteAnim("Attack2.png", 4, 32));
+        Dante.put("Hit", loadDanteAnim("Hit.png", 3, 32));
+        Dante.put("Death", loadDanteAnim("Death.png", 10,32));
 
         Dante.put("Ice_Morph", loadDanteAnim("Ice_Morph.png", 3, 192));
         Dante.put("Eden_Shield", loadDanteAnim("Eden_Shield.png", 7, 192));

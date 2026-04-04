@@ -44,11 +44,19 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "all.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "checkpoint-removebg-preview.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "checkpoint.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "deco.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
@@ -85,6 +93,7 @@
         }
     },
     "last.exportedFilePath": "C:/Users/mario/OneDrive/Desktop",
+    "last.externalTilesetPath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Tiles/L1",
     "last.imagePath": "C:/Users/mario/OneDrive/Desktop/tiled",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
@@ -97,19 +106,20 @@
     ],
     "project": "untitled.tiled-project",
     "recentFiles": [
+        "deco.tsx",
+        "Spear.tsx",
+        "fundal_nivel1.tsx",
+        "all.tsx",
         "checkpoint-removebg-preview.tsx",
         "untitled.tmx",
         "checkpoint.tsx",
         "C:/Users/mario/OneDrive/Desktop/untitled.tmx",
         "00 All.tsx",
-        "Spear.tsx",
         "steag16.tsx",
         "Winter_C.tsx",
-        "fundal_nivel1.tsx",
-        "C:/Users/mario/OneDrive/Desktop/nivel1/untitled.tmx",
-        "Untitled design.tsx",
-        "steag_albmic-removebg-preview.tsx"
+        "C:/Users/mario/OneDrive/Desktop/nivel1/untitled.tmx"
     ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,
