@@ -1,0 +1,54 @@
+{
+    "activeFile": "L1.tmx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "L1.tmx": {
+            "scale": 1,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 7660.5,
+                "y": 314.5
+            }
+        },
+        "Spear.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "all.tsx": {
+            "scaleInDock": 1
+        },
+        "checkpoint.tsx": {
+            "scaleInDock": 1
+        },
+        "deco.tsx": {
+            "scaleInDock": 1
+        },
+        "fundal_nivel1.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "penguin.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "platform_snow.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.externalTilesetPath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L1",
+    "openFiles": [
+        "L1.tmx"
+    ],
+    "project": "L1.tiled-project",
+    "recentFiles": [
+        "L1.tmx",
+        "platform_snow.tsx",
+        "fundal_nivel1.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)"
+}

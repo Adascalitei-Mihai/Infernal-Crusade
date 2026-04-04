@@ -1,11 +1,9 @@
 package PaooGame.Graphics;
 
-import PaooGame.Entities.Creatures.Dante;
+import PaooGame.Tiles.Tile;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
-
-import static PaooGame.Entities.Creatures.Dante.DEFAULT_WIDTH;
 
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.
@@ -16,7 +14,8 @@ public class Assets {
     public static BufferedImage controlsMenuBg;
 
     public static HashMap<String, BufferedImage[]> Dante;
-
+    public static BufferedImage[] worldTiles = new BufferedImage[5000];
+    public static BufferedImage bgMuntiSpate, bgMunti, bgPadureCeata, bgPadureClara, bgIarba, bgArena;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
@@ -27,9 +26,41 @@ public class Assets {
     }
 
     public static void InitL1() {
-        BufferedImage platforms = ImageLoader.LoadImage("/textures/Tiles/L1/Snow platform tileset.png");
+        bgMuntiSpate = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer5.png");
+        bgMunti = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer4.png");
+        bgPadureCeata = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer2.png");
+        bgPadureClara = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer1.png");
+        bgIarba = ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer3.png");
+        bgArena = ImageLoader.LoadImage("/textures/Maps/L1/fundal_arena.png");
+        
+        SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
+        fillTiles(snowSheet, 1, 11, 121);
+        
+        SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
+        fillTiles(decoSheet, 122, 48, 2304);
+        
+        SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
+        fillTiles(penguinSheet, 2426, 4, 32);
+        
+        SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
+        fillTiles(allSheet, 2458, 64, 2176);
+
+        SpriteSheet checkSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/checkpoint.png"), 16, 16);
+        fillTiles(checkSheet, 4634, 4, 16);
     }
 
+    /**
+     * Metodă utilitară pentru a umple vectorul worldTiles cu sub-imagini
+     */
+    private static void fillTiles(SpriteSheet sheet, int startID, int columns, int totalCount) {
+        int id = startID;
+        for (int i = 0; i < totalCount; i++) {
+            int x = i % columns;
+            int y = i / columns;
+            worldTiles[id] = sheet.crop(x, y);
+            id++;
+        }
+    }
     /**
      * Functia care initializeaza meniurile utilizate.
      */
