@@ -1,4 +1,4 @@
-package PaooGame.State.VisualElements;
+package PaooGame.States.VisualElements;
 
 import java.awt.*;
 

@@ -6,9 +6,9 @@ import PaooGame.Game.Game;
 import PaooGame.Game.GameCamera;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
-import PaooGame.State.StartMenu;
-import PaooGame.State.State;
-import PaooGame.World.World;
+import PaooGame.States.StartMenu;
+import PaooGame.States.State;
+import PaooGame.World.Levels.Level;
 
 import java.awt.*;
 
@@ -17,7 +17,7 @@ public class Handler {
 
     private State state;
     private Game game;
-    private World world;
+    private Level level;
     private DatabaseManager dbMan;
 
     private int playerID;
@@ -91,12 +91,12 @@ public class Handler {
         this.game = game;
     }
 
-    public World getWorld() {
-        return world;
+    public Level getWorld() {
+        return level;
     }
 
-    public void setWorld(World world) {
-        this.world = world;
+    public void setWorld(Level level) {
+        this.level = level;
     }
 
     public DatabaseManager getDbMan() {
@@ -177,5 +177,12 @@ public class Handler {
 
     public void setGlobalScore(int globalScore) {
         this.globalScore = globalScore;
+    }
+
+    public float getxOffset() {
+        return game.getGameCamera().getxOffset();
+    }
+    public float getyOffset() {
+        return game.getGameCamera().getyOffset();
     }
 }

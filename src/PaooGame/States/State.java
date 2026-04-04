@@ -1,4 +1,4 @@
-package PaooGame.State;
+package PaooGame.States;
 import PaooGame.Handler;
 
 import java.awt.*;

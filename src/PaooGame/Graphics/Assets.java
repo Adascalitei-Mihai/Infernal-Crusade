@@ -3,6 +3,8 @@ package PaooGame.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
+import static PaooGame.World.Tiles.Tile.NO_TILES;
+
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.
  */
@@ -12,7 +14,7 @@ public class Assets {
     public static BufferedImage controlsMenuBg;
 
     public static HashMap<String, BufferedImage[]> Dante;
-    public static BufferedImage[] worldTiles = new BufferedImage[5000];
+    public static BufferedImage[] worldTiles = new BufferedImage[NO_TILES];
     public static BufferedImage[] bg;
     public static BufferedImage[] chkp;
     public static BufferedImage[] spear_opening, spear_closing;
@@ -38,6 +40,8 @@ public class Assets {
                 spearSheet.crop(1, 0),
                 spearSheet.crop(0, 0)
         };
+
+        InitL1();
     }
 
     public static void InitL1() {

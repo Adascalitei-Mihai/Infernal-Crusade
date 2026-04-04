@@ -39,8 +39,8 @@ public class SpearGate extends Entity {
 
     @Override
     public void Draw(Graphics g) {
-        int screenX = (int) (x - handler.getGame().getGameCamera().getxOffset());
-        int screenY = (int) (y - handler.getGame().getGameCamera().getyOffset());
+        int screenX = (int) (x - handler.getxOffset());
+        int screenY = (int) (y - handler.getyOffset());
 
         switch (state) {
             case 1 -> g.drawImage(closeAnim.getCurrentFrame(), screenX, screenY, width, height, null);

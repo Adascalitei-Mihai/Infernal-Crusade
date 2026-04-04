@@ -1,8 +1,8 @@
-package PaooGame.State;
+package PaooGame.States;
 
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
-import PaooGame.State.VisualElements.Button;
+import PaooGame.States.VisualElements.Button;
 
 import java.awt.*;
 

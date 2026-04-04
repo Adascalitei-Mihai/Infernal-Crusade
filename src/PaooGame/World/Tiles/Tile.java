@@ -1,12 +1,13 @@
 package PaooGame.World.Tiles;
 
+import PaooGame.Graphics.Assets;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Tile {
-    public static final int TILE_WIDTH = 16; // Adaptat la cerința ta
-    public static final int TILE_HEIGHT = 16;
-    private static final int NO_TILES = 256;
+    public static final int TILE_SIZE = 16;
+    public static final int NO_TILES = 5000;
 
     public static Tile[] tiles = new Tile[NO_TILES];
 
@@ -23,10 +24,10 @@ public abstract class Tile {
     }
 
     public void Draw(Graphics g, int x, int y) {
-        g.drawImage(img, x, y, TILE_WIDTH, TILE_HEIGHT, null);
+        g.drawImage(img, x, y, TILE_SIZE, TILE_SIZE, null);
     }
 
-    public boolean isSolid() { return false; }
+    public abstract boolean isSolid();
 
     public int getId() { return id; }
 }
