@@ -1,10 +1,8 @@
 package PaooGame.Entities.Projectiles;
 
-import PaooGame.Graphics.Assets;
 import PaooGame.Game;
 import PaooGame.Entities.Entity;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 
 public class Arrow extends Projectile {
 
