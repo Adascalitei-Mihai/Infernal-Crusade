@@ -10,8 +10,7 @@ import java.awt.*;
 /**
  * Clasa meniului de inceput, este una dintre starile posibile.
  */
-public class StartMenu implements State {
-    private final Handler handler;
+public class StartMenu extends State {
     private final TextBox nameInput;
     private final Button quitBtn;
 
@@ -27,7 +26,7 @@ public class StartMenu implements State {
      * @param handler Instanta jocului actual.
      */
     public StartMenu(Handler handler) {
-        this.handler = handler;
+        super(handler);
 
         nameInput = new TextBox(0, 0, BOX_WIDTH, BOX_HEIGTH);
         quitBtn = new Button(0, 0, BOX_WIDTH, BOX_HEIGTH,
@@ -38,6 +37,7 @@ public class StartMenu implements State {
      * Functie care primeste un caracter prin intermediul KeyManager.
      * @param c Caracterul adaugat in caseta text.
      */
+    @Override
     public void onKeyTyped(char c) { nameInput.addChar(c); }
 
     /**
@@ -82,7 +82,7 @@ public class StartMenu implements State {
             if(!playerName.trim().isEmpty()) {
                 handler.playerLogin(playerName.trim());
 
-                Handler.setState(new MainMenu(handler,
+                handler.setState(new MainMenu(handler,
                         (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }

@@ -9,8 +9,7 @@ import java.awt.*;
 /**
  * Clasa meniului principal
  */
-public class MainMenu implements State {
-    private final Handler handler;
+public class MainMenu extends State {
     private final Button[] btns;
 
     private int btnsX, btnsY, scoreX, scoreY;
@@ -22,7 +21,7 @@ public class MainMenu implements State {
     private final static int BTN_COUNT = 5;
 
     public MainMenu(Handler handler, String startText) {
-        this.handler = handler;
+        super(handler);
 
         btnsX = (handler.getWidth() - BOX_WIDTH) / 2;
         int totalHeight = BTN_COUNT * (BOX_HEIGTH + 10);
@@ -53,9 +52,6 @@ public class MainMenu implements State {
                     new String[]{"Quit (ESC)"})
         };
     }
-
-    @Override
-    public void onKeyTyped(char c) {}
 
     @Override
     public void Update() {
@@ -99,7 +95,7 @@ public class MainMenu implements State {
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
-                Handler.setState(new PlayState(handler));
+                handler.setState(new PlayState(handler));
                 break;
             case 1:
                 if(handler.getBestScore() != 0) {
@@ -110,7 +106,7 @@ public class MainMenu implements State {
                 btns[2].changeState();
                 break;
             case 3:
-                Handler.setState(new ControlsMenu(handler));
+                handler.setState(new ControlsMenu(handler));
                 break;
             case 4:
                 handler.StopGame();

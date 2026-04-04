@@ -1,11 +1,19 @@
 package PaooGame.State;
+import PaooGame.Handler;
+
 import java.awt.*;
 
 /**
  * Clasa abstracta care face legatura intre joc si starea curenta.
  */
-public interface State {
-    void onKeyTyped(char c);
-    void Update();
-    void Draw(Graphics g);
+public abstract class State {
+    protected Handler handler;
+
+    public State(Handler handler) {
+        this.handler = handler;
+    }
+
+    public void onKeyTyped(char c) {}
+    public abstract void Update();
+    public abstract void Draw(Graphics g);
 }

@@ -6,6 +6,7 @@ import PaooGame.Game.Game;
 import PaooGame.Game.GameCamera;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
+import PaooGame.State.StartMenu;
 import PaooGame.State.State;
 import PaooGame.World.World;
 
@@ -14,7 +15,7 @@ import java.awt.*;
 public class Handler {
     public static final int NR_CHKPTS = 3;
 
-    private static State state;
+    private State state;
     private Game game;
     private World world;
     private DatabaseManager dbMan;
@@ -36,6 +37,8 @@ public class Handler {
         dbMan = new DatabaseManager();
         dbMan.connect("jdbc:sqlite:database/game.db");
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
+
+        setState(new StartMenu(this));
     }
 
     public void playerLogin(String playerName) {
@@ -72,12 +75,12 @@ public class Handler {
     public int getWidth() { return game.getWidth(); }
     public int getHeight() { return game.getHeight(); }
 
-    public static State getState() {
+    public State getState() {
         return state;
     }
 
-    public static void setState(State state) {
-        Handler.state = state;
+    public void setState(State state) {
+        this.state = state;
     }
 
     public Game getGame() {

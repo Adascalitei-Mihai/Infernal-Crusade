@@ -5,14 +5,11 @@ import PaooGame.Handler;
 
 import java.awt.*;
 
-public class PlayState implements State {
-    private final Handler handler;
+public class PlayState extends State {
     public PlayState(Handler handler) {
-        this.handler = handler;
+        super(handler);
     }
 
-    @Override
-    public void onKeyTyped(char c) {}
 
     @Override
     public void Update() {

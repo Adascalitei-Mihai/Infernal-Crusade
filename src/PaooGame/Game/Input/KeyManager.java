@@ -10,6 +10,7 @@ import java.util.Arrays;
  * Clasa care traduce actiunile tastaturii.
  */
 public class KeyManager implements KeyListener {
+    private final Handler handler;
 
     private final boolean[] keys;
     public boolean up, down, left, right,
@@ -19,7 +20,8 @@ public class KeyManager implements KeyListener {
     /**
      * Constructor vid, initializeaza un vector in care retinem caracterele apasate.
      */
-    public KeyManager() {
+    public KeyManager(Handler handler) {
+        this.handler = handler;
         keys = new boolean[256];
     }
 
@@ -69,8 +71,8 @@ public class KeyManager implements KeyListener {
      */
     @Override
     public void keyTyped(KeyEvent e) {
-        if(Handler.getState() != null) {
-            Handler.getState().onKeyTyped(e.getKeyChar());
+        if(handler.getState() != null) {
+            handler.getState().onKeyTyped(e.getKeyChar());
         }
     }
 

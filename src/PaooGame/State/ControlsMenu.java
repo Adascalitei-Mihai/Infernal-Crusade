@@ -6,8 +6,7 @@ import PaooGame.State.VisualElements.Button;
 
 import java.awt.*;
 
-public class ControlsMenu implements State {
-    private final Handler handler;
+public class ControlsMenu extends State {
     private final Button returnBtn;
     private int btnX, btnY;
 
@@ -17,7 +16,7 @@ public class ControlsMenu implements State {
     private final static int TEXT_SIZE = 40;
 
     public ControlsMenu(Handler handler) {
-        this.handler = handler;
+        super(handler);
 
         btnX = handler.getWidth() - BOX_WIDTH;
         btnY = 10;
@@ -25,9 +24,6 @@ public class ControlsMenu implements State {
         returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGTH,
                 new String[]{"Return (ESC)"});
     }
-
-    @Override
-    public void onKeyTyped(char c) {}
 
     @Override
     public void Update() {
@@ -45,7 +41,7 @@ public class ControlsMenu implements State {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             if(handler.getMouseManager().isLeftPressed()) {
-                Handler.setState(new MainMenu(handler,
+                handler.setState(new MainMenu(handler,
                         (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
             }
         }
@@ -55,7 +51,7 @@ public class ControlsMenu implements State {
 
         if(handler.getKeyManager().escape) {
             handler.getKeyManager().resetKeys();
-            Handler.setState(new MainMenu(handler, "New Game"));
+            handler.setState(new MainMenu(handler, "New Game"));
         }
     }
 

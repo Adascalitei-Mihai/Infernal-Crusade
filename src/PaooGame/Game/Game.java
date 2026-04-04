@@ -52,16 +52,16 @@ public class Game implements Runnable
         wnd = new GameWindow("Infernal Crusaders", 1000, 800); // 1
         wnd.BuildGameWindow();
 
-        wnd.getCanvas().addKeyListener(keyMan); // 2
-        wnd.getCanvas().addMouseListener(mouseMan);
-        wnd.getCanvas().addMouseMotionListener(mouseMan);
-
         Assets.Init(); // 3
         handler = new Handler(this);
 
         gameCamera = new GameCamera(handler, 0, 0);
-        keyMan = new KeyManager();
-        mouseMan = new MouseManager();
+        keyMan = new KeyManager(handler);
+        mouseMan = new MouseManager(handler);
+
+        wnd.getCanvas().addKeyListener(keyMan); // 2
+        wnd.getCanvas().addMouseListener(mouseMan);
+        wnd.getCanvas().addMouseMotionListener(mouseMan);
     }
 
     /**

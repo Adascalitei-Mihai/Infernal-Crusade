@@ -1,5 +1,7 @@
 package PaooGame.Game.Input;
 
+import PaooGame.Handler;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -8,7 +10,7 @@ import java.awt.event.MouseMotionListener;
  * Clasa care traduce actiunile mouse-ului.
  */
 public class MouseManager implements MouseListener, MouseMotionListener {
-
+    private final Handler handler;
     private boolean leftPressed, rightPressed;
     private boolean leftReleased;
     private int mouseX, mouseY;
@@ -16,7 +18,8 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     /**
      * Constructor vid.
      */
-    public MouseManager() {
+    public MouseManager(Handler handler) {
+        this.handler = handler;
     }
 
     /**
