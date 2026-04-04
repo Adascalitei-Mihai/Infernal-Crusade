@@ -1,7 +1,5 @@
 package PaooGame.Graphics;
 
-import PaooGame.Tiles.Tile;
-
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 

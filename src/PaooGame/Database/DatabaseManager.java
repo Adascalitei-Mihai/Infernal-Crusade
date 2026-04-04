@@ -1,6 +1,6 @@
 package PaooGame.Database;
 
-import PaooGame.Game;
+import PaooGame.Handler;
 
 import java.sql.*;
 
@@ -26,7 +26,7 @@ public class DatabaseManager {
         }
     }
 
-    public void loadOrCreatePlayer(String name, Game game) {
+    public void loadOrCreatePlayer(String name, Handler handler) {
         String querySelect = "SELECT * FROM Players WHERE Name = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(querySelect)) {
@@ -34,14 +34,14 @@ public class DatabaseManager {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                game.setPlayerID(rs.getInt("ID_P"));
-                game.setPlayerName(rs.getString("Name"));
-                game.setCurrLevel(rs.getInt("CurrLevel"));
-                game.setCurrChkp(rs.getInt("CurrChkp"));
-                System.out.println("Profil încărcat: " + name + " (ID: " + game.getPlayerID() + ")");
+                handler.setPlayerID(rs.getInt("ID_P"));
+                handler.setPlayerName(rs.getString("Name"));
+                handler.setCurrLevel(rs.getInt("CurrLevel"));
+                handler.setCurrChkp(rs.getInt("CurrChkp"));
+                System.out.println("Profil încărcat: " + name + " (ID: " + handler.getPlayerID() + ")");
             }
             else {
-                createNewPlayer(name, game);
+                createNewPlayer(name, handler);
             }
         }
         catch (SQLException e) {
@@ -49,7 +49,7 @@ public class DatabaseManager {
         }
     }
 
-    private void createNewPlayer(String name, Game game) {
+    private void createNewPlayer(String name, Handler handler) {
         String queryInsert = "INSERT INTO Players(Name, CurrLevel, CurrChkp) VALUES(?, 1, 0)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(queryInsert, Statement.RETURN_GENERATED_KEYS)) {
@@ -58,10 +58,10 @@ public class DatabaseManager {
 
             ResultSet generatedKeys = pstmt.getGeneratedKeys();
             if (generatedKeys.next()) {
-                game.setPlayerID(generatedKeys.getInt(1));
-                game.setPlayerName(name);
-                game.setCurrLevel(1);
-                game.setCurrChkp(0);
+                handler.setPlayerID(generatedKeys.getInt(1));
+                handler.setPlayerName(name);
+                handler.setCurrLevel(1);
+                handler.setCurrChkp(0);
                 System.out.println("Jucător nou creat: " + name);
             }
         } catch (SQLException e) {
