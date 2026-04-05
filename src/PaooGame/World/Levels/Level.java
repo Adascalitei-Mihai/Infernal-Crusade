@@ -40,6 +40,8 @@ public abstract class Level {
     public void Update() { entityManager.Update(); }
 
     public void Draw(Graphics g) {
+        drawBackground(g);
+
         int xStart = (int) Math.max(0, handler.getxOffset() / TILE_SIZE);
         int xEnd = (int) Math.min(width, (handler.getxOffset() + handler.getWidth()) / TILE_SIZE + 1);
         int yStart = (int) Math.max(0, handler.getyOffset() / TILE_SIZE);
@@ -74,4 +76,5 @@ public abstract class Level {
     public EntityManager getEntityManager() {
         return entityManager;
     }
+    public void drawBackground(Graphics g) {}
 }

@@ -6,7 +6,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Tile {
-    public static final int TILE_SIZE = 16;
+    public static final int DEFAULT_SIZE = 16;
+    public static final float SCALE = 2.5f; // 250%
+    public static final int TILE_SIZE = (int) (DEFAULT_SIZE * SCALE);
     public static final int NO_TILES = 5000;
 
     public static Tile[] tiles = new Tile[NO_TILES];

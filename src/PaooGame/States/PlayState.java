@@ -16,7 +16,6 @@ public class PlayState extends State {
 
         Level1Factory level1Factory = new Level1Factory(handler);
 
-        // 2. Construim nivelul (care va rula loadLevel intern)
         level = new Level1(handler);
     }
 

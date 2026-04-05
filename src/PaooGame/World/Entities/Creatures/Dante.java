@@ -11,7 +11,7 @@ public class Dante extends Creature {
     public static final int DEFAULT_HEIGHT = 64;
 
     public Dante(Handler handler, float x, float y) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
     }
 
     @Override
@@ -22,4 +22,10 @@ public class Dante extends Creature {
 
     @Override
     public void onInteraction(Entity e) {}
+
+    @Override
+    public void Move() {}
+
+    @Override
+    public void hurt(float dmg) {}
 }
