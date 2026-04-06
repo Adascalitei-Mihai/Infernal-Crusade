@@ -53,6 +53,7 @@ public class Handler {
         if (dbMan != null) {
             dbMan.close();
         }
+        game.StopGame();
     }
 
     public void Update() {
@@ -68,7 +69,7 @@ public class Handler {
     }
 
     public void setCursor(Cursor c) {
-        game.getWnd().getFrame().setCursor(c);
+        game.getWnd().getCanvas().setCursor(c);
     }
 
     public KeyManager getKeyManager() { return game.getKeyMan(); }
@@ -194,4 +195,6 @@ public class Handler {
     public Dante getDante() {
         return level.getEntityManager().getDante();
     }
+
+
 }

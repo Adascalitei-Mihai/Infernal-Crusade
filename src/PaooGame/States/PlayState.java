@@ -10,6 +10,7 @@ import java.awt.*;
 
 public class PlayState extends State {
     private Level level;
+    private boolean initializedFullscreen = false;
 
     public PlayState(Handler handler) {
         super(handler);
@@ -22,9 +23,19 @@ public class PlayState extends State {
 
     @Override
     public void Update() {
-        level.Update();
+        if (!initializedFullscreen) {
+            handler.getGame().getWnd().setFullScreen(true);
+            handler.getGame().getWnd().hideCursor(true);
+            initializedFullscreen = true;
+        }
 
+        level.Update();
         handler.getGameCamera().center(level.getEntityManager().getDante());
+
+        if(handler.getKeyManager().escape) {
+            handler.getGame().getWnd().setWindowed();
+            handler.setState(new MainMenu(handler, "Continue"));
+        }
     }
 
     @Override

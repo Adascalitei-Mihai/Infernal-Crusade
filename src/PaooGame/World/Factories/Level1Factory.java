@@ -9,6 +9,7 @@ import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
 import PaooGame.World.Entities.Environment.CameraTrigger;
 import PaooGame.World.Tiles.SolidTile;
+import PaooGame.World.Tiles.Tile;
 import PaooGame.World.Tiles.TransparentTile;
 
 import static PaooGame.World.Tiles.Tile.NO_TILES;
@@ -22,6 +23,10 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public void InitTiles() {
+        if (Tile.tiles[0] == null) {
+            new TransparentTile(null, 0);
+        }
+
         for(int i = 0; i < NO_TILES; i++) {
             if(Assets.worldTiles[i] != null) {
                 if ((i >= 1 && i <= 121) || (i >= 2458 && i <= 4633)) {

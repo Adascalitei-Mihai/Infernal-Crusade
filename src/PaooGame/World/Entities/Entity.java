@@ -30,6 +30,10 @@ public abstract class Entity {
         return new Rectangle((int)(x + bounds.x + xOffset), (int)(y + bounds.y + yOffset), bounds.width, bounds.height);
     }
     public boolean checkEntityCollisions(float xOffset, float yOffset) {
+        if (handler.getLevel() == null) {
+            return false;
+        }
+
         for (Entity e : handler.getEntities()) {
             if (e.equals(this))
                 continue;

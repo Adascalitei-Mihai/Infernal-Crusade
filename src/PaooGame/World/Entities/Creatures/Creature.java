@@ -7,15 +7,12 @@ import PaooGame.World.Tiles.Tile;
 import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public abstract class Creature extends Entity {
-    public static final float DEFAULT_SPEED = 3.0f;
     protected float hp;
-    protected float speed;
     protected float xMove, yMove;
 
     public Creature(Handler handler, float x, float y, int width, int height, float hp) {
         super(handler, x, y, width, height);
         this.hp = hp;
-        this.speed = DEFAULT_SPEED;
     }
     public void move() {
         if(!checkEntityCollisions(xMove, 0f))
@@ -33,7 +30,8 @@ public abstract class Creature extends Entity {
             else {
                 x = tx * TILE_SIZE - bounds.x - bounds.width - 1;
             }
-        } else if (xMove < 0) {
+        }
+        else if (xMove < 0) {
             int tx = (int) (x + xMove + bounds.x) / TILE_SIZE;
             if (!collisionWithTile(tx, (int) (y + bounds.y) / TILE_SIZE) &&
                     !collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / TILE_SIZE)) {
@@ -54,7 +52,8 @@ public abstract class Creature extends Entity {
             else {
                 y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
             }
-        } else if (yMove > 0) {
+        }
+        else if (yMove > 0) {
             int ty = (int) (y + yMove + bounds.y + bounds.height) / TILE_SIZE;
             if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
                     !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
@@ -67,7 +66,13 @@ public abstract class Creature extends Entity {
     }
 
     protected boolean collisionWithTile(int x, int y) {
-        return handler.getLevel().getTile(x, y).isSolid();
+        Tile t = handler.getLevel().getTile(x, y);
+
+        if (t == null) {
+            return true;
+        }
+
+        return t.isSolid();
     }
 
     public void hurt(float dmg) {
@@ -79,7 +84,6 @@ public abstract class Creature extends Entity {
     }
 
     public abstract void die();
-    public abstract void tick();
 
     public void setHp(float hp) { this.hp = hp; }
     public float getHp() { return hp; }
@@ -87,6 +91,4 @@ public abstract class Creature extends Entity {
     public void setxMove(float xMove) { this.xMove = xMove; }
     public float getyMove() { return yMove; }
     public void setyMove(float yMove) { this.yMove = yMove; }
-    public float getSpeed() { return speed; }
-    public void setSpeed(float speed) { this.speed = speed; }
 }

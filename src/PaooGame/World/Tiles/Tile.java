@@ -19,17 +19,19 @@ public abstract class Tile {
     public Tile(BufferedImage img, int id) {
         this.img = img;
         this.id = id;
-        tiles[id] = this;
+        if (id >= 0 && id < NO_TILES) {
+            tiles[id] = this;
+        }
     }
 
-    public void Update() {
-    }
+    public void Update() {}
 
     public void Draw(Graphics g, int x, int y) {
         g.drawImage(img, x, y, TILE_SIZE, TILE_SIZE, null);
     }
 
     public abstract boolean isSolid();
+    public abstract boolean getIce();
 
     public int getId() { return id; }
 }

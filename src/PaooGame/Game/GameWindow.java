@@ -2,6 +2,7 @@ package PaooGame.Game;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * Clasa care implementeaza fereastra jocului.
@@ -25,6 +26,60 @@ public class GameWindow {
         wndWidth = width;
         wndHeight = height;
         wndFrame = null;
+    }
+
+    public void setFullScreen(boolean fullscreen) {
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        if (fullscreen) {
+            if (gd.isFullScreenSupported()) {
+                wndFrame.dispose();
+                wndFrame.setUndecorated(true);
+                gd.setFullScreenWindow(wndFrame);
+                wndFrame.setVisible(true);
+
+                canvas.setFocusable(true);
+                canvas.requestFocusInWindow();
+            }
+        } else {
+            gd.setFullScreenWindow(null);
+            wndFrame.dispose();
+            wndFrame.setUndecorated(false);
+            wndFrame.setVisible(true);
+            wndFrame.setLocationRelativeTo(null);
+        }
+        canvas.requestFocus();
+    }
+    public void setWindowed() {
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        if (gd.getFullScreenWindow() != null) {
+            gd.setFullScreenWindow(null);
+            wndFrame.dispose();
+            wndFrame.setUndecorated(false);
+            wndFrame.setPreferredSize(new Dimension(wndWidth, wndHeight));
+            wndFrame.pack();
+            wndFrame.setLocationRelativeTo(null);
+            wndFrame.setVisible(true);
+
+            canvas.setFocusable(true);
+            canvas.requestFocusInWindow();
+
+            hideCursor(false);
+        }
+    }
+
+    public void hideCursor(boolean hide) {
+        if (canvas == null) return;
+
+        if (hide) {
+            BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+                    cursorImg, new Point(0, 0), "blank cursor");
+            canvas.setCursor(blankCursor);
+        } else {
+            canvas.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     /**

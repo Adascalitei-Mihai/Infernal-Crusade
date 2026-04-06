@@ -8,4 +8,7 @@ public class TransparentTile extends Tile {
 
     @Override
     public boolean isSolid() { return false; }
+
+    @Override
+    public boolean getIce() { return false; }
 }

@@ -23,7 +23,7 @@ public abstract class Enemy extends Creature {
     }
 
     @Override
-    public void tick() {
+    public void Update() {
         makeDecision();
         move();
     }

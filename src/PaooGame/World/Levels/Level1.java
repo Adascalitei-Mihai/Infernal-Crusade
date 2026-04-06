@@ -21,7 +21,7 @@ public class Level1 extends Level {
     private final int[] oy = {-250, -140, -170, -70, 62, -1};      // Offset Y
 
     public Level1(Handler handler) {
-        super(handler, L1_WIDTH, L1_HEIGHT, 0, 0, "res/textures/Maps/L1/L1.tmx");
+        super(handler, L1_WIDTH, L1_HEIGHT, 5, 100, "res/textures/Maps/L1/L1.tmx");
         factory = new Level1Factory(handler);
     }
 

@@ -13,7 +13,7 @@ public class KeyManager implements KeyListener {
     private final Handler handler;
 
     private final boolean[] keys;
-    public boolean up, down, left, right,
+    public boolean up, down, left, right, space,
             shift, j, k, l,
             enter, escape;
 
@@ -33,6 +33,8 @@ public class KeyManager implements KeyListener {
         down = keys[KeyEvent.VK_S];
         left = keys[KeyEvent.VK_A];
         right = keys[KeyEvent.VK_D];
+
+        space = keys[KeyEvent.VK_SPACE];
 
         shift = keys[KeyEvent.VK_SHIFT];
         j = keys[KeyEvent.VK_J];
@@ -83,6 +85,7 @@ public class KeyManager implements KeyListener {
         down = false;
         left = false;
         right = false;
+        space = false;
 
         shift = false;
         j = false;
