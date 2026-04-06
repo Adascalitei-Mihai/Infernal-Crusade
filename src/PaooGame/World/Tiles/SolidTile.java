@@ -6,6 +6,4 @@ public class SolidTile extends Tile {
 
     @Override
     public boolean isSolid() { return true; }
-
-    public boolean canHostSpells() { return false; }
 }

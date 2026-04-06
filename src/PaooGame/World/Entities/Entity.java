@@ -29,6 +29,19 @@ public abstract class Entity {
     public Rectangle getCollisionBounds(float xOffset, float yOffset) {
         return new Rectangle((int)(x + bounds.x + xOffset), (int)(y + bounds.y + yOffset), bounds.width, bounds.height);
     }
+    public boolean checkEntityCollisions(float xOffset, float yOffset) {
+        for (Entity e : handler.getEntities()) {
+            if (e.equals(this))
+                continue;
+
+            Rectangle otherBounds = e.getCollisionBounds(0f, 0f);
+            Rectangle myFutureBounds = getCollisionBounds(xOffset, yOffset);
+            if (otherBounds.intersects(myFutureBounds)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }

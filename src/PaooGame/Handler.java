@@ -8,9 +8,11 @@ import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.States.StartMenu;
 import PaooGame.States.State;
+import PaooGame.World.Entities.Entity;
 import PaooGame.World.Levels.Level;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Handler {
     public static final int NR_CHKPTS = 3;
@@ -91,11 +93,11 @@ public class Handler {
         this.game = game;
     }
 
-    public Level getWorld() {
+    public Level getLevel() {
         return level;
     }
 
-    public void setWorld(Level level) {
+    public void setLevel(Level level) {
         this.level = level;
     }
 
@@ -184,5 +186,8 @@ public class Handler {
     }
     public float getyOffset() {
         return game.getGameCamera().getyOffset();
+    }
+    public ArrayList<Entity> getEntities() {
+        return level.getEntityManager().getEntities();
     }
 }

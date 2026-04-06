@@ -5,11 +5,11 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "L1.tmx": {
-            "scale": 2,
+            "scale": 1.5,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 7114.25,
-                "y": 236.75
+                "x": 7570.666666666666,
+                "y": 196.33333333333337
             }
         },
         "Spear.tsx": {
