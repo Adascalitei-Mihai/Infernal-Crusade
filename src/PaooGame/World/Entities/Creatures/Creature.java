@@ -77,7 +77,10 @@ public abstract class Creature extends Entity {
             die();
         }
     }
+
     public abstract void die();
+    public abstract void tick();
+
     public void setHp(float hp) { this.hp = hp; }
     public float getHp() { return hp; }
     public float getxMove() { return xMove; }

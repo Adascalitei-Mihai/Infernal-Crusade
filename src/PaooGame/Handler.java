@@ -8,6 +8,7 @@ import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.States.StartMenu;
 import PaooGame.States.State;
+import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Levels.Level;
 
@@ -189,5 +190,8 @@ public class Handler {
     }
     public ArrayList<Entity> getEntities() {
         return level.getEntityManager().getEntities();
+    }
+    public Dante getDante() {
+        return level.getEntityManager().getDante();
     }
 }
