@@ -39,7 +39,11 @@ public class Dante extends Creature {
     private boolean isJumping;
     private boolean onGround = false;
 
-    private long lastAttackTimer, attackCooldown = 500, attackTimer = attackCooldown;
+    private static final int ATTACK_COOLDOWN = 30;
+    private static final int ATTACK_DURATION = 12;
+    private int attackTimer = 0;
+    private int attackActiveTimer = 0;
+
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
@@ -169,41 +173,46 @@ public class Dante extends Creature {
     }
 
     private void attack() {
-        attackTimer += System.currentTimeMillis() - lastAttackTimer;
-        lastAttackTimer = System.currentTimeMillis();
-
-        if (handler.getKeyManager().j && attackTimer >= attackCooldown) {
-            isAttacking = true;
-            attackTimer = 0;
+        if (attackTimer > 0) {
+            attackTimer--;
         }
 
         if (isAttacking) {
-            if (attackTimer >= 200) {
+            attackActiveTimer--;
+            if (attackActiveTimer <= 0) {
                 isAttacking = false;
                 return;
             }
+        }
 
-            int verticalWidth = (int) (bounds.width * 1.5f);
-            int verticalHeight = TILE_SIZE * 2;
-            int horizontalWidth = TILE_SIZE * 2;
-            int horizontalHeight = (int) (bounds.height * 0.5f);
+        if (handler.getKeyManager().j && attackTimer <= 0) {
+            isAttacking = true;
+            attackActiveTimer = ATTACK_DURATION;
+            attackTimer = ATTACK_COOLDOWN;
+        }
+
+        if (isAttacking) {
+            int vWidth = (int) (bounds.width * 1.5f);
+            int vHeight = TILE_SIZE * 2;
+            int hWidth = TILE_SIZE * 2;
+            int hHeight = (int) (bounds.height * 0.5f);
 
             switch (direction) {
-                case 0:
-                    attackBounds.setSize(horizontalWidth, horizontalHeight);
+                case 0 -> {
+                    attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
-                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
-                    break;
-                case 1:
-                    attackBounds.setSize(verticalWidth, verticalHeight);
-                    attackBounds.x = (int) (x + bounds.x - (verticalWidth - bounds.width) / 2);
-                    attackBounds.y = (int) (y + bounds.y - verticalHeight);
-                    break;
-                case 2:
-                    attackBounds.setSize(horizontalWidth, horizontalHeight);
-                    attackBounds.x = (int) (x + bounds.x - horizontalWidth);
-                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
-                    break;
+                    attackBounds.y = (int) (y + bounds.y + (bounds.height - hHeight) / 2);
+                }
+                case 1 -> {
+                    attackBounds.setSize(vWidth, vHeight);
+                    attackBounds.x = (int) (x + bounds.x - (vWidth - bounds.width) / 2);
+                    attackBounds.y = (int) (y + bounds.y - vHeight);
+                }
+                case 2 -> {
+                    attackBounds.setSize(hWidth, hHeight);
+                    attackBounds.x = (int) (x + bounds.x - hWidth);
+                    attackBounds.y = (int) (y + bounds.y + (bounds.height - hHeight) / 2);
+                }
             }
         }
     }
@@ -266,7 +275,6 @@ public class Dante extends Creature {
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
 
             fieryJudgementTimer = FIERY_JUDGEMENT_COOLDOWN;
-            System.out.println("Fiery Judgement has been cast!");
         }
     }
 

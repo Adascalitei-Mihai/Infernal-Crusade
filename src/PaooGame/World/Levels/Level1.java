@@ -18,7 +18,7 @@ public class Level1 extends Level {
     private final float[] px = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f}; // Factori Parallax X
     private final float[] py = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f}; // Factori Parallax Y
     private final int[] ox = {0, 0, 0, 2, -34, 7200};             // Offset X (rotunjit)
-    private final int[] oy = {-250, -140, -170, -70, 62, -1};      // Offset Y
+    private final int[] oy = {0, 0, -100, -70, 62, -1};      // Offset Y
 
     public Level1(Handler handler) {
         super(handler, L1_WIDTH, L1_HEIGHT, 5, 100, "res/textures/Maps/L1/L1.tmx");
