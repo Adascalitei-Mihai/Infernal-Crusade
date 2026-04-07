@@ -29,7 +29,6 @@ public abstract class Tile {
     }
 
     public abstract boolean isSolid();
-    public abstract boolean isIce();
 
     public int getId() { return id; }
 }

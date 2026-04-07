@@ -103,7 +103,6 @@ public class Game implements Runnable
 
             if (timer >= 1000000000) {
                 currentFPS = ticks;
-                System.out.println("FPS: " + currentFPS);
                 ticks = 0;
                 timer = 0;
             }

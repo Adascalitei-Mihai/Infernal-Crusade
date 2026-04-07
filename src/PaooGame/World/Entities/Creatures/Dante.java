@@ -12,24 +12,28 @@ public class Dante extends Creature {
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
 
-    public static final float MAX_SPEED = 5f;
-    private static final float FRICTION = 0.9f;
-    private static final float ICE_FRICTION = 0.98f;
-    private static final float ACCELERATION = 1.2f;
+    public static final float MAX_SPEED = 15f;
+    public static final float SPEED = 5f;
+    private static final float ACCELERATION = 0.2f;
+    private static final float FRICTION = 0.6f;
+
     private static final float GRAVITY = 0.5f;
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
     private static final int MAX_JUMP_TIME = 20;
 
+    private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
+    private int dirrection = 2;
+
     private int jumpTimer = 0;
     private boolean isJumping;
+    private boolean onGround = false;
 
     private long lastAttackTimer, attackCooldown = 500, attackTimer = attackCooldown;
-    private int attackDir = 0;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    private boolean onGround = false;
+    private long lastMorphTimer, morphCooldown = 2000, morphTimer = morphCooldown;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
@@ -44,29 +48,33 @@ public class Dante extends Creature {
 
     @Override
     public void Update() {
-        applyPhysics();
-        getInput();
-        checkAttack();
+        applyGravity();
+        getDir();
+
         move();
+        jump();
+        attack();
+        iceMorph();
+    }
+    private void getDir() {
+        if (handler.getKeyManager().up) {
+            dirrection = 1;
+        }
+        else if (handler.getKeyManager().left) {
+            dirrection = 2;
+        }
+        else {
+            dirrection = 0;
+        }
     }
 
-    private void checkAttack() {
+    private void attack() {
         attackTimer += System.currentTimeMillis() - lastAttackTimer;
         lastAttackTimer = System.currentTimeMillis();
 
         if (handler.getKeyManager().j && attackTimer >= attackCooldown) {
             isAttacking = true;
             attackTimer = 0;
-
-            if (handler.getKeyManager().up) {
-                attackDir = 0;
-            } else if (handler.getKeyManager().left) {
-                attackDir = 1;
-            } else if (handler.getKeyManager().right) {
-                attackDir = 2;
-            } else {
-                attackDir = 2;
-            }
         }
 
         if (isAttacking) {
@@ -80,22 +88,51 @@ public class Dante extends Creature {
             int horizontalWidth = TILE_SIZE * 2;
             int horizontalHeight = (int) (bounds.height * 0.5f);
 
-            switch (attackDir) {
+            switch (dirrection) {
                 case 0:
-                    attackBounds.setSize(verticalWidth, verticalHeight);
-                    attackBounds.x = (int) (x + bounds.x - (verticalWidth - bounds.width) / 2);
-                    attackBounds.y = (int) (y + bounds.y - verticalHeight);
-                    break;
-                case 1:
-                    attackBounds.setSize(horizontalWidth, horizontalHeight);
-                    attackBounds.x = (int) (x + bounds.x - horizontalWidth);
-                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
-                    break;
-                case 2:
                     attackBounds.setSize(horizontalWidth, horizontalHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
                     attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
                     break;
+                case 1:
+                    attackBounds.setSize(verticalWidth, verticalHeight);
+                    attackBounds.x = (int) (x + bounds.x - (verticalWidth - bounds.width) / 2);
+                    attackBounds.y = (int) (y + bounds.y - verticalHeight);
+                    break;
+                case 2:
+                    attackBounds.setSize(horizontalWidth, horizontalHeight);
+                    attackBounds.x = (int) (x + bounds.x - horizontalWidth);
+                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
+                    break;
+            }
+        }
+    }
+
+    private void iceMorph() {
+        if (handler.getKeyManager().shift) {
+
+            getDir();
+            int centerX = (int) (x + bounds.x + bounds.width / 2) / TILE_SIZE;
+            int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
+
+            int startX, endX;
+
+            if (dirrection == 0 || dirrection == 1) {
+                startX = centerX - 2;
+                endX = centerX + 5;
+            }
+            else {
+                startX = centerX - 5;
+                endX = centerX + 2;
+            }
+
+            int startY = centerY - 1;
+            int endY = centerY + 2;
+
+            for (int tx = startX; tx <= endX; tx++) {
+                for (int ty = startY; ty <= endY; ty++) {
+                    handler.getLevel().setIce(tx, ty, ICE_TIMER);
+                }
             }
         }
     }
@@ -129,24 +166,7 @@ public class Dante extends Creature {
     @Override
     public void die() {}
 
-    private void getInput() {
-        if(handler.getKeyManager().right) {
-            xMove += ACCELERATION;
-        }
-        else if(handler.getKeyManager().left) {
-            xMove -= ACCELERATION;
-        }
-        else {
-            xMove *= getFrictionCoefficient();
-        }
-
-        if(xMove > MAX_SPEED) {
-            xMove = MAX_SPEED;
-        }
-        if(xMove < -MAX_SPEED) {
-            xMove = -MAX_SPEED;
-        }
-
+    private void jump() {
         if(handler.getKeyManager().space && onGround) {
             yMove = JUMP_IMPULSE;
             onGround = false;
@@ -169,25 +189,46 @@ public class Dante extends Creature {
         }
     }
 
-    private float getFrictionCoefficient() {
-        if (handler.getLevel() == null) {
-            return FRICTION;
-        }
-
+    private boolean isOnIce() {
         int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
-        int ty = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
-
-        Tile t = handler.getLevel().getTile(tx, ty);
-
-        if (t != null && t.isIce()) {
-            return ICE_FRICTION;
-        }
-
-        return FRICTION;
+        int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
+        return handler.getLevel().isIce(tx, ty);
     }
 
-    private void applyPhysics() {
+    private void applyGravity() {
         yMove += GRAVITY;
+    }
+
+    @Override
+    public void moveX() {
+        if (!isOnIce()) {
+            if (handler.getKeyManager().right) {
+                xMove = SPEED;
+            }
+            else if (handler.getKeyManager().left) {
+                xMove = -SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+        else {
+            if (handler.getKeyManager().right) {
+                xMove += ACCELERATION;
+                if (xMove < SPEED) xMove = SPEED;
+                if (xMove > MAX_SPEED) xMove = MAX_SPEED;
+            }
+            else if (handler.getKeyManager().left) {
+                xMove -= ACCELERATION;
+                if (xMove > -SPEED) xMove = -SPEED;
+                if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+
+        super.moveX();
     }
 
     @Override
