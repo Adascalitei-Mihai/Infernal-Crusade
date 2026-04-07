@@ -75,14 +75,7 @@ public abstract class Creature extends Entity {
         return t.isSolid();
     }
 
-    public void hurt(float dmg) {
-        hp -= dmg;
-        if (hp <= 0) {
-            active = false;
-            die();
-        }
-    }
-
+    public abstract void hurt(float dmg);
     public abstract void die();
 
     public void setHp(float hp) { this.hp = hp; }

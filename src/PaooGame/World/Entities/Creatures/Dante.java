@@ -23,13 +23,17 @@ public class Dante extends Creature {
     private static final int MAX_JUMP_TIME = 20;
 
     private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
-    private int dirrection = 2;
+    private int direction = 2;
 
     private boolean edenShieldActive = false;
     private static final int EDEN_SHIELD_COOLDOWN = 300;
     private int edenShieldTimer = 0;
     private static final int EDEN_SHIELD_DURATION = 15;
     private int edenActiveTimer = 0;
+
+    private static final int FIERY_JUDGEMENT_COOLDOWN = 600;
+    private static final int FIERY_JUDGEMENT_SPREAD = 40;
+    private int fieryJudgementTimer = 0;
 
     private int jumpTimer = 0;
     private boolean isJumping;
@@ -60,6 +64,7 @@ public class Dante extends Creature {
         attack();
         iceMorph();
         edenShield();
+        fieryJudgement();
     }
 
     private void applyGravity() {
@@ -67,13 +72,13 @@ public class Dante extends Creature {
     }
     private void getDir() {
         if (handler.getKeyManager().up) {
-            dirrection = 1;
+            direction = 1;
         }
         else if (handler.getKeyManager().left) {
-            dirrection = 2;
+            direction = 2;
         }
         else {
-            dirrection = 0;
+            direction = 0;
         }
     }
 
@@ -183,7 +188,7 @@ public class Dante extends Creature {
             int horizontalWidth = TILE_SIZE * 2;
             int horizontalHeight = (int) (bounds.height * 0.5f);
 
-            switch (dirrection) {
+            switch (direction) {
                 case 0:
                     attackBounds.setSize(horizontalWidth, horizontalHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
@@ -211,7 +216,7 @@ public class Dante extends Creature {
 
             int startX, endX;
 
-            if (dirrection == 0 || dirrection == 1) {
+            if (direction == 0 || direction == 1) {
                 startX = centerX - 2;
                 endX = centerX + 5;
             }
@@ -243,11 +248,44 @@ public class Dante extends Creature {
             }
         }
 
-        if (handler.getKeyManager().k && edenShieldTimer <= 0) {
+        if (handler.getKeyManager().k && edenShieldTimer <= 0 && onGround) {
             edenShieldActive = true;
             edenActiveTimer = EDEN_SHIELD_DURATION;
             edenShieldTimer = EDEN_SHIELD_COOLDOWN;
         }
+    }
+    private void fieryJudgement() {
+        if (fieryJudgementTimer > 0) {
+            fieryJudgementTimer--;
+        }
+
+        if (handler.getKeyManager().l && fieryJudgementTimer <= 0) {
+            int centerX = (int) (x + bounds.x + bounds.width / 2) / TILE_SIZE;
+            int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
+
+            spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
+
+            fieryJudgementTimer = FIERY_JUDGEMENT_COOLDOWN;
+            System.out.println("Fiery Judgement has been cast!");
+        }
+    }
+
+    private void spreadFire(int tx, int ty, int remainingSteps) {
+        if (remainingSteps <= 0) {
+            return;
+        }
+
+        Tile t = handler.getLevel().getTile(tx, ty);
+        if (t == null || !t.isSolid()) return;
+
+        if (handler.getLevel().isFire(tx, ty)) return;
+
+        handler.getLevel().setFire(tx, ty, FIRE_TIMER);
+
+        spreadFire(tx + 1, ty, remainingSteps - 1);
+        spreadFire(tx - 1, ty, remainingSteps - 1);
+        spreadFire(tx, ty + 1, remainingSteps - 1);
+        spreadFire(tx, ty - 1, remainingSteps - 1);
     }
 
     @Override
