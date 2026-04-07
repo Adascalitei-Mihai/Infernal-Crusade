@@ -2,17 +2,23 @@ package PaooGame.World.Tiles;
 import java.awt.image.BufferedImage;
 
 public class SolidTile extends Tile {
-    private boolean ice;
+    private static final int ICE_TIME = 600;
+
+    private int iceTimer = 0;
     public SolidTile(BufferedImage image, int id) {
         super(image, id);
-        ice = false;
+    }
+
+    @Override
+    public void Update() {
+        iceTimer -= 1;
     }
 
     @Override
     public boolean isSolid() { return true; }
 
     @Override
-    public boolean getIce() { return ice; }
+    public boolean isIce() { return iceTimer > 0; }
 
-    public void setIce(boolean ice) { this.ice = ice; }
+    public void setIce() { this.iceTimer = ICE_TIME; }
 }

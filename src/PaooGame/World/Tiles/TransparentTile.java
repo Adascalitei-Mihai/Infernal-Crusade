@@ -10,5 +10,5 @@ public class TransparentTile extends Tile {
     public boolean isSolid() { return false; }
 
     @Override
-    public boolean getIce() { return false; }
+    public boolean isIce() { return false; }
 }

@@ -1,7 +1,5 @@
 package PaooGame.World.Tiles;
 
-import PaooGame.Graphics.Assets;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -31,7 +29,7 @@ public abstract class Tile {
     }
 
     public abstract boolean isSolid();
-    public abstract boolean getIce();
+    public abstract boolean isIce();
 
     public int getId() { return id; }
 }

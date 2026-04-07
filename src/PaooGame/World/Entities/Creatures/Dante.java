@@ -2,7 +2,6 @@ package PaooGame.World.Entities.Creatures;
 
 import PaooGame.Handler;
 import PaooGame.World.Entities.Entity;
-import PaooGame.Game.Game;
 import PaooGame.World.Tiles.Tile;
 
 import java.awt.*;
@@ -20,10 +19,15 @@ public class Dante extends Creature {
     private static final float GRAVITY = 0.5f;
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
+    private static final int MAX_JUMP_TIME = 20;
 
     private int jumpTimer = 0;
-    private static final int MAX_JUMP_TIME = 20;
     private boolean isJumping;
+
+    private long lastAttackTimer, attackCooldown = 500, attackTimer = attackCooldown;
+    private int attackDir = 0;
+    private boolean isAttacking = false;
+    private Rectangle attackBounds = new Rectangle();
 
     private boolean onGround = false;
 
@@ -42,7 +46,58 @@ public class Dante extends Creature {
     public void Update() {
         applyPhysics();
         getInput();
+        checkAttack();
         move();
+    }
+
+    private void checkAttack() {
+        attackTimer += System.currentTimeMillis() - lastAttackTimer;
+        lastAttackTimer = System.currentTimeMillis();
+
+        if (handler.getKeyManager().j && attackTimer >= attackCooldown) {
+            isAttacking = true;
+            attackTimer = 0;
+
+            if (handler.getKeyManager().up) {
+                attackDir = 0;
+            } else if (handler.getKeyManager().left) {
+                attackDir = 1;
+            } else if (handler.getKeyManager().right) {
+                attackDir = 2;
+            } else {
+                attackDir = 2;
+            }
+        }
+
+        if (isAttacking) {
+            if (attackTimer >= 200) {
+                isAttacking = false;
+                return;
+            }
+
+            int verticalWidth = (int) (bounds.width * 1.5f);
+            int verticalHeight = TILE_SIZE * 2;
+            int horizontalWidth = TILE_SIZE * 2;
+            int horizontalHeight = (int) (bounds.height * 0.5f);
+
+            switch (attackDir) {
+                case 0:
+                    attackBounds.setSize(verticalWidth, verticalHeight);
+                    attackBounds.x = (int) (x + bounds.x - (verticalWidth - bounds.width) / 2);
+                    attackBounds.y = (int) (y + bounds.y - verticalHeight);
+                    break;
+                case 1:
+                    attackBounds.setSize(horizontalWidth, horizontalHeight);
+                    attackBounds.x = (int) (x + bounds.x - horizontalWidth);
+                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
+                    break;
+                case 2:
+                    attackBounds.setSize(horizontalWidth, horizontalHeight);
+                    attackBounds.x = (int) (x + bounds.x + bounds.width);
+                    attackBounds.y = (int) (y + bounds.y + (bounds.height - horizontalHeight) / 2);
+                    break;
+            }
+        }
     }
 
     @Override
@@ -51,6 +106,18 @@ public class Dante extends Creature {
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                 bounds.width, bounds.height);
+
+        if (isAttacking) {
+            g.setColor(new Color(255, 255, 255, 150));
+            g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
+                    (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
+                    attackBounds.width, attackBounds.height);
+
+            g.setColor(Color.BLACK);
+            g.drawRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
+                    (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
+                    attackBounds.width, attackBounds.height);
+        }
     }
 
     @Override
@@ -112,7 +179,7 @@ public class Dante extends Creature {
 
         Tile t = handler.getLevel().getTile(tx, ty);
 
-        if (t != null && t.getIce()) {
+        if (t != null && t.isIce()) {
             return ICE_FRICTION;
         }
 

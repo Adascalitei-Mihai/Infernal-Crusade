@@ -39,7 +39,10 @@ public abstract class Level {
         this.tiles = TMXParser.decodeCSV(csvData, width, height);
     }
 
-    public void Update() { entityManager.Update(); }
+    public void Update() {
+        entityManager.Update();
+
+    }
 
     public void Draw(Graphics g) {
         drawBackground(g);
