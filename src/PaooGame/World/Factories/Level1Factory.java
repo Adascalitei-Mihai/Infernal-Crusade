@@ -3,14 +3,10 @@ package PaooGame.World.Factories;
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
-import PaooGame.World.Entities.Creatures.Enemies.Skeleton;
-import PaooGame.World.Entities.Creatures.Enemies.Cyclop;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
 import PaooGame.World.Entities.Environment.CameraTrigger;
-import PaooGame.World.Tiles.SolidTile;
 import PaooGame.World.Tiles.Tile;
-import PaooGame.World.Tiles.TransparentTile;
 
 import java.util.Set;
 
@@ -29,15 +25,15 @@ public class Level1Factory extends EntityFactory {
     @Override
     public void InitTiles() {
         if (Tile.tiles[0] == null) {
-            new TransparentTile(null, 0);
+            new Tile(null, 0, false);
         }
 
         for(int i = 0; i < NO_TILES; i++) {
             if(Assets.worldTiles[i] != null) {
                 if (SOLID_TILES.contains(i)) {
-                    new SolidTile(Assets.worldTiles[i], i);
+                    new Tile(Assets.worldTiles[i], i, true);
                 } else {
-                    new TransparentTile(Assets.worldTiles[i], i);
+                    new Tile(Assets.worldTiles[i], i, false);
                 }
             }
         }

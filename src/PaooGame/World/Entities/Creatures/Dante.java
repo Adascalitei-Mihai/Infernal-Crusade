@@ -25,6 +25,12 @@ public class Dante extends Creature {
     private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
     private int dirrection = 2;
 
+    private boolean edenShieldActive = false;
+    private static final int EDEN_SHIELD_COOLDOWN = 300;
+    private int edenShieldTimer = 0;
+    private static final int EDEN_SHIELD_DURATION = 15;
+    private int edenActiveTimer = 0;
+
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
@@ -32,8 +38,6 @@ public class Dante extends Creature {
     private long lastAttackTimer, attackCooldown = 500, attackTimer = attackCooldown;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
-
-    private long lastMorphTimer, morphCooldown = 2000, morphTimer = morphCooldown;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
@@ -55,6 +59,11 @@ public class Dante extends Creature {
         jump();
         attack();
         iceMorph();
+        edenShield();
+    }
+
+    private void applyGravity() {
+        yMove += GRAVITY;
     }
     private void getDir() {
         if (handler.getKeyManager().up) {
@@ -65,6 +74,92 @@ public class Dante extends Creature {
         }
         else {
             dirrection = 0;
+        }
+    }
+
+
+    private boolean isOnIce() {
+        int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
+        int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
+        return handler.getLevel().isIce(tx, ty);
+    }
+    @Override
+    public void moveX() {
+        if (!isOnIce()) {
+            if (handler.getKeyManager().right) {
+                xMove = SPEED;
+            }
+            else if (handler.getKeyManager().left) {
+                xMove = -SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+        else {
+            if (handler.getKeyManager().right) {
+                xMove += ACCELERATION;
+                if (xMove < SPEED) xMove = SPEED;
+                if (xMove > MAX_SPEED) xMove = MAX_SPEED;
+            }
+            else if (handler.getKeyManager().left) {
+                xMove -= ACCELERATION;
+                if (xMove > -SPEED) xMove = -SPEED;
+                if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+
+        super.moveX();
+    }
+    @Override
+    public void moveY() {
+        if (yMove < 0) {
+            int ty = (int) (y + yMove + bounds.y) / TILE_SIZE;
+            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
+                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
+                y += yMove;
+            }
+            else {
+                y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
+                yMove = 0;
+            }
+        }
+        else if (yMove > 0) {
+            int ty = (int) (y + yMove + bounds.y + bounds.height) / TILE_SIZE;
+            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
+                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
+                y += yMove;
+            }
+            else {
+                y = ty * TILE_SIZE - bounds.y - bounds.height - 1;
+                onGround = true;
+                yMove = 0;
+            }
+        }
+    }
+    private void jump() {
+        if(handler.getKeyManager().space && onGround) {
+            yMove = JUMP_IMPULSE;
+            onGround = false;
+            isJumping = true;
+            jumpTimer = 0;
+        }
+
+        if (handler.getKeyManager().space && isJumping) {
+            if (jumpTimer < MAX_JUMP_TIME) {
+                yMove += JUMP_ADDAGE;
+                jumpTimer++;
+            }
+            else {
+                isJumping = false;
+            }
+        }
+
+        if (!handler.getKeyManager().space) {
+            isJumping = false;
         }
     }
 
@@ -107,7 +202,6 @@ public class Dante extends Creature {
             }
         }
     }
-
     private void iceMorph() {
         if (handler.getKeyManager().shift) {
 
@@ -137,9 +231,31 @@ public class Dante extends Creature {
         }
     }
 
+    private void edenShield() {
+        if (edenShieldTimer > 0) {
+            edenShieldTimer--;
+        }
+
+        if (edenShieldActive) {
+            edenActiveTimer--;
+            if (edenActiveTimer <= 0) {
+                edenShieldActive = false;
+            }
+        }
+
+        if (handler.getKeyManager().k && edenShieldTimer <= 0) {
+            edenShieldActive = true;
+            edenActiveTimer = EDEN_SHIELD_DURATION;
+            edenShieldTimer = EDEN_SHIELD_COOLDOWN;
+        }
+    }
+
     @Override
     public void Draw(Graphics g) {
         g.setColor(Color.RED);
+        if (edenShieldActive) {
+            g.setColor(Color.GREEN);
+        }
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                 bounds.width, bounds.height);
@@ -165,96 +281,4 @@ public class Dante extends Creature {
 
     @Override
     public void die() {}
-
-    private void jump() {
-        if(handler.getKeyManager().space && onGround) {
-            yMove = JUMP_IMPULSE;
-            onGround = false;
-            isJumping = true;
-            jumpTimer = 0;
-        }
-
-        if (handler.getKeyManager().space && isJumping) {
-            if (jumpTimer < MAX_JUMP_TIME) {
-                yMove += JUMP_ADDAGE;
-                jumpTimer++;
-            }
-            else {
-                isJumping = false;
-            }
-        }
-
-        if (!handler.getKeyManager().space) {
-            isJumping = false;
-        }
-    }
-
-    private boolean isOnIce() {
-        int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
-        int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
-        return handler.getLevel().isIce(tx, ty);
-    }
-
-    private void applyGravity() {
-        yMove += GRAVITY;
-    }
-
-    @Override
-    public void moveX() {
-        if (!isOnIce()) {
-            if (handler.getKeyManager().right) {
-                xMove = SPEED;
-            }
-            else if (handler.getKeyManager().left) {
-                xMove = -SPEED;
-            }
-            else {
-                xMove *= FRICTION;
-            }
-        }
-        else {
-            if (handler.getKeyManager().right) {
-                xMove += ACCELERATION;
-                if (xMove < SPEED) xMove = SPEED;
-                if (xMove > MAX_SPEED) xMove = MAX_SPEED;
-            }
-            else if (handler.getKeyManager().left) {
-                xMove -= ACCELERATION;
-                if (xMove > -SPEED) xMove = -SPEED;
-                if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
-            }
-            else {
-                xMove *= FRICTION;
-            }
-        }
-
-        super.moveX();
-    }
-
-    @Override
-    public void moveY() {
-        if (yMove < 0) {
-            int ty = (int) (y + yMove + bounds.y) / TILE_SIZE;
-            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
-                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
-                y += yMove;
-            }
-            else {
-                y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
-                yMove = 0;
-            }
-        }
-        else if (yMove > 0) {
-            int ty = (int) (y + yMove + bounds.y + bounds.height) / TILE_SIZE;
-            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
-                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
-                y += yMove;
-            }
-            else {
-                y = ty * TILE_SIZE - bounds.y - bounds.height - 1;
-                onGround = true;
-                yMove = 0;
-            }
-        }
-    }
 }
