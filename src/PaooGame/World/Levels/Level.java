@@ -54,24 +54,29 @@ public abstract class Level {
             for(int x = xStart; x < xEnd; x++) {
                 Tile t = getTile(x, y);
                 if(t != null) {
-                    // 1. Desenăm imaginea reală a tile-ului
+
                     int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
                     int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
                     t.Draw(g, screenX, screenY);
 
-                    // 2. Debug Overlay: Verde pentru SOLID, Galben pentru TRANSPARENT
-                    if(t.isSolid()) {
-                        g.setColor(new Color(0, 255, 0, 100)); // Verde semi-transparent
-                    } else {
-                        g.setColor(new Color(255, 255, 0, 100)); // Galben semi-transparent
+                    if(handler.getDebugMode()) {
+                        if(t.isSolid()) {
+                            g.setColor(new Color(0, 255, 0, 100));
+                        } else {
+                            g.setColor(new Color(255, 255, 0, 100));
+                        }
+
+                        g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        g.setColor(Color.BLACK);
+                        g.drawRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        g.setColor(Color.RED);
+                        g.setFont(new Font("MONOSPACED", Font.BOLD, 36));
+                        String fpsText = "FPS: " + handler.getGame().getCurrentFPS();
+                        g.drawString(fpsText, handler.getWidth() - 200, 50);
                     }
 
-                    // Desenăm dreptunghiul de debug
-                    g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
-
-                    // Opțional: Desenăm și un contur negru ca să vedem grila clar
-                    g.setColor(Color.BLACK);
-                    g.drawRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
                 }
             }
         }

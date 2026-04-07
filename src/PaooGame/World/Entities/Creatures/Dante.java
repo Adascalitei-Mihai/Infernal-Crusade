@@ -18,12 +18,24 @@ public class Dante extends Creature {
     private static final float ICE_FRICTION = 0.98f;
     private static final float ACCELERATION = 1.2f;
     private static final float GRAVITY = 0.5f;
-    private static final float JUMP_FORCE = -12.0f;
+    private static final float JUMP_IMPULSE = -10.0f;
+    private static final float JUMP_ADDAGE = -0.6f;
+
+    private int jumpTimer = 0;
+    private static final int MAX_JUMP_TIME = 20;
+    private boolean isJumping;
 
     private boolean onGround = false;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
+
+
+        bounds.x = 4;
+        bounds.width = DEFAULT_WIDTH - 8;
+
+        bounds.y = 1;
+        bounds.height = DEFAULT_HEIGHT - 2;
     }
 
     @Override
@@ -69,8 +81,24 @@ public class Dante extends Creature {
         }
 
         if(handler.getKeyManager().space && onGround) {
-            yMove = JUMP_FORCE;
-            System.out.println("Space frate");
+            yMove = JUMP_IMPULSE;
+            onGround = false;
+            isJumping = true;
+            jumpTimer = 0;
+        }
+
+        if (handler.getKeyManager().space && isJumping) {
+            if (jumpTimer < MAX_JUMP_TIME) {
+                yMove += JUMP_ADDAGE;
+                jumpTimer++;
+            }
+            else {
+                isJumping = false;
+            }
+        }
+
+        if (!handler.getKeyManager().space) {
+            isJumping = false;
         }
     }
 

@@ -12,9 +12,14 @@ import PaooGame.World.Tiles.SolidTile;
 import PaooGame.World.Tiles.Tile;
 import PaooGame.World.Tiles.TransparentTile;
 
+import java.util.Set;
+
 import static PaooGame.World.Tiles.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
+    private static final Set<Integer> SOLID_TILES = Set.of(
+            1, 2, 9, 20, 38, 22, 12, 43, 42, 32, 45, 46, 56, 67, 57, 58, 68, 47, 13, 24, 21, 10, 31, 4, 15, 848, 849, 850, 656, 657, 658, 720, 721, 722
+    );
 
     public Level1Factory(Handler handler) {
         super(handler);
@@ -29,7 +34,7 @@ public class Level1Factory extends EntityFactory {
 
         for(int i = 0; i < NO_TILES; i++) {
             if(Assets.worldTiles[i] != null) {
-                if ((i >= 1 && i <= 121) || (i >= 2458 && i <= 4633)) {
+                if (SOLID_TILES.contains(i)) {
                     new SolidTile(Assets.worldTiles[i], i);
                 } else {
                     new TransparentTile(Assets.worldTiles[i], i);

@@ -15,7 +15,7 @@ public class KeyManager implements KeyListener {
     private final boolean[] keys;
     public boolean up, down, left, right, space,
             shift, j, k, l,
-            enter, escape;
+            enter, escape, debug;
 
     /**
      * Constructor vid, initializeaza un vector in care retinem caracterele apasate.
@@ -43,6 +43,7 @@ public class KeyManager implements KeyListener {
 
         enter = keys[KeyEvent.VK_ENTER];
         escape = keys[KeyEvent.VK_ESCAPE];
+        debug = keys[KeyEvent.VK_BACK_SLASH];
     }
 
     /**
@@ -94,5 +95,6 @@ public class KeyManager implements KeyListener {
 
         enter = false;
         escape = false;
+        debug = false;
     }
 }

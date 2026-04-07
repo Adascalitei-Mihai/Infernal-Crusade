@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 public class Handler {
     public static final int NR_CHKPTS = 3;
+    private boolean debugMode = false;
 
     private State state;
     private Game game;
@@ -196,5 +197,11 @@ public class Handler {
         return level.getEntityManager().getDante();
     }
 
+    public boolean getDebugMode() {
+        return debugMode;
+    }
 
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
 }

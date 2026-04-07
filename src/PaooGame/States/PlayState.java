@@ -1,6 +1,5 @@
 package PaooGame.States;
 
-import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Factories.Level1Factory;
 import PaooGame.World.Levels.Level;
@@ -11,6 +10,7 @@ import java.awt.*;
 public class PlayState extends State {
     private Level level;
     private boolean initializedFullscreen = false;
+    private boolean debugKeyPressed = false;
 
     public PlayState(Handler handler) {
         super(handler);
@@ -34,7 +34,17 @@ public class PlayState extends State {
 
         if(handler.getKeyManager().escape) {
             handler.getGame().getWnd().setWindowed();
+            handler.getKeyManager().resetKeys();
             handler.setState(new MainMenu(handler, "Continue"));
+        }
+
+        if(handler.getKeyManager().debug) {
+            if(!debugKeyPressed) {
+                handler.setDebugMode(!handler.getDebugMode());
+                debugKeyPressed = true;
+            }
+        } else {
+            debugKeyPressed = false;
         }
     }
 
