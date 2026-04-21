@@ -10,6 +10,7 @@ import PaooGame.World.Factories.Level1Factory;
 import java.awt.*;
 
 import static PaooGame.World.Tiles.Tile.SCALE;
+import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public class Level1 extends Level {
     private final EntityFactory factory;
@@ -20,22 +21,45 @@ public class Level1 extends Level {
     private final int[] ox = {0, 0, 0, 2, -34, 7200};             // Offset X (rotunjit)
     private final int[] oy = {0, 0, -100, -70, 62, -1};      // Offset Y
 
-    private static final int[][] chkpPos = {{40, 800}, {10000, 800}, {17600, 800}};
+    private static final int[][] chkpPos = {
+            {1, 20},
+            {219, 20},
+            {436, 20}
+    };
+    private static final int[] arenaCoords = {
+            450, 0, 500, 29
+    };
+    private static final int[] gateCoords = {
+            450, 20
+    };
 
     public Level1(Handler handler) {
         super(handler, L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
         factory = new Level1Factory(handler);
 
-        spawn();
+        spawn(); // Dante
+
         for(int i = 0; i < chkpPos.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
-                    chkpPos[i][0], chkpPos[i][1], i));
-        }
+                    chkpPos[i][0] * TILE_SIZE, chkpPos[i][1] * TILE_SIZE, i));
+        } // Checkpoints
 
+        entityManager.addEntity(factory.createCameraTrigger(
+                gateCoords[0] * TILE_SIZE, gateCoords[1] * TILE_SIZE, TILE_SIZE, 4 * TILE_SIZE,
+                arenaCoords[0] * TILE_SIZE, arenaCoords[1] * TILE_SIZE,
+                arenaCoords[2] * TILE_SIZE, arenaCoords[3] * TILE_SIZE,
+                true
+        )); // Camera
+
+        entityManager.addEntity(factory.createEnemyTrigger(
+                arenaCoords[0] * TILE_SIZE, arenaCoords[1] * TILE_SIZE,
+                arenaCoords[2] * TILE_SIZE, arenaCoords[3] * TILE_SIZE
+        ));
     }
 
     @Override
     public void spawn() {
+        System.out.println(handler.getCurrChkp());
         entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0]);
         entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1]);
     }

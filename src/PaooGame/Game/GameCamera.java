@@ -10,6 +10,10 @@ public class GameCamera {
     private float xOffset, yOffset;
     private Handler handler;
 
+    private boolean useLevelBounds = true;
+
+    private float minX, maxX, minY, maxY;
+
     private float previousEntityX;
     private float currentScreenTargetX = 0.3f;
 
@@ -51,13 +55,34 @@ public class GameCamera {
     }
 
     public void checkBlankSpace() {
-        if(xOffset < 0) xOffset = 0;
-        else if(xOffset > handler.getLevel().getWidth() * TILE_SIZE - handler.getWidth())
-            xOffset = handler.getLevel().getWidth() * TILE_SIZE - handler.getWidth();
+        float currentLimitMinX = 0;
+        float currentLimitMinY = 0;
+        float currentLimitMaxX = handler.getLevel().getWidth() * TILE_SIZE - handler.getWidth();
+        float currentLimitMaxY = handler.getLevel().getHeight() * TILE_SIZE - handler.getHeight();
 
-        if(yOffset < 0) yOffset = 0;
-        else if(yOffset > handler.getLevel().getHeight() * TILE_SIZE - handler.getHeight())
-            yOffset = handler.getLevel().getHeight() * TILE_SIZE - handler.getHeight();
+        if (!useLevelBounds) {
+            currentLimitMinX = minX;
+            currentLimitMinY = minY;
+            currentLimitMaxX = maxX - handler.getWidth();
+            currentLimitMaxY = maxY - handler.getHeight();
+        }
+
+        if(xOffset < currentLimitMinX) xOffset = currentLimitMinX;
+        else if(xOffset > currentLimitMaxX) xOffset = currentLimitMaxX;
+
+        if(yOffset < currentLimitMinY) yOffset = currentLimitMinY;
+        else if(yOffset > currentLimitMaxY) yOffset = currentLimitMaxY;
+    }
+
+    public void setCustomBounds(float x, float y, float width, float height) {
+        this.minX = x;
+        this.minY = y;
+        this.maxX = x + width;
+        this.maxY = y + height;
+        this.useLevelBounds = false;
+    }
+    public void resetToLevelBounds() {
+        this.useLevelBounds = true;
     }
 
     public float getxOffset() { return xOffset; }

@@ -5,7 +5,7 @@ import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
-import PaooGame.World.Entities.Environment.CameraTrigger;
+import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
 import PaooGame.World.Tiles.Tile;
 
 import java.util.Set;
@@ -57,11 +57,5 @@ public class Level1Factory extends EntityFactory {
     @Override
     public SpearGate createSpearGate(float x, float y) {
         return new SpearGate(handler, x, y);
-    }
-
-    @Override
-    public CameraTrigger createTrigger(float x, float y, int centerX, int centerY) {
-        System.out.println("Am creat!");
-        return new CameraTrigger(handler, x, y, centerX, centerY);
     }
 }

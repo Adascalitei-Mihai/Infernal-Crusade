@@ -36,8 +36,9 @@ public class Checkpoint extends Entity {
         int screenY = (int) (y - handler.getyOffset());
 
         if(handler.getDebugMode()) {
-            g.setColor(Color.YELLOW);
-            g.drawRect(screenX + bounds.x, screenY + bounds.y, bounds.width, bounds.height);
+            g.setColor(new Color(255, 255, 0, 100));
+            g.fillRect((int) (x - handler.getGameCamera().getxOffset()),
+                    (int) (y - handler.getGameCamera().getyOffset()), width, height);
         }
         else {
             if (activated) {
