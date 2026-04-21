@@ -48,9 +48,9 @@ public class Handler {
         dbMan.loadOrCreatePlayer(playerName, this);
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
     }
-    public void updateCurrChkp() {
-        dbMan.saveScore(playerID, currLevel, currChkp, currChkp + 1, 100 * difficulty);
-        ++currChkp;
+    public void updateCurrChkp(int newChkp) {
+        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, 100 * difficulty);
+        currChkp = newChkp;
 
         dbMan.updatePlayerCheckpoint(playerID, currChkp);
     }

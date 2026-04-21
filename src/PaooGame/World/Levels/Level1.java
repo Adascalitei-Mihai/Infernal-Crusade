@@ -54,14 +54,13 @@ public class Level1 extends Level {
         entityManager.addEntity(factory.createEnemyTrigger(
                 arenaCoords[0] * TILE_SIZE, arenaCoords[1] * TILE_SIZE,
                 arenaCoords[2] * TILE_SIZE, arenaCoords[3] * TILE_SIZE
-        ));
+        )); // Arena
     }
 
     @Override
     public void spawn() {
-        System.out.println(handler.getCurrChkp());
-        entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0]);
-        entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1]);
+        entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0] * TILE_SIZE);
+        entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1] * TILE_SIZE);
     }
 
     @Override

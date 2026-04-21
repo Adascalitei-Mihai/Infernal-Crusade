@@ -31,6 +31,7 @@ public class PlayState extends State {
         handler.getGameCamera().center(level.getEntityManager().getDante());
 
         if(handler.getKeyManager().escape) {
+            handler.getGame().getGameCamera().resetToLevelBounds();
             handler.getGame().getWnd().setWindowed();
             handler.getKeyManager().resetKeys();
             handler.setState(new MainMenu(handler, "Continue"));

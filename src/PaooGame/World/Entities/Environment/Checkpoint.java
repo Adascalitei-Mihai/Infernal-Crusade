@@ -55,7 +55,7 @@ public class Checkpoint extends Entity {
         if(e instanceof Dante && !activated) {
             activated = true;
             if(id != handler.getCurrChkp()) {
-                handler.updateCurrChkp();
+                handler.updateCurrChkp(id);
             }
         }
     }
