@@ -28,7 +28,7 @@ public class Dante extends Creature {
     private boolean edenShieldActive = false;
     private static final int EDEN_SHIELD_COOLDOWN = 300;
     private int edenShieldTimer = 0;
-    private static final int EDEN_SHIELD_DURATION = 15;
+    private final int EDEN_SHIELD_DURATION;
     private int edenActiveTimer = 0;
     private Rectangle edenShieldBounds = new Rectangle();
 
@@ -51,6 +51,11 @@ public class Dante extends Creature {
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
 
+        EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
+            case 0 -> 20;
+            case 2 -> 8;
+            default -> 15;
+        };
 
         bounds.x = 4;
         bounds.width = DEFAULT_WIDTH - 8;

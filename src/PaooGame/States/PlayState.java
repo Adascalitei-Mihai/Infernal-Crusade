@@ -15,8 +15,6 @@ public class PlayState extends State {
     public PlayState(Handler handler) {
         super(handler);
 
-        Level1Factory level1Factory = new Level1Factory(handler);
-
         level = new Level1(handler);
     }
 

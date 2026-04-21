@@ -8,17 +8,19 @@ import PaooGame.Graphics.Assets;
 
 import java.awt.*;
 
+import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+
 public class Checkpoint extends Entity {
     private final Animation flutter;
     private final int id;
     private boolean activated = false;
 
     public Checkpoint(Handler handler, float x, float y, int id) {
-        super(handler, x, y, 32, 32);
+        super(handler, x, y, 4 * TILE_SIZE, 4 * TILE_SIZE);
         flutter = new Animation(150, Assets.chkp);
         this.id = id;
 
-        this.bounds = new Rectangle(7, -370, 18, 400);
+        this.bounds = new Rectangle(0, -2000, 4 * TILE_SIZE, 4000);
     }
 
     @Override
@@ -33,18 +35,27 @@ public class Checkpoint extends Entity {
         int screenX = (int) (x - handler.getxOffset());
         int screenY = (int) (y - handler.getyOffset());
 
-        if (activated) {
-            g.drawImage(flutter.getCurrentFrame(), screenX, screenY, width, height, null);
+        if(handler.getDebugMode()) {
+            g.setColor(Color.YELLOW);
+            g.drawRect(screenX + bounds.x, screenY + bounds.y, bounds.width, bounds.height);
         }
         else {
-            g.drawImage(Assets.chkp[0], screenX, screenY, width, height, null);
+            if (activated) {
+                g.drawImage(flutter.getCurrentFrame(), screenX, screenY, width, height, null);
+            }
+            else {
+                g.drawImage(Assets.chkp[0], screenX, screenY, width, height, null);
+            }
         }
     }
 
     @Override
     public void onInteraction(Entity e) {
-        if(e instanceof Dante) {
+        if(e instanceof Dante && !activated) {
             activated = true;
+            if(id > 0) {
+                handler.updateCurrChkp();
+            }
         }
     }
 }

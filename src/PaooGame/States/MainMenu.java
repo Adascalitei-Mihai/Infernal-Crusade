@@ -65,7 +65,7 @@ public class MainMenu extends State {
         int mx = handler.getMouseManager().getMouseX();
         int my = handler.getMouseManager().getMouseY();
 
-        boolean isRealased = handler.getMouseManager().isLeftReleased();
+        boolean isReleased = handler.getMouseManager().isLeftReleased();
         int hoveredIndex = -1;
         for (int i = 0; i < btns.length; i++) {
             btns[i].setPosition(btnsX, btnsY + i * (BOX_HEIGTH + 10));
@@ -80,7 +80,7 @@ public class MainMenu extends State {
         if (hoveredIndex != -1) {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if (isRealased) {
+            if (isReleased) {
                 handleButtonClick(hoveredIndex);
             }
         } else {
@@ -95,6 +95,7 @@ public class MainMenu extends State {
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
+                handler.setDifficulty(btns[2].getState());
                 handler.setState(new PlayState(handler));
                 break;
             case 1:

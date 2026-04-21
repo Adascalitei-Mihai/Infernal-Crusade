@@ -2,12 +2,12 @@ package PaooGame.World.Levels;
 
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.EntityManager;
 import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Factories.Level1Factory;
-import PaooGame.World.Tiles.Tile;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 import static PaooGame.World.Tiles.Tile.SCALE;
 
@@ -20,9 +20,19 @@ public class Level1 extends Level {
     private final int[] ox = {0, 0, 0, 2, -34, 7200};             // Offset X (rotunjit)
     private final int[] oy = {0, 0, -100, -70, 62, -1};      // Offset Y
 
+    private static final int[][] chkpPos = {{40, 800}, {10000, 800}, {17600, 800}};
+
     public Level1(Handler handler) {
-        super(handler, L1_WIDTH, L1_HEIGHT, 5, 100, "res/textures/Maps/L1/L1.tmx");
+        super(handler, L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
         factory = new Level1Factory(handler);
+
+        for(int i = 0; i < chkpPos.length; ++i) {
+            entityManager.addEntity(factory.createCheckpoint(
+                    chkpPos[i][0], chkpPos[i][1], i));
+        }
+
+        entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0]);
+        entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1]);
     }
 
     @Override

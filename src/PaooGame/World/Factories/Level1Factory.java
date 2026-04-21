@@ -61,6 +61,7 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public CameraTrigger createTrigger(float x, float y, int centerX, int centerY) {
+        System.out.println("Am creat!");
         return new CameraTrigger(handler, x, y, centerX, centerY);
     }
 }

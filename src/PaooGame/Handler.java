@@ -28,7 +28,6 @@ public class Handler {
     private String playerName;
     private int currLevel, currChkp;
 
-    private int lastChkp;
     private long startTime;
     private int difficulty;
 
@@ -48,6 +47,12 @@ public class Handler {
     public void playerLogin(String playerName) {
         dbMan.loadOrCreatePlayer(playerName, this);
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
+    }
+    public void updateCurrChkp() {
+        dbMan.saveScore(playerID, currLevel, currChkp, currChkp + 1, 100 * difficulty);
+        ++currChkp;
+
+        dbMan.updatePlayerCheckpoint(playerID, currChkp);
     }
 
     public void StopGame() {
@@ -144,13 +149,6 @@ public class Handler {
         this.currChkp = currChkp;
     }
 
-    public int getLastChkp() {
-        return lastChkp;
-    }
-
-    public void setLastChkp(int lastChkp) {
-        this.lastChkp = lastChkp;
-    }
 
     public long getStartTime() {
         return startTime;

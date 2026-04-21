@@ -18,18 +18,15 @@ public abstract class Level {
     protected int[][] iceTimers;
     protected EntityManager entityManager;
 
-    public Level(Handler handler, int width, int height, int spawnX, int spawnY, String path) {
+    public Level(Handler handler, int width, int height, String path) {
         this.handler = handler;
         this.width = width;
         this.height = height;
 
         handler.setLevel(this);
-
-        entityManager = new EntityManager(new Dante(handler, 0, 0));
         loadLevel(path);
 
-        entityManager.getDante().setX(spawnX);
-        entityManager.getDante().setY(spawnY);
+        entityManager = new EntityManager(new Dante(handler, 0, 0));
     }
 
     public void loadLevel(String path) {
