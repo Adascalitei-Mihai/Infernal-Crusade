@@ -26,7 +26,7 @@ public class GameCamera {
         if (e.getX() > previousEntityX) {
             currentScreenTargetX = 0.3f;
         } else if (e.getX() < previousEntityX) {
-            // Mergem la STÂNGA: Vrem ca jucătorul să fie la 50% din ecran (centru)
+
             currentScreenTargetX = 0.5f;
         }
 

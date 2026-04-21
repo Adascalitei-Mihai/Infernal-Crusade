@@ -30,6 +30,7 @@ public class Dante extends Creature {
     private int edenShieldTimer = 0;
     private static final int EDEN_SHIELD_DURATION = 15;
     private int edenActiveTimer = 0;
+    private Rectangle edenShieldBounds = new Rectangle();
 
     private static final int FIERY_JUDGEMENT_COOLDOWN = 600;
     private static final int FIERY_JUDGEMENT_SPREAD = 40;
@@ -201,17 +202,17 @@ public class Dante extends Creature {
                 case 0 -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
-                    attackBounds.y = (int) (y + bounds.y + (bounds.height - hHeight) / 2);
+                    attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
                 case 1 -> {
                     attackBounds.setSize(vWidth, vHeight);
-                    attackBounds.x = (int) (x + bounds.x - (vWidth - bounds.width) / 2);
+                    attackBounds.x = (int) (x + bounds.x - (float) (vWidth - bounds.width) / 2);
                     attackBounds.y = (int) (y + bounds.y - vHeight);
                 }
                 case 2 -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x - hWidth);
-                    attackBounds.y = (int) (y + bounds.y + (bounds.height - hHeight) / 2);
+                    attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
             }
         }
@@ -220,7 +221,7 @@ public class Dante extends Creature {
         if (handler.getKeyManager().shift) {
 
             getDir();
-            int centerX = (int) (x + bounds.x + bounds.width / 2) / TILE_SIZE;
+            int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
 
             int startX, endX;
@@ -252,6 +253,13 @@ public class Dante extends Creature {
 
         if (edenShieldActive) {
             edenActiveTimer--;
+
+            int padding = 30;
+            edenShieldBounds.x = (int) (x + bounds.x - padding);
+            edenShieldBounds.y = (int) (y + bounds.y - padding);
+            edenShieldBounds.width = bounds.width + (padding * 2);
+            edenShieldBounds.height = bounds.height + (padding * 2);
+
             if (edenActiveTimer <= 0) {
                 edenShieldActive = false;
             }
@@ -269,7 +277,7 @@ public class Dante extends Creature {
         }
 
         if (handler.getKeyManager().l && fieryJudgementTimer <= 0) {
-            int centerX = (int) (x + bounds.x + bounds.width / 2) / TILE_SIZE;
+            int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
@@ -299,12 +307,16 @@ public class Dante extends Creature {
     @Override
     public void Draw(Graphics g) {
         g.setColor(Color.RED);
-        if (edenShieldActive) {
-            g.setColor(Color.GREEN);
-        }
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                 bounds.width, bounds.height);
+
+        if (edenShieldActive) {
+            g.setColor(new Color(0, 255, 0));
+            g.fillRect((int) (edenShieldBounds.x - handler.getGameCamera().getxOffset()),
+                    (int) (edenShieldBounds.y - handler.getGameCamera().getyOffset()),
+                    edenShieldBounds.width, edenShieldBounds.height);
+        }
 
         if (isAttacking) {
             g.setColor(new Color(255, 255, 255, 150));
