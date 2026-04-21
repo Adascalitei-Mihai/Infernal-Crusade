@@ -1,5 +1,6 @@
 {
     "activeFile": "L1.tmx",
+    "automapping.whileDrawing": true,
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -8,8 +9,8 @@
             "scale": 2,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 7114.25,
-                "y": 236.75
+                "x": 8077.25,
+                "y": 277.25
             }
         },
         "Spear.tsx": {

@@ -17,6 +17,7 @@ public class Game implements Runnable
     private GameWindow wnd;
     private boolean runState;
     private Thread gameThread;
+    private int currentFPS = 0;
 
     private BufferStrategy bs;
     private Graphics g;
@@ -73,27 +74,39 @@ public class Game implements Runnable
      */
     public void run()
     {
-        InitGame(); // 1
+        InitGame();
 
-        long oldTime = System.nanoTime(); // 2
-        long curentTime;
+        long lastTime = System.nanoTime(); // Folosim lastTime pentru delta/logică
+        long timer = 0;
+        int ticks = 0;
 
-        final int framesPerSecond = 60; // 3
+        final int framesPerSecond = 60;
         final double timeFrame = (double) 1000000000 / framesPerSecond;
+        double delta = 0;
 
-        while (runState) // 4
+        while (runState)
         {
-            curentTime = System.nanoTime();
+            long now = System.nanoTime();
+            long elapsed = now - lastTime;
 
-            if((curentTime - oldTime) > timeFrame)
+            delta += elapsed / timeFrame;
+            timer += elapsed; // Timer-ul primește timpul real scurs între iterații
+            lastTime = now;
+
+            if(delta >= 1)
             {
                 Update();
                 Draw();
+                ticks++;
+                delta--;
+            }
 
-                oldTime = curentTime;
+            if (timer >= 1000000000) {
+                currentFPS = ticks;
+                ticks = 0;
+                timer = 0;
             }
         }
-
     }
 
     /**
@@ -200,5 +213,9 @@ public class Game implements Runnable
 
     public void setGameCamera(GameCamera gameCamera) {
         this.gameCamera = gameCamera;
+    }
+
+    public int getCurrentFPS() {
+        return currentFPS;
     }
 }

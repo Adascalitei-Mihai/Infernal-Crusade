@@ -14,19 +14,22 @@ public abstract class Level {
     protected final Handler handler;
     protected int width, height;
     protected int[][] tiles;
+    protected int[][] fireTimers;
+    protected int[][] iceTimers;
     protected EntityManager entityManager;
 
-    public Level(Handler handler, int width, int height, int spawnX, int spawnY, String path) {
+    public Level(Handler handler, int width, int height, String path) {
         this.handler = handler;
         this.width = width;
         this.height = height;
 
-        entityManager = new EntityManager(new Dante(handler, 0, 0));
+        handler.setLevel(this);
         loadLevel(path);
 
-        entityManager.getDante().setX(spawnX);
-        entityManager.getDante().setY(spawnY);
+        entityManager = new EntityManager(new Dante(handler, 0, 0));
     }
+
+    public abstract void spawn();
 
     public void loadLevel(String path) {
         String content = TMXParser.loadFileAsString(path);
@@ -35,9 +38,25 @@ public abstract class Level {
                 content.indexOf("</data>"));
 
         this.tiles = TMXParser.decodeCSV(csvData, width, height);
+        fireTimers = new int[tiles.length][tiles[0].length];
+        iceTimers = new int[tiles.length][tiles[0].length];
     }
 
-    public void Update() { entityManager.Update(); }
+    public void Update() {
+        entityManager.Update();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (fireTimers[x][y] > 0) {
+                    fireTimers[x][y] -= 1;
+                }
+
+                if (iceTimers[x][y] > 0) {
+                    iceTimers[x][y] -= 1;
+                }
+            }
+        }
+    }
 
     public void Draw(Graphics g) {
         drawBackground(g);
@@ -51,8 +70,35 @@ public abstract class Level {
             for(int x = xStart; x < xEnd; x++) {
                 Tile t = getTile(x, y);
                 if(t != null) {
-                    t.Draw(g, (int)(x * TILE_SIZE - handler.getxOffset()),
-                            (int)(y * TILE_SIZE - handler.getyOffset()));
+
+                    int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
+                    int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
+                    t.Draw(g, screenX, screenY);
+
+                    if(handler.getDebugMode()) {
+                        if(t.isSolid()) {
+                            g.setColor(new Color(0, 255, 0, 100));
+                        } else {
+                            g.setColor(new Color(255, 255, 0, 100));
+                        }
+
+                        g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        g.setColor(Color.BLACK);
+                        g.drawRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        if (isFire(x, y) || isIce(x, y)) {
+                            g.setColor(new Color(255, 100, 0, 150));
+                            g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+                        }
+
+                        g.setColor(Color.RED);
+                        g.setFont(new Font("MONOSPACED", Font.BOLD, 36));
+                        String fpsText = "FPS: " + handler.getGame().getCurrentFPS();
+                        g.drawString(fpsText, handler.getWidth() - 200, 50);
+
+
+                    }
                 }
             }
         }
@@ -61,12 +107,43 @@ public abstract class Level {
     }
 
     public Tile getTile(int x, int y) {
-        if(x < 0 || y < 0 || x >= width || y >= height)
+        if(x < 0 || x >= width || y >= height)
             return Tile.tiles[1];
 
+        if(y < 0)
+            return Tile.tiles[0];
+
         int id = tiles[x][y];
-        if(id == 0) return null;
+
+        if(id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) {
+            return Tile.tiles[0];
+        }
+
         return Tile.tiles[id];
+    }
+    public boolean isFire(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return false;
+        }
+        return fireTimers[x][y] > 0;
+    }
+    public boolean isIce(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return false;
+        }
+        return iceTimers[x][y] > 0;
+    }
+    public void setFire(int x, int y, int time) {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return ;
+        }
+        fireTimers[x][y] = time;
+    }
+    public void setIce(int x, int y, int time) {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return ;
+        }
+        iceTimers[x][y] = time;
     }
     public int getWidth() { return width; }
     public void setWidth(int width) { this.width = width; }

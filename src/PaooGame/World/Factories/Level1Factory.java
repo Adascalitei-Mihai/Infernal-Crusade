@@ -3,17 +3,19 @@ package PaooGame.World.Factories;
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
-import PaooGame.World.Entities.Creatures.Enemies.Skeleton;
-import PaooGame.World.Entities.Creatures.Enemies.Cyclop;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
-import PaooGame.World.Entities.Environment.CameraTrigger;
-import PaooGame.World.Tiles.SolidTile;
-import PaooGame.World.Tiles.TransparentTile;
+import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
+import PaooGame.World.Tiles.Tile;
+
+import java.util.Set;
 
 import static PaooGame.World.Tiles.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
+    private static final Set<Integer> SOLID_TILES = Set.of(
+            1, 2, 9, 20, 38, 22, 12, 43, 42, 32, 45, 46, 56, 67, 57, 58, 68, 47, 13, 24, 21, 10, 31, 4, 15, 848, 849, 850, 656, 657, 658, 720, 721, 722
+    );
 
     public Level1Factory(Handler handler) {
         super(handler);
@@ -22,12 +24,16 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public void InitTiles() {
+        if (Tile.tiles[0] == null) {
+            new Tile(null, 0, false);
+        }
+
         for(int i = 0; i < NO_TILES; i++) {
             if(Assets.worldTiles[i] != null) {
-                if ((i >= 1 && i <= 121) || (i >= 2458 && i <= 4633)) {
-                    new SolidTile(Assets.worldTiles[i], i);
+                if (SOLID_TILES.contains(i)) {
+                    new Tile(Assets.worldTiles[i], i, true);
                 } else {
-                    new TransparentTile(Assets.worldTiles[i], i);
+                    new Tile(Assets.worldTiles[i], i, false);
                 }
             }
         }
@@ -51,10 +57,5 @@ public class Level1Factory extends EntityFactory {
     @Override
     public SpearGate createSpearGate(float x, float y) {
         return new SpearGate(handler, x, y);
-    }
-
-    @Override
-    public CameraTrigger createTrigger(float x, float y, int centerX, int centerY) {
-        return new CameraTrigger(handler, x, y, centerX, centerY);
     }
 }

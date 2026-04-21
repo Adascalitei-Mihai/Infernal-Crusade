@@ -8,12 +8,16 @@ import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.States.StartMenu;
 import PaooGame.States.State;
+import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.Entity;
 import PaooGame.World.Levels.Level;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Handler {
     public static final int NR_CHKPTS = 3;
+    private boolean debugMode = false;
 
     private State state;
     private Game game;
@@ -24,7 +28,6 @@ public class Handler {
     private String playerName;
     private int currLevel, currChkp;
 
-    private int lastChkp;
     private long startTime;
     private int difficulty;
 
@@ -45,11 +48,18 @@ public class Handler {
         dbMan.loadOrCreatePlayer(playerName, this);
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
     }
+    public void updateCurrChkp(int newChkp) {
+        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, 100 * difficulty);
+        currChkp = newChkp;
+
+        dbMan.updatePlayerCheckpoint(playerID, currChkp);
+    }
 
     public void StopGame() {
         if (dbMan != null) {
             dbMan.close();
         }
+        game.StopGame();
     }
 
     public void Update() {
@@ -65,7 +75,7 @@ public class Handler {
     }
 
     public void setCursor(Cursor c) {
-        game.getWnd().getFrame().setCursor(c);
+        game.getWnd().getCanvas().setCursor(c);
     }
 
     public KeyManager getKeyManager() { return game.getKeyMan(); }
@@ -91,11 +101,11 @@ public class Handler {
         this.game = game;
     }
 
-    public Level getWorld() {
+    public Level getLevel() {
         return level;
     }
 
-    public void setWorld(Level level) {
+    public void setLevel(Level level) {
         this.level = level;
     }
 
@@ -139,13 +149,6 @@ public class Handler {
         this.currChkp = currChkp;
     }
 
-    public int getLastChkp() {
-        return lastChkp;
-    }
-
-    public void setLastChkp(int lastChkp) {
-        this.lastChkp = lastChkp;
-    }
 
     public long getStartTime() {
         return startTime;
@@ -184,5 +187,19 @@ public class Handler {
     }
     public float getyOffset() {
         return game.getGameCamera().getyOffset();
+    }
+    public ArrayList<Entity> getEntities() {
+        return level.getEntityManager().getEntities();
+    }
+    public Dante getDante() {
+        return level.getEntityManager().getDante();
+    }
+
+    public boolean getDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 }

@@ -68,6 +68,62 @@ public class DatabaseManager {
             System.err.println("Eroare la crearea jucătorului: " + e.getMessage());
         }
     }
+    public void saveScore(int playerID, int levelID, int startChkp, int endChkp, int score) {
+        String checkSql = "SELECT Best_Score FROM Scores WHERE ID_P = ? AND Level_ID = ? AND Start_Chkp = ? AND End_Chkp = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(checkSql)) {
+            pstmt.setInt(1, playerID);
+            pstmt.setInt(2, levelID);
+            pstmt.setInt(3, startChkp);
+            pstmt.setInt(4, endChkp);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                int oldScore = rs.getInt("Best_Score");
+                if (score > oldScore) {
+                    String updateSql = "UPDATE Scores SET Best_Score = ? WHERE ID_P = ? AND Level_ID = ? AND Start_Chkp = ? AND End_Chkp = ?";
+                    try (PreparedStatement updPstmt = connection.prepareStatement(updateSql)) {
+                        updPstmt.setInt(1, score);
+                        updPstmt.setInt(2, playerID);
+                        updPstmt.setInt(3, levelID);
+                        updPstmt.setInt(4, startChkp);
+                        updPstmt.setInt(5, endChkp);
+                        updPstmt.executeUpdate();
+                        System.out.println("Scor actualizat: " + score);
+                    }
+                }
+            } else {
+                String insertSql = "INSERT INTO Scores (ID_P, Level_ID, Start_Chkp, End_Chkp, Best_Score) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement insPstmt = connection.prepareStatement(insertSql)) {
+                    insPstmt.setInt(1, playerID);
+                    insPstmt.setInt(2, levelID);
+                    insPstmt.setInt(3, startChkp);
+                    insPstmt.setInt(4, endChkp);
+                    insPstmt.setInt(5, score);
+                    insPstmt.executeUpdate();
+                    System.out.println("Scor nou inserat!");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Eroare manuală la salvare scor: " + e.getMessage());
+        }
+    }
+    public void updatePlayerCheckpoint(int playerID, int newChkp) {
+        String sql = "UPDATE Players SET CurrChkp = ? WHERE ID_P = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, newChkp);
+            pstmt.setInt(2, playerID);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                System.out.println("Progres salvat în DB: Checkpoint " + newChkp);
+            }
+        } catch (SQLException e) {
+            System.err.println("Eroare la updatePlayerCheckpoint: " + e.getMessage());
+        }
+    }
 
     public int getTotalBestScore(int playerID, int totalRequiredSegments) {
         String sql = "SELECT SUM(Best_Score) AS Total " +
@@ -89,7 +145,6 @@ public class DatabaseManager {
         }
         return 0;
     }
-
     public int getGlobalBestScore(int totalSegmentsRequired) {
         String sql = "SELECT SUM(Best_Score) AS Total " +
                 "FROM Scores " +

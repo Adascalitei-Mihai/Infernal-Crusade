@@ -2,6 +2,7 @@ package PaooGame.World.Entities;
 
 import PaooGame.Game.Game;
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Creature;
 
 import java.awt.*;
 
@@ -28,6 +29,26 @@ public abstract class Entity {
 
     public Rectangle getCollisionBounds(float xOffset, float yOffset) {
         return new Rectangle((int)(x + bounds.x + xOffset), (int)(y + bounds.y + yOffset), bounds.width, bounds.height);
+    }
+    public boolean checkEntityCollisions(float xOffset, float yOffset) {
+        if (handler.getLevel() == null) return false;
+
+        for (Entity e : handler.getEntities()) {
+            if (e.equals(this)) continue;
+
+            Rectangle otherBounds = e.getCollisionBounds(0f, 0f);
+            Rectangle myFutureBounds = getCollisionBounds(xOffset, yOffset);
+
+            if (otherBounds.intersects(myFutureBounds)) {
+                e.onInteraction(this);
+                this.onInteraction(e);
+
+                if (e instanceof Creature) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public float getX() { return x; }
