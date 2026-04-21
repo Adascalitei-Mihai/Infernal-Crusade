@@ -29,6 +29,8 @@ public abstract class Level {
         entityManager = new EntityManager(new Dante(handler, 0, 0));
     }
 
+    public abstract void spawn();
+
     public void loadLevel(String path) {
         String content = TMXParser.loadFileAsString(path);
 
@@ -120,15 +122,27 @@ public abstract class Level {
         return Tile.tiles[id];
     }
     public boolean isFire(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return false;
+        }
         return fireTimers[x][y] > 0;
     }
     public boolean isIce(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return false;
+        }
         return iceTimers[x][y] > 0;
     }
     public void setFire(int x, int y, int time) {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return ;
+        }
         fireTimers[x][y] = time;
     }
     public void setIce(int x, int y, int time) {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return ;
+        }
         iceTimers[x][y] = time;
     }
     public int getWidth() { return width; }

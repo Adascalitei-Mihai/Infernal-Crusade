@@ -26,11 +26,16 @@ public class Level1 extends Level {
         super(handler, L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
         factory = new Level1Factory(handler);
 
+        spawn();
         for(int i = 0; i < chkpPos.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
                     chkpPos[i][0], chkpPos[i][1], i));
         }
 
+    }
+
+    @Override
+    public void spawn() {
         entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0]);
         entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1]);
     }

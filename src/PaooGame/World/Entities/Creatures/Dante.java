@@ -79,6 +79,9 @@ public class Dante extends Creature {
 
     private void applyGravity() {
         yMove += GRAVITY;
+        if (y + DEFAULT_HEIGHT >= (handler.getLevel().getHeight() - 1) * TILE_SIZE) {
+            die();
+        }
     }
     private void getDir() {
         if (handler.getKeyManager().up) {
@@ -245,7 +248,10 @@ public class Dante extends Creature {
 
             for (int tx = startX; tx <= endX; tx++) {
                 for (int ty = startY; ty <= endY; ty++) {
-                    handler.getLevel().setIce(tx, ty, ICE_TIMER);
+                    if (tx >= 0 && tx < handler.getLevel().getWidth() &&
+                            ty >= 0 && ty < handler.getLevel().getHeight()) {
+                        handler.getLevel().setIce(tx, ty, ICE_TIMER);
+                    }
                 }
             }
         }
@@ -343,5 +349,10 @@ public class Dante extends Creature {
     public void hurt(float dmg) {}
 
     @Override
-    public void die() {}
+    public void die() {
+        xMove = 0;
+        yMove = 0;
+
+        handler.getLevel().spawn();
+    }
 }
