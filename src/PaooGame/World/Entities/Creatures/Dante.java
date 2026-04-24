@@ -84,10 +84,10 @@ public class Dante extends Creature {
         }
     }
     private void getDir() {
-        if (handler.getKeyManager().up) {
+        if (handler.getInputManager().up) {
             direction = 1;
         }
-        else if (handler.getKeyManager().left) {
+        else if (handler.getInputManager().left) {
             direction = 2;
         }
         else {
@@ -104,10 +104,10 @@ public class Dante extends Creature {
     @Override
     public void moveX() {
         if (!isOnIce()) {
-            if (handler.getKeyManager().right) {
+            if (handler.getInputManager().right) {
                 xMove = SPEED;
             }
-            else if (handler.getKeyManager().left) {
+            else if (handler.getInputManager().left) {
                 xMove = -SPEED;
             }
             else {
@@ -115,12 +115,12 @@ public class Dante extends Creature {
             }
         }
         else {
-            if (handler.getKeyManager().right) {
+            if (handler.getInputManager().right) {
                 xMove += ACCELERATION;
                 if (xMove < SPEED) xMove = SPEED;
                 if (xMove > MAX_SPEED) xMove = MAX_SPEED;
             }
-            else if (handler.getKeyManager().left) {
+            else if (handler.getInputManager().left) {
                 xMove -= ACCELERATION;
                 if (xMove > -SPEED) xMove = -SPEED;
                 if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
@@ -159,14 +159,14 @@ public class Dante extends Creature {
         }
     }
     private void jump() {
-        if(handler.getKeyManager().space && onGround) {
+        if(handler.getInputManager().space && onGround) {
             yMove = JUMP_IMPULSE;
             onGround = false;
             isJumping = true;
             jumpTimer = 0;
         }
 
-        if (handler.getKeyManager().space && isJumping) {
+        if (handler.getInputManager().space && isJumping) {
             if (jumpTimer < MAX_JUMP_TIME) {
                 yMove += JUMP_ADDAGE;
                 jumpTimer++;
@@ -176,7 +176,7 @@ public class Dante extends Creature {
             }
         }
 
-        if (!handler.getKeyManager().space) {
+        if (!handler.getInputManager().space) {
             isJumping = false;
         }
     }
@@ -194,7 +194,7 @@ public class Dante extends Creature {
             }
         }
 
-        if (handler.getKeyManager().j && attackTimer <= 0) {
+        if (handler.getInputManager().j && attackTimer <= 0) {
             isAttacking = true;
             attackActiveTimer = ATTACK_DURATION;
             attackTimer = ATTACK_COOLDOWN;
@@ -226,7 +226,7 @@ public class Dante extends Creature {
         }
     }
     private void iceMorph() {
-        if (handler.getKeyManager().shift) {
+        if (handler.getInputManager().shift) {
 
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
@@ -276,7 +276,7 @@ public class Dante extends Creature {
             }
         }
 
-        if (handler.getKeyManager().k && edenShieldTimer <= 0 && onGround) {
+        if (handler.getInputManager().k && edenShieldTimer <= 0 && onGround) {
             edenShieldActive = true;
             edenActiveTimer = EDEN_SHIELD_DURATION;
             edenShieldTimer = EDEN_SHIELD_COOLDOWN;
@@ -287,7 +287,7 @@ public class Dante extends Creature {
             fieryJudgementTimer--;
         }
 
-        if (handler.getKeyManager().l && fieryJudgementTimer <= 0) {
+        if (handler.getInputManager().l && fieryJudgementTimer <= 0) {
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 

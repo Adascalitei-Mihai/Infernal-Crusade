@@ -9,25 +9,21 @@ import java.util.Arrays;
 /**
  * Clasa care traduce actiunile tastaturii.
  */
-public class KeyManager implements KeyListener {
-    private final Handler handler;
-
+public class KeyManager extends InputManager implements KeyListener {
     private final boolean[] keys;
-    public boolean up, down, left, right, space,
-            shift, j, k, l,
-            enter, escape, debug;
 
     /**
      * Constructor vid, initializeaza un vector in care retinem caracterele apasate.
      */
     public KeyManager(Handler handler) {
-        this.handler = handler;
+        super(handler);
         keys = new boolean[256];
     }
 
     /**
      * Functie care traduce tastele uzuale.
      */
+    @Override
     public void Update() {
         up = keys[KeyEvent.VK_W];
         down = keys[KeyEvent.VK_S];
@@ -79,22 +75,9 @@ public class KeyManager implements KeyListener {
         }
     }
 
+    @Override
     public void reset() {
         Arrays.fill(keys, false);
-
-        up = false;
-        down = false;
-        left = false;
-        right = false;
-        space = false;
-
-        shift = false;
-        j = false;
-        k = false;
-        l = false;
-
-        enter = false;
-        escape = false;
-        debug = false;
+        super.reset();
     }
 }

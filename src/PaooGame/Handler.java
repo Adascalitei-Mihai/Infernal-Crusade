@@ -5,6 +5,7 @@ import PaooGame.Database.DatabaseManager;
 import PaooGame.Game.Game;
 import PaooGame.Game.GameCamera;
 import PaooGame.Game.Input.GamepadManager;
+import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.States.StartMenu;
@@ -81,6 +82,8 @@ public class Handler {
 
     public KeyManager getKeyManager() { return game.getKeyMan(); }
     public GamepadManager getPadManager() { return game.getPadMan(); }
+    public InputManager getInputManager() { return game.getInputMan(); }
+    public void setInput(InputManager inputMan) { game.setInput(inputMan); }
     public MouseManager getMouseManager() { return game.getMouseMan(); }
     public GameCamera getGameCamera() { return game.getGameCamera(); }
 

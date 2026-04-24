@@ -4,19 +4,13 @@ import PaooGame.Handler;
 import com.studiohartman.jamepad.ControllerManager;
 import com.studiohartman.jamepad.ControllerState;
 
-public class GamepadManager {
-    private final Handler handler;
-
+public class GamepadManager extends InputManager {
     private ControllerManager controllers;
     private ControllerState currState;
-
-    public boolean up, down, left, right, space,
-            shift, j, k, l,
-            enter, escape, debug;
-    public float leftStickX, leftStickY;
+    private static final float DEADZONE = 0.3f;
 
     public GamepadManager(Handler handler) {
-        this.handler = handler;
+        super(handler);
         controllers = new ControllerManager();
         controllers.initSDLGamepad();
     }
@@ -25,10 +19,10 @@ public class GamepadManager {
         currState = controllers.getState(0);
 
         if (currState.isConnected) {
-            up = currState.dpadUp;
-            down = currState.dpadDown;
-            left = currState.dpadLeft;
-            right = currState.dpadRight;
+            up = currState.dpadUp || currState.leftStickY < -DEADZONE;
+            down = currState.dpadDown || currState.leftStickY > DEADZONE;
+            left = currState.dpadLeft || currState.leftStickX < -DEADZONE;
+            right = currState.dpadRight || currState.leftStickX > DEADZONE;
 
             space = currState.a;
 
@@ -41,17 +35,8 @@ public class GamepadManager {
             enter = currState.a;
             escape = currState.start;
             debug = currState.back;
-
-            leftStickX = currState.leftStickX;
-            leftStickY = currState.leftStickY;
         }
     }
-    public void reset() {
-        up = down = left = right = space = shift = j = k = l = enter = escape = debug = false;
-        leftStickX = 0;
-        leftStickY = 0;
-    }
-
     public void terminate() {
         controllers.quitSDLGamepad();
     }
