@@ -79,7 +79,7 @@ public class KeyManager implements KeyListener {
         }
     }
 
-    public void resetKeys() {
+    public void reset() {
         Arrays.fill(keys, false);
 
         up = false;

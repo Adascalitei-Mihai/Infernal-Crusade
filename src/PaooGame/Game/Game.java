@@ -1,5 +1,6 @@
 package PaooGame.Game;
 
+import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.Graphics.Assets;
@@ -23,6 +24,7 @@ public class Game implements Runnable
     private Graphics g;
 
     private KeyManager keyMan;
+    private GamepadManager padMan;
     private MouseManager mouseMan;
 
     private Handler handler;
@@ -58,6 +60,7 @@ public class Game implements Runnable
 
         gameCamera = new GameCamera(handler, 0, 0);
         keyMan = new KeyManager(handler);
+        padMan = new GamepadManager(handler);
         mouseMan = new MouseManager(handler);
 
         wnd.getCanvas().addKeyListener(keyMan); // 2
@@ -138,6 +141,10 @@ public class Game implements Runnable
             wnd.getFrame().dispose();
         }
 
+        if(padMan != null) {
+            padMan.terminate();
+        }
+
         handler.StopGame();
     }
 
@@ -146,6 +153,7 @@ public class Game implements Runnable
      */
     private void Update() {
         keyMan.Update();
+        padMan.Update();
         handler.Update();
     }
 
@@ -184,6 +192,8 @@ public class Game implements Runnable
      * @return Managerul de taste actual.
      */
     public KeyManager getKeyMan() { return keyMan; }
+
+    public GamepadManager getPadMan() { return padMan; }
 
     /**
      * Getter pentru managerul de mouse.

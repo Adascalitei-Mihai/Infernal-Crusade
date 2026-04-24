@@ -4,6 +4,7 @@ import PaooGame.Database.DatabaseManager;
 
 import PaooGame.Game.Game;
 import PaooGame.Game.GameCamera;
+import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.States.StartMenu;
@@ -38,7 +39,7 @@ public class Handler {
         this.game = game;
 
         dbMan = new DatabaseManager();
-        dbMan.connect("jdbc:sqlite:database/game.db");
+        dbMan.connect("jdbc:sqlite:res/database/game.db");
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
 
         setState(new StartMenu(this));
@@ -79,6 +80,7 @@ public class Handler {
     }
 
     public KeyManager getKeyManager() { return game.getKeyMan(); }
+    public GamepadManager getPadManager() { return game.getPadMan(); }
     public MouseManager getMouseManager() { return game.getMouseMan(); }
     public GameCamera getGameCamera() { return game.getGameCamera(); }
 
