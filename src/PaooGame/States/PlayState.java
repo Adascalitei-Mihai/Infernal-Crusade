@@ -55,7 +55,7 @@ public class PlayState extends State {
     private void detectInputMode() {
         if (handler.getKeyManager().up || handler.getKeyManager().down ||
                 handler.getKeyManager().left || handler.getKeyManager().right ||
-                handler.getKeyManager().space) {
+                handler.getKeyManager().space || handler.getKeyManager().escape) {
             if (handler.getInputManager() instanceof GamepadManager) {
                 handler.getPadManager().reset();
                 handler.setInput(handler.getKeyManager());

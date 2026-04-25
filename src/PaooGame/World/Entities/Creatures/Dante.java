@@ -9,6 +9,8 @@ import java.awt.*;
 import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public class Dante extends Creature {
+    private enum direction { RIGHT, UP, LEFT };
+
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
 
@@ -23,7 +25,7 @@ public class Dante extends Creature {
     private static final int MAX_JUMP_TIME = 20;
 
     private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
-    private int direction = 2;
+    private direction currDirection = direction.LEFT;
 
     private boolean edenShieldActive = false;
     private static final int EDEN_SHIELD_COOLDOWN = 300;
@@ -85,13 +87,13 @@ public class Dante extends Creature {
     }
     private void getDir() {
         if (handler.getInputManager().up) {
-            direction = 1;
+            currDirection = direction.UP;
         }
         else if (handler.getInputManager().left) {
-            direction = 2;
+            currDirection = direction.LEFT;
         }
         else {
-            direction = 0;
+            currDirection = direction.RIGHT;
         }
     }
 
@@ -198,6 +200,8 @@ public class Dante extends Creature {
             isAttacking = true;
             attackActiveTimer = ATTACK_DURATION;
             attackTimer = ATTACK_COOLDOWN;
+
+            handler.getPadManager().rumble(0.0f, 0.5f, 100);
         }
 
         if (isAttacking) {
@@ -206,18 +210,18 @@ public class Dante extends Creature {
             int hWidth = TILE_SIZE * 2;
             int hHeight = (int) (bounds.height * 0.5f);
 
-            switch (direction) {
-                case 0 -> {
+            switch (currDirection) {
+                case direction.RIGHT -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
-                case 1 -> {
+                case direction.UP -> {
                     attackBounds.setSize(vWidth, vHeight);
                     attackBounds.x = (int) (x + bounds.x - (float) (vWidth - bounds.width) / 2);
                     attackBounds.y = (int) (y + bounds.y - vHeight);
                 }
-                case 2 -> {
+                case direction.LEFT -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x - hWidth);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
@@ -227,14 +231,13 @@ public class Dante extends Creature {
     }
     private void iceMorph() {
         if (handler.getInputManager().shift) {
-
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
 
             int startX, endX;
 
-            if (direction == 0 || direction == 1) {
+            if (currDirection != direction.LEFT) {
                 startX = centerX - 2;
                 endX = centerX + 5;
             }
@@ -294,6 +297,8 @@ public class Dante extends Creature {
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
 
             fieryJudgementTimer = FIERY_JUDGEMENT_COOLDOWN;
+
+            handler.getPadManager().rumble(0.8f, 0.8f, 200);
         }
     }
 
@@ -353,6 +358,7 @@ public class Dante extends Creature {
         xMove = 0;
         yMove = 0;
 
+        handler.getPadManager().rumble(0.8f, 0.8f, 300);
         handler.getLevel().spawn();
     }
 }

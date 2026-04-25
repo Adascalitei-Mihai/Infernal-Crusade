@@ -8,6 +8,7 @@ public class GamepadManager extends InputManager {
     private ControllerManager controllers;
     private ControllerState currState;
     private static final float DEADZONE = 0.3f;
+    private static final float ACC_POINT = 0.5f;
 
     public GamepadManager(Handler handler) {
         super(handler);
@@ -26,17 +27,22 @@ public class GamepadManager extends InputManager {
 
             space = currState.a;
 
-            shift = currState.leftTrigger > 0.5f;
-
-            j = currState.x;
+            shift = currState.leftTrigger > ACC_POINT;
+            j = currState.rb;
             k = currState.b;
-            l = currState.rightTrigger > 0.5f;
+            l = currState.rightTrigger > ACC_POINT;
 
             enter = currState.a;
             escape = currState.start;
             debug = currState.back;
         }
     }
+    public void rumble(float leftMotor, float rightMotor, int durationMs) {
+        if (currState != null && currState.isConnected) {
+            controllers.doVibration(0, leftMotor, rightMotor, durationMs);
+        }
+    }
+
     public void terminate() {
         controllers.quitSDLGamepad();
     }

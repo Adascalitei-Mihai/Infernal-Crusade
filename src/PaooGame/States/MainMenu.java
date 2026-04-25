@@ -87,6 +87,12 @@ public class MainMenu extends State {
             handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
+        if (handler.getPadManager().enter) {
+            handler.setDifficulty(btns[2].getState());
+            handler.setState(new PlayState(handler));
+            handler.getPadManager().reset();
+        }
+
         if (handler.getKeyManager().escape) {
             handler.StopGame();
         }
