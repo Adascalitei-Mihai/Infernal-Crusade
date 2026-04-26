@@ -11,6 +11,9 @@ public class EntityManager {
     private final Dante dante;
     private final ArrayList<Entity> entities;
 
+    private final ArrayList<Entity> entitiesToAdd;
+    private boolean isUpdating = false;
+
     private final Comparator<Entity> renderSorter = (a, b) ->
             Float.compare(a.getY() + a.getHeight(), b.getY() + b.getHeight());
 
@@ -18,10 +21,14 @@ public class EntityManager {
         this.dante = dante;
 
         entities = new ArrayList<>();
+        entitiesToAdd = new ArrayList<>();
+
         addEntity(dante);
     }
 
     public void Update() {
+        isUpdating = true;
+
         Iterator<Entity> it = entities.iterator();
 
         while (it.hasNext()) {
@@ -33,6 +40,10 @@ public class EntityManager {
             }
         }
 
+        isUpdating = false;
+        entities.addAll(entitiesToAdd);
+        entitiesToAdd.clear();
+
         entities.sort(renderSorter);
     }
 
@@ -43,11 +54,17 @@ public class EntityManager {
     }
 
     public void addEntity(Entity e) {
-        entities.add(e);
+        if (isUpdating) {
+            entitiesToAdd.add(e);
+        }
+        else {
+            entities.add(e);
+        }
     }
 
     public void resetEntities() {
         entities.clear();
+        entitiesToAdd.clear();
         addEntity(dante);
     }
 

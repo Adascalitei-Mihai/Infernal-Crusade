@@ -3,6 +3,7 @@ package PaooGame.World.Entities.Creatures;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import PaooGame.World.Entities.Entity;
+import PaooGame.World.Entities.Projectiles.Projectile;
 import PaooGame.World.Tile;
 
 import java.awt.*;
@@ -32,7 +33,6 @@ public class Dante extends Creature {
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
-
 
     private static final int ATTACK_COOLDOWN = 30;
     private static final int ATTACK_DURATION = 12;
@@ -410,6 +410,22 @@ public class Dante extends Creature {
 
     @Override
     public void onInteraction(Entity e) {}
+
+    public boolean projectileHit(Projectile p) {
+        if (edenShieldActive && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
+            p.reflect(this);
+
+            handler.getPadManager().rumble(0.6f, 0.6f, 150);
+            return true;
+        }
+
+        if (hurt(p.getDamage())) {
+            float knockX = (p.getSpeedX() > 0) ? p.getKnockbackForce() * p.getKnockPercent() : -p.getKnockbackForce() * p.getKnockPercent();
+            applyKnockback(knockX, -5f);
+        }
+
+        return false;
+    }
 
     @Override
     public boolean hurt(float dmg) {

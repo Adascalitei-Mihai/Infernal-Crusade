@@ -4,6 +4,7 @@ import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Hunter;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Skeleton;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
@@ -42,7 +43,7 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public Creature createMinorEnemy(float x, float y) {
-        return new Skeleton(handler, x, y);
+        return new Hunter(handler, x, y);
     }
 
     @Override
