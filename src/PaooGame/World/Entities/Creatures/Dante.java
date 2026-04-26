@@ -15,6 +15,10 @@ public class Dante extends Creature {
 
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
+    private static final float MAX_HP = 1000;
+    private static final float BASE_REGEN = 8f / 60;
+    private final float REGEN_PERCENT;
+    private final float RESISTANCE;
 
     public static final float MAX_SPEED = 15f;
     public static final float SPEED = 5f;
@@ -29,21 +33,18 @@ public class Dante extends Creature {
     private boolean isJumping;
     private boolean onGround = false;
 
-    private static final float MAX_HP = 1000;
-    private static final float BASE_REGEN = 8f / 60;
-    private final float REGEN_PERCENT;
-    private final float RESISTANCE;
 
     private static final int ATTACK_COOLDOWN = 30;
     private static final int ATTACK_DURATION = 12;
     private static final float ATTACK_DMG = 50f;
+    private static final float KNOCKBACK_FORCE = 15f;
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
     public static final int ICE_TIMER = 300, FIRE_TIMER = 300;
-    public static final int FIERY_JUDGEMENT_DMG = 20;
+    public static final int FIERY_JUDGEMENT_DMG = 50;
 
     private static final int EDEN_SHIELD_COOLDOWN = 300;
     private final int EDEN_SHIELD_DURATION;
@@ -58,7 +59,7 @@ public class Dante extends Creature {
     private int fieryJudgementTimer = 0;
 
     public Dante(Handler handler, float x, float y) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
+        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP);
 
         RESISTANCE = switch (handler.getDifficulty()) {
             case EASY -> 0.75f;
@@ -249,8 +250,8 @@ public class Dante extends Creature {
 
         if (isAttacking) {
             int vWidth = (int) (bounds.width * 1.5f);
-            int vHeight = TILE_SIZE * 2;
-            int hWidth = TILE_SIZE * 2;
+            int vHeight = TILE_SIZE * 3;
+            int hWidth = TILE_SIZE * 4;
             int hHeight = (int) (bounds.height * 0.5f);
 
             switch (currDirection) {
@@ -275,15 +276,14 @@ public class Dante extends Creature {
                 if (e instanceof Enemy target) {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
                         if (target.hurt(ATTACK_DMG)) {
-                            float knockbackForce = 15.0f;
                             if (currDirection == Direction.RIGHT) {
-                                target.applyKnockback(knockbackForce, -5.0f);
+                                target.applyKnockback(KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
                             }
                             else if (currDirection == Direction.LEFT) {
-                                target.applyKnockback(-knockbackForce, -5.0f);
+                                target.applyKnockback(-KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
                             }
                             else {
-                                target.applyKnockback(0, -15.0f);
+                                target.applyKnockback(0, -10.0f);
                             }
                         }
                     }

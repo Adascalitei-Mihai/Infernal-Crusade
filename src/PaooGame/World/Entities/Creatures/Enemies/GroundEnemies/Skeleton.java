@@ -12,6 +12,8 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public class Skeleton extends GroundEnemy {
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
+    public static final float MAX_HP = 100;
+    public static final float KNOCK_PERCENT = 1f;
 
     private static final int ATTACK_COOLDOWN = 60;
     private static final int ATTACK_DURATION = 15;
@@ -23,7 +25,7 @@ public class Skeleton extends GroundEnemy {
     private static final float COLLISION_DMG = 20f;
 
     public Skeleton(Handler handler, float x, float y) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 100);
+        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP, KNOCK_PERCENT);
 
         bounds.x = 4;
         bounds.width = DEFAULT_WIDTH - 8;

@@ -18,14 +18,17 @@ public abstract class Enemy extends Creature {
     protected float attackRange;
     protected float[] patrolRange;
 
-    protected boolean isWindingUp;
-    protected boolean isAttacking;
-
     protected int direction = 1; // -1 stanga, 1 dreapta
     protected float baseSpeed, aggroSpeed;
 
-    public Enemy(Handler handler, float x, float y, int width, int height, float hp) {
+    protected boolean isWindingUp;
+    protected boolean isAttacking;
+
+    protected float knockPercent;
+
+    public Enemy(Handler handler, float x, float y, int width, int height, float hp, float knockPercent) {
         super(handler, x, y, width, height, hp);
+        this.knockPercent = knockPercent;
     }
 
     protected float getDistanceToPlayer() {
@@ -116,4 +119,8 @@ public abstract class Enemy extends Creature {
 
     protected abstract void makeDecision();
     protected abstract void attack();
+
+    public float getKnockPercent() {
+        return knockPercent;
+    }
 }

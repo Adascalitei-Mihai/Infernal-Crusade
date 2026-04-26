@@ -6,13 +6,19 @@ import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class GroundEnemy extends Enemy {
-    public GroundEnemy(Handler handler, float x, float y, int width, int height, float hp) {
-        super(handler, x, y, width, height, hp);
+    public GroundEnemy(Handler handler, float x, float y, int width, int height, float hp, float weight) {
+        super(handler, x, y, width, height, hp, weight);
     }
 
     @Override
     protected void makeDecision() {
         yMove += 0.5f;
+        if (isWindingUp || isAttacking) {
+            currState = EnemyState.ATTACKING;
+            xMove = 0;
+            return;
+        }
+
         float distance = getDistanceToPlayer();
         float speed = baseSpeed;
 
