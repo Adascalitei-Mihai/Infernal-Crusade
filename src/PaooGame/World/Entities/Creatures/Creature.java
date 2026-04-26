@@ -7,12 +7,28 @@ import PaooGame.World.Tiles.Tile;
 import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public abstract class Creature extends Entity {
+    protected static final int INVULN_TIME = 45;
+    protected int invulnerabilityTimer = 0;
+    protected static final int KNOCK_TIME = 15;
+    protected int knockbackTimer = 0;
+
     protected float hp;
+
     protected float xMove, yMove;
 
     public Creature(Handler handler, float x, float y, int width, int height, float hp) {
         super(handler, x, y, width, height);
         this.hp = hp;
+    }
+
+    @Override
+    public void Update() {
+        if (invulnerabilityTimer > 0) {
+            --invulnerabilityTimer;
+        }
+        if (knockbackTimer > 0) {
+            --knockbackTimer;
+        }
     }
     public void move() {
         if(!checkEntityCollisions(xMove, 0f))
@@ -79,6 +95,11 @@ public abstract class Creature extends Entity {
 
     public abstract boolean hurt(float dmg);
     public abstract void die();
+    public void applyKnockback(float forceX, float forceY) {
+        xMove = forceX;
+        yMove = forceY;
+        knockbackTimer = KNOCK_TIME;
+    }
 
     public void setHp(float hp) { this.hp = hp; }
     public float getHp() { return hp; }

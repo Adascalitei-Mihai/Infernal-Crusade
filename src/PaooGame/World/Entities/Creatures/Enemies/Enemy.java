@@ -10,9 +10,15 @@ public abstract class Enemy extends Creature {
     protected enum EnemyState { PATROLLING, CHASING, ATTACKING }
     protected EnemyState currState = EnemyState.PATROLLING;
 
+    protected static final int PAUSE_DURATION = 90;
+    protected int pauseTimer;
+
     protected float aggroRange;
     protected float attackRange;
     protected float[] patrolRange;
+
+    protected boolean isWindingUp;
+    protected boolean isAttacking;
 
     protected int direction = 1; // -1 stanga, 1 dreapta
     protected float baseSpeed, aggroSpeed;
@@ -38,6 +44,30 @@ public abstract class Enemy extends Creature {
 
     @Override
     public void Update() {
+        super.Update();
+
+        if (knockbackTimer > 0) {
+            isAttacking = false;
+            isWindingUp = false;
+
+            xMove *= 0.8f;
+            yMove += 0.5f;
+
+            move();
+            return;
+        }
+        if(pauseTimer > 0) {
+            pauseTimer--;
+
+            xMove = 0;
+            yMove += 0.5f;
+            isAttacking = false;
+            isWindingUp = false;
+
+            move();
+            return;
+        }
+
         makeDecision();
 
         switch (currState) {
@@ -53,8 +83,13 @@ public abstract class Enemy extends Creature {
 
     @Override
     public boolean hurt(float dmg) {
+        if (invulnerabilityTimer > 0) {
+            return false;
+        }
         hp -= dmg;
-        if(hp <= 0) {
+        invulnerabilityTimer = INVULN_TIME;
+
+        if (hp <= 0) {
             die();
         }
         return true;

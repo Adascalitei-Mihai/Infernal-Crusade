@@ -1,6 +1,7 @@
 package PaooGame.World.Entities.Creatures;
 
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Tiles.Tile;
 
@@ -47,18 +48,28 @@ public class Dante extends Creature {
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
 
+    private static final float ATTACK_DMG = 50f;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    private static final int INVULN_TIME = 45;
-    private int invulnerabilityTimer = 0;
-    private int knockbackTimer = 0;
-
     private static final float MAX_HP = 1000;
+    private static final float BASE_REGEN = 8f / 60;
+    private final float REGEN_PERCENTAGE;
+    private final float RESISTANCE;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
 
+        RESISTANCE = switch (handler.getDifficulty()) {
+            case EASY -> 0.75f;
+            case HARD -> 1.25f;
+            default -> 1f;
+        };
+        REGEN_PERCENTAGE = switch (handler.getDifficulty()) {
+            case EASY -> 2f;
+            case HARD -> 0.5f;
+            default -> 1f;
+        };
         EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
             case EASY -> 20;
             case HARD -> 8;
@@ -76,10 +87,7 @@ public class Dante extends Creature {
 
     @Override
     public void Update() {
-        if (invulnerabilityTimer > 0) {
-            invulnerabilityTimer--;
-        }
-
+        updateHealth();
         applyGravity();
         getDir();
 
@@ -91,6 +99,17 @@ public class Dante extends Creature {
         fieryJudgement();
     }
 
+    private void updateHealth() {
+        if (invulnerabilityTimer > 0) {
+            invulnerabilityTimer--;
+        }
+        else {
+            hp += BASE_REGEN * REGEN_PERCENTAGE;
+            if (hp > MAX_HP) {
+                hp = MAX_HP;
+            }
+        }
+    }
     private void applyGravity() {
         yMove += GRAVITY;
         if (y + DEFAULT_HEIGHT >= (handler.getLevel().getHeight() - 1) * TILE_SIZE) {
@@ -246,6 +265,25 @@ public class Dante extends Creature {
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
             }
+
+            for (Entity e : handler.getLevel().getEntityManager().getEntities()) {
+                if (e instanceof Enemy target) {
+                    if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
+                        if (target.hurt(ATTACK_DMG)) {
+                            float knockbackForce = 15.0f;
+                            if (currDirection == Direction.RIGHT) {
+                                target.applyKnockback(knockbackForce, -5.0f);
+                            }
+                            else if (currDirection == Direction.LEFT) {
+                                target.applyKnockback(-knockbackForce, -5.0f);
+                            }
+                            else {
+                                target.applyKnockback(0, -15.0f);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     private void iceMorph() {
@@ -375,8 +413,8 @@ public class Dante extends Creature {
             return false;
         }
 
-        hp -= dmg;
-        invulnerabilityTimer = 45;
+        hp -= dmg * RESISTANCE;
+        invulnerabilityTimer = INVULN_TIME;
         handler.getPadManager().rumble(0.8f, 0.8f, 200);
 
         if (hp <= 0) {
@@ -385,10 +423,9 @@ public class Dante extends Creature {
         return true;
     }
 
+    @Override
     public void applyKnockback(float forceX, float forceY) {
-        xMove = forceX;
-        yMove = forceY;
-        knockbackTimer = 15;
+        super.applyKnockback(forceX, forceY);
         onGround = false;
     }
 

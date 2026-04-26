@@ -18,13 +18,9 @@ public class Skeleton extends GroundEnemy {
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
 
-    private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
-    private final float ATTACK_DMG;
+    private static final float ATTACK_DMG = 50f;
     private static final float COLLISION_DMG = 20f;
-
-    private static final int PAUSE_DURATION = 90;
-    private int pauseTimer = 0;
 
     public Skeleton(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 100);
@@ -39,28 +35,25 @@ public class Skeleton extends GroundEnemy {
         this.attackRange = TILE_SIZE * 5;
         this.aggroRange = TILE_SIZE * 18;
         this.patrolRange = new float[]{x - Tile.TILE_SIZE * 5, x + Tile.TILE_SIZE * 5};
-
-        ATTACK_DMG = switch (handler.getDifficulty()) {
-            case EASY -> 25;
-            case HARD -> 100;
-            default -> 50;
-        };
     }
 
     @Override
     public void Update() {
-        if (pauseTimer > 0) {
-            pauseTimer--;
-
-            xMove = 0;
-            isAttacking = false;
-
-            move();
+        super.Update();
+        if (knockbackTimer > 0 || pauseTimer > 0) {
             return;
         }
 
         if (attackTimer > 0) {
             attackTimer--;
+
+            if (attackTimer == ATTACK_DURATION) {
+                isWindingUp = false;
+                isAttacking = true;
+                attackActiveTimer = ATTACK_DURATION;
+
+                executeAttackHitbox();
+            }
         }
 
         if (isAttacking) {
@@ -70,11 +63,13 @@ public class Skeleton extends GroundEnemy {
             }
         }
 
-        super.Update();
-        move();
+        if (isWindingUp || isAttacking) {
+            xMove = 0;
+        }
 
+        move();
         if (currState == EnemyState.ATTACKING) {
-                attack();
+            attack();
         }
     }
 
@@ -84,10 +79,11 @@ public class Skeleton extends GroundEnemy {
             return;
         }
 
-        isAttacking = true;
-        attackActiveTimer = ATTACK_DURATION;
         attackTimer = ATTACK_COOLDOWN;
+        isWindingUp = true;
+    }
 
+    private void executeAttackHitbox() {
         int hWidth = TILE_SIZE * 4;
         int hHeight = (int) (bounds.height * 0.5f);
 
@@ -114,7 +110,13 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void Draw(Graphics g) {
-        g.setColor(Color.ORANGE);
+        if (isWindingUp) {
+            g.setColor(Color.MAGENTA);
+        }
+        else {
+            g.setColor(Color.ORANGE);
+        }
+
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                 bounds.width, bounds.height);
@@ -138,7 +140,7 @@ public class Skeleton extends GroundEnemy {
             if (dante.hurt(COLLISION_DMG)) {
                 float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
 
-                dante.applyKnockback(knockX, -10.0f);
+                dante.applyKnockback(knockX, -15.0f);
                 pauseTimer = PAUSE_DURATION;
             }
         }
