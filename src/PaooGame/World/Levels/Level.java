@@ -4,11 +4,11 @@ import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.EntityManager;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Level {
     protected final Handler handler;

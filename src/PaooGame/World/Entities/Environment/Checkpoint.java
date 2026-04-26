@@ -8,7 +8,7 @@ import PaooGame.Graphics.Assets;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Checkpoint extends Entity {
     private final Animation flutter;

@@ -28,7 +28,7 @@ public class GamepadManager extends InputManager {
             space = currState.a;
 
             shift = currState.leftTrigger > ACC_POINT;
-            j = currState.rb;
+            j = currState.x;
             k = currState.b;
             l = currState.rightTrigger > ACC_POINT;
 

@@ -7,8 +7,8 @@ import PaooGame.World.Factories.Level1Factory;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.SCALE;
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.SCALE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Level1 extends Level {
     private final EntityFactory factory;

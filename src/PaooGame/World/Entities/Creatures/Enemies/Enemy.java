@@ -2,9 +2,10 @@ package PaooGame.World.Entities.Creatures.Enemies;
 
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Enemy extends Creature {
     protected enum EnemyState { PATROLLING, CHASING, ATTACKING }
@@ -42,10 +43,23 @@ public abstract class Enemy extends Creature {
         return (player.getX() + player.getBounds().x) > (this.x + this.bounds.x);
     }
 
+    private void checkEnvironmentDamage() {
+        int tx = (int) (x + bounds.x + bounds.width / 2) / TILE_SIZE;
+        int ty = (int) (y + bounds.y + bounds.height + 16) / TILE_SIZE;
+
+
+        if (handler.getLevel().isFire(tx, ty)) {
+            if (hurt(Dante.FIERY_JUDGEMENT_DMG)) {
+                applyKnockback(0f, -5.0f);
+            }
+        }
+    }
+
     @Override
     public void Update() {
         super.Update();
 
+        checkEnvironmentDamage();
         if (knockbackTimer > 0) {
             isAttacking = false;
             isWindingUp = false;

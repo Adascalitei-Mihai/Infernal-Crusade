@@ -3,11 +3,11 @@ package PaooGame.World.Entities.Creatures;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import PaooGame.World.Entities.Entity;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Dante extends Creature {
     public enum Direction { RIGHT, UP, LEFT }
@@ -25,37 +25,37 @@ public class Dante extends Creature {
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
     private static final int MAX_JUMP_TIME = 20;
-
-    private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
-
-    private boolean edenShieldActive = false;
-    private static final int EDEN_SHIELD_COOLDOWN = 300;
-    private int edenShieldTimer = 0;
-    private final int EDEN_SHIELD_DURATION;
-    private int edenActiveTimer = 0;
-    private Rectangle edenShieldBounds = new Rectangle();
-
-    private static final int FIERY_JUDGEMENT_COOLDOWN = 600;
-    private static final int FIERY_JUDGEMENT_SPREAD = 40;
-    private int fieryJudgementTimer = 0;
-
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
 
+    private static final float MAX_HP = 1000;
+    private static final float BASE_REGEN = 8f / 60;
+    private final float REGEN_PERCENT;
+    private final float RESISTANCE;
+
     private static final int ATTACK_COOLDOWN = 30;
     private static final int ATTACK_DURATION = 12;
+    private static final float ATTACK_DMG = 50f;
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
-
-    private static final float ATTACK_DMG = 50f;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    private static final float MAX_HP = 1000;
-    private static final float BASE_REGEN = 8f / 60;
-    private final float REGEN_PERCENTAGE;
-    private final float RESISTANCE;
+    public static final int ICE_TIMER = 600, FIRE_TIMER = 600;
+    public static final int FIERY_JUDGEMENT_DMG = 20;
+
+    private static final int EDEN_SHIELD_COOLDOWN = 300;
+    private final int EDEN_SHIELD_DURATION;
+    private boolean edenShieldActive = false;
+    private int edenShieldTimer = 0;
+    private int edenActiveTimer = 0;
+    private Rectangle edenShieldBounds = new Rectangle();
+
+    private static final int FIERY_JUDGEMENT_BASE_CD = 600;
+    private static final int FIERY_JUDGEMENT_SPREAD = 40;
+    private final float FIERY_JUDGEMENT_CD_PERCENT;
+    private int fieryJudgementTimer = 0;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
@@ -65,7 +65,7 @@ public class Dante extends Creature {
             case HARD -> 1.25f;
             default -> 1f;
         };
-        REGEN_PERCENTAGE = switch (handler.getDifficulty()) {
+        REGEN_PERCENT = switch (handler.getDifficulty()) {
             case EASY -> 2f;
             case HARD -> 0.5f;
             default -> 1f;
@@ -74,6 +74,11 @@ public class Dante extends Creature {
             case EASY -> 20;
             case HARD -> 8;
             default -> 15;
+        };
+        FIERY_JUDGEMENT_CD_PERCENT = switch (handler.getDifficulty()) {
+            case EASY -> 0.8f;
+            case HARD -> 1.2f;
+            default -> 1f;
         };
 
         bounds.x = 4;
@@ -104,7 +109,7 @@ public class Dante extends Creature {
             invulnerabilityTimer--;
         }
         else {
-            hp += BASE_REGEN * REGEN_PERCENTAGE;
+            hp += BASE_REGEN * REGEN_PERCENT;
             if (hp > MAX_HP) {
                 hp = MAX_HP;
             }
@@ -352,8 +357,7 @@ public class Dante extends Creature {
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
-
-            fieryJudgementTimer = FIERY_JUDGEMENT_COOLDOWN;
+            fieryJudgementTimer = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_CD_PERCENT);
 
             handler.getPadManager().rumble(0.8f, 0.8f, 200);
         }

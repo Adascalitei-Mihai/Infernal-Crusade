@@ -3,11 +3,11 @@ package PaooGame.World.Entities.Creatures.Enemies.GroundEnemies;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Skeleton extends GroundEnemy {
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;

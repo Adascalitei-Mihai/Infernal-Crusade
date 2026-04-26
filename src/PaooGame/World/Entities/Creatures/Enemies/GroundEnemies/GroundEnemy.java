@@ -3,7 +3,7 @@ package PaooGame.World.Entities.Creatures.Enemies.GroundEnemies;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class GroundEnemy extends Enemy {
     public GroundEnemy(Handler handler, float x, float y, int width, int height, float hp) {

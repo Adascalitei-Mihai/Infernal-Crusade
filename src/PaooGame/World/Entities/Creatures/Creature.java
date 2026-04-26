@@ -2,9 +2,9 @@ package PaooGame.World.Entities.Creatures;
 
 import PaooGame.Handler;
 import PaooGame.World.Entities.Entity;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Creature extends Entity {
     protected static final int INVULN_TIME = 45;

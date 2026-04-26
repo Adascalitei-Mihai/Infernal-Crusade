@@ -6,12 +6,11 @@ import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Skeleton;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
-import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.util.Set;
 
-import static PaooGame.World.Tiles.Tile.NO_TILES;
+import static PaooGame.World.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
     private static final Set<Integer> SOLID_TILES = Set.of(
