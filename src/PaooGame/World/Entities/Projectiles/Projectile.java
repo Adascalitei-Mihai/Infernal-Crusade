@@ -27,11 +27,11 @@ public abstract class Projectile extends Entity {
         super(handler, x, y, width, height);
         this.START_X = x;
         this.START_Y = y;
-        this.owner = owner;
+        calculateVelocity(targetX, targetY, speed);
 
+        this.owner = owner;
         this.damage = damage;
         this.knockPercent = knockPercent;
-        calculateVelocity(targetX, targetY, speed);
     }
 
     private void calculateVelocity(float targetX, float targetY, float speed) {
@@ -108,9 +108,6 @@ public abstract class Projectile extends Entity {
         }
         return false;
     }
-
-    @Override
-    public abstract void Draw(Graphics g);
 
     @Override
     public void onInteraction(Entity e) {
