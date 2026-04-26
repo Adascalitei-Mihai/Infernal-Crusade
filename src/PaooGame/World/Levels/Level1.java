@@ -68,6 +68,7 @@ public class Level1 extends Level {
     @Override
     public void setEnemies() {
         entityManager.addEntity(factory.createMinorEnemy(2000, 800));
+        entityManager.addEntity(factory.createMajorEnemy(4000, 800));
     }
 
     @Override

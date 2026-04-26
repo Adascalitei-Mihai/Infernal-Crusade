@@ -42,7 +42,7 @@ public class Dante extends Creature {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    public static final int ICE_TIMER = 600, FIRE_TIMER = 600;
+    public static final int ICE_TIMER = 300, FIRE_TIMER = 300;
     public static final int FIERY_JUDGEMENT_DMG = 20;
 
     private static final int EDEN_SHIELD_COOLDOWN = 300;
