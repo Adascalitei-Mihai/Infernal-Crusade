@@ -49,7 +49,7 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public Creature createMajorEnemy(float x, float y) {
-        return new Cyclops(handler, x, y);
+        return new Hunter(handler, x, y);
     }
 
     @Override

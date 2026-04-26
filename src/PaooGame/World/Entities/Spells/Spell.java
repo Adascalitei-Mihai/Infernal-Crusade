@@ -9,7 +9,7 @@ import java.awt.*;
 
 public abstract class Spell extends Entity {
     protected final static float KNOCKBACK_FORCE = 10f;
-
+    protected final static float LIFESTEAL = 100f;
     protected Creature owner;
     protected float damage;
     protected float knockPercent;
@@ -73,6 +73,10 @@ public abstract class Spell extends Entity {
     @Override
     public void onInteraction(Entity e) {
         if (isSummoning) {
+            return;
+        }
+        if (e instanceof Necromancer target) {
+            target.heal(LIFESTEAL);
             return;
         }
 

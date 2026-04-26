@@ -36,8 +36,6 @@ public class Dante extends Creature {
     private final float REGEN_PERCENT;
     private final float RESISTANCE;
 
-
-
     public static final float MAX_SPEED = 15f;
     public static final float SPEED = 5f;
     private static final float ACCELERATION = 0.2f;
@@ -160,7 +158,7 @@ public class Dante extends Creature {
         else if (handler.getInputManager().left) {
             currDirection = Direction.LEFT;
         }
-        else {
+        else if (handler.getInputManager().right) {
             currDirection = Direction.RIGHT;
         }
     }

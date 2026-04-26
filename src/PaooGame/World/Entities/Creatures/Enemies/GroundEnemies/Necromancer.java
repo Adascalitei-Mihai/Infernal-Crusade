@@ -19,8 +19,11 @@ public class Necromancer extends GroundEnemy {
 
     private static final int ATTACK_COOLDOWN = 240;
     private static final int ATTACK_DURATION = 30;
-    private int attackTimer = 0;
-    private int attackActiveTimer = 0;
+    private int attackTimer;
+    private int attackActiveTimer;
+
+    private static final int LIFESTEAL_COOLDOWN = 240;
+    private int lifestealTimer;
 
     private static final float COLLISION_DMG = 20f;
 
@@ -44,6 +47,10 @@ public class Necromancer extends GroundEnemy {
         super.Update();
         if (knockbackTimer > 0 || pauseTimer > 0) {
             return;
+        }
+
+        if (lifestealTimer > 0) {
+            lifestealTimer--;
         }
 
         if (attackTimer > 0) {
@@ -119,6 +126,13 @@ public class Necromancer extends GroundEnemy {
                 dante.applyKnockback(knockX, -15.0f);
                 pauseTimer = PAUSE_DURATION;
             }
+        }
+    }
+
+    public void heal(float hp) {
+        if (lifestealTimer == 0) {
+            this.hp += hp;
+            lifestealTimer = LIFESTEAL_COOLDOWN;
         }
     }
 }

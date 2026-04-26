@@ -16,7 +16,7 @@ public class Hunter extends GroundEnemy {
     public static final float MAX_HP = 100;
     public static final float KNOCK_PERCENT = 1f;
 
-    private static final int ATTACK_COOLDOWN = 60;
+    private static final int ATTACK_COOLDOWN = 180;
     private static final int ATTACK_DURATION = 15;
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
