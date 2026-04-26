@@ -1,9 +1,6 @@
 package PaooGame.World.Entities;
 
-import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Dante;
-import PaooGame.Game.Game;
-import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -22,7 +19,6 @@ public class EntityManager {
 
         entities = new ArrayList<>();
         addEntity(dante);
-
     }
 
     public void Update() {
@@ -48,6 +44,11 @@ public class EntityManager {
 
     public void addEntity(Entity e) {
         entities.add(e);
+    }
+
+    public void resetEntities() {
+        entities.clear();
+        addEntity(dante);
     }
 
     public Dante getDante() { return dante; }

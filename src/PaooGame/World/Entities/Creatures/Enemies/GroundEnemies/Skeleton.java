@@ -1,6 +1,7 @@
 package PaooGame.World.Entities.Creatures.Enemies.GroundEnemies;
 
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Tiles.Tile;
 
@@ -20,6 +21,10 @@ public class Skeleton extends GroundEnemy {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
     private final float ATTACK_DMG;
+    private static final float COLLISION_DMG = 20f;
+
+    private static final int PAUSE_DURATION = 90;
+    private int pauseTimer = 0;
 
     public Skeleton(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 100);
@@ -30,8 +35,8 @@ public class Skeleton extends GroundEnemy {
         bounds.height = DEFAULT_HEIGHT - 2;
 
         this.baseSpeed = 2.0f;
-        this.aggroSpeed = 3.0f;
-        this.attackRange = TILE_SIZE * 2;
+        this.aggroSpeed = 2.5f;
+        this.attackRange = TILE_SIZE * 5;
         this.aggroRange = TILE_SIZE * 18;
         this.patrolRange = new float[]{x - Tile.TILE_SIZE * 5, x + Tile.TILE_SIZE * 5};
 
@@ -44,6 +49,16 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void Update() {
+        if (pauseTimer > 0) {
+            pauseTimer--;
+
+            xMove = 0;
+            isAttacking = false;
+
+            move();
+            return;
+        }
+
         if (attackTimer > 0) {
             attackTimer--;
         }
@@ -59,7 +74,7 @@ public class Skeleton extends GroundEnemy {
         move();
 
         if (currState == EnemyState.ATTACKING) {
-            attack();
+                attack();
         }
     }
 
@@ -73,7 +88,7 @@ public class Skeleton extends GroundEnemy {
         attackActiveTimer = ATTACK_DURATION;
         attackTimer = ATTACK_COOLDOWN;
 
-        int hWidth = TILE_SIZE * 2;
+        int hWidth = TILE_SIZE * 4;
         int hHeight = (int) (bounds.height * 0.5f);
 
         attackBounds.setSize(hWidth, hHeight);
@@ -85,6 +100,16 @@ public class Skeleton extends GroundEnemy {
             attackBounds.x = (int) (x + bounds.x - hWidth);
         }
         attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
+
+        Dante dante = handler.getDante();
+        if (attackBounds.intersects(dante.getCollisionBounds(0f, 0f))) {
+            if (dante.hurt(ATTACK_DMG)) {
+                float knockX = (direction == 1) ? 100.0f : -100.0f;
+                dante.applyKnockback(knockX, -10.0f);
+
+                pauseTimer = PAUSE_DURATION;
+            }
+        }
     }
 
     @Override
@@ -109,6 +134,13 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void onInteraction(Entity e) {
-        //handler.getDante().hurt(ATTACK_DMG);
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
+
+                dante.applyKnockback(knockX, -10.0f);
+                pauseTimer = PAUSE_DURATION;
+            }
+        }
     }
 }

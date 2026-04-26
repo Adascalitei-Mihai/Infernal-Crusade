@@ -50,7 +50,11 @@ public class Dante extends Creature {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    private float hp = 1000;
+    private static final int INVULN_TIME = 45;
+    private int invulnerabilityTimer = 0;
+    private int knockbackTimer = 0;
+
+    private static final float MAX_HP = 1000;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
@@ -66,14 +70,18 @@ public class Dante extends Creature {
 
         bounds.y = 1;
         bounds.height = DEFAULT_HEIGHT - 2;
+
+        hp = MAX_HP;
     }
 
     @Override
     public void Update() {
+        if (invulnerabilityTimer > 0) {
+            invulnerabilityTimer--;
+        }
+
         applyGravity();
         getDir();
-
-        System.out.println(x + ", " + y);
 
         move();
         jump();
@@ -109,6 +117,13 @@ public class Dante extends Creature {
     }
     @Override
     public void moveX() {
+        if (knockbackTimer > 0) {
+            knockbackTimer--;
+            xMove *= FRICTION;
+            super.moveX();
+            return;
+        }
+
         if (!isOnIce()) {
             if (handler.getInputManager().right) {
                 xMove = SPEED;
@@ -355,14 +370,35 @@ public class Dante extends Creature {
     public void onInteraction(Entity e) {}
 
     @Override
-    public void hurt(float dmg) {}
+    public boolean hurt(float dmg) {
+        if (invulnerabilityTimer > 0 || edenShieldActive) {
+            return false;
+        }
+
+        hp -= dmg;
+        invulnerabilityTimer = 45;
+        handler.getPadManager().rumble(0.8f, 0.8f, 200);
+
+        if (hp <= 0) {
+            die();
+        }
+        return true;
+    }
+
+    public void applyKnockback(float forceX, float forceY) {
+        xMove = forceX;
+        yMove = forceY;
+        knockbackTimer = 15;
+        onGround = false;
+    }
 
     @Override
     public void die() {
         xMove = 0;
         yMove = 0;
 
+        setHp(MAX_HP);
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
-        handler.getLevel().spawn();
+        handler.getLevel().requestRespawn();
     }
 }

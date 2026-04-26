@@ -2,8 +2,6 @@ package PaooGame.World.Levels;
 
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
-import PaooGame.World.Entities.Creatures.Dante;
-import PaooGame.World.Entities.EntityManager;
 import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Factories.Level1Factory;
 
@@ -37,8 +35,17 @@ public class Level1 extends Level {
         super(handler, L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
         factory = new Level1Factory(handler);
 
-        spawn(); // Dante
-        entityManager.addEntity(factory.createMinorEnemy(2000, 800));
+        requestRespawn();
+    }
+
+    @Override
+    public void spawn() {
+        entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0] * TILE_SIZE);
+        entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1] * TILE_SIZE);
+
+        entityManager.resetEntities();
+        setEnemies();
+
 
         for(int i = 0; i < chkpPos.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
@@ -59,14 +66,12 @@ public class Level1 extends Level {
     }
 
     @Override
-    public void spawn() {
-        entityManager.getDante().setX(chkpPos[handler.getCurrChkp()][0] * TILE_SIZE);
-        entityManager.getDante().setY(chkpPos[handler.getCurrChkp()][1] * TILE_SIZE);
+    public void setEnemies() {
+        entityManager.addEntity(factory.createMinorEnemy(2000, 800));
     }
 
     @Override
     public void drawBackground(Graphics g) {
-
         for (int i = 0; i < Assets.bg.length; i++) {
             if (Assets.bg[i] == null) continue;
 

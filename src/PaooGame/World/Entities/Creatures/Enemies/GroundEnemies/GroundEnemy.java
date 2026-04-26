@@ -18,7 +18,7 @@ public abstract class GroundEnemy extends Enemy {
 
         if (distance <= attackRange) {
             currState = EnemyState.ATTACKING;
-            speed = aggroSpeed;
+            speed = 0;
         }
         else if (distance <= aggroRange) {
             currState = EnemyState.CHASING;

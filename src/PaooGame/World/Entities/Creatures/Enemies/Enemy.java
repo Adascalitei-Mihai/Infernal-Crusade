@@ -52,12 +52,12 @@ public abstract class Enemy extends Creature {
     }
 
     @Override
-    public void hurt(float dmg) {
+    public boolean hurt(float dmg) {
         hp -= dmg;
-
         if(hp <= 0) {
             die();
         }
+        return true;
     }
 
     @Override

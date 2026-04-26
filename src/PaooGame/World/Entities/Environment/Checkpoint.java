@@ -54,7 +54,7 @@ public class Checkpoint extends Entity {
     public void onInteraction(Entity e) {
         if(e instanceof Dante && !activated) {
             activated = true;
-            if(id != handler.getCurrChkp()) {
+            if(id > handler.getCurrChkp()) {
                 handler.updateCurrChkp(id);
             }
         }
