@@ -14,12 +14,29 @@ public class Dante extends Creature {
     public enum Direction { RIGHT, UP, LEFT }
     private Direction currDirection = Direction.LEFT;
 
+    public enum Ranks {
+        D(3),
+        C(5),
+        B(7),
+        A(15),
+        S(-1);
+
+        private final int points;
+        Ranks(int points) {
+            this.points = points;
+        }
+    }
+    private Ranks currRank = Ranks.D;
+    private int currPoints;
+
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
     private static final float MAX_HP = 1000;
     private static final float BASE_REGEN = 8f / 60;
     private final float REGEN_PERCENT;
     private final float RESISTANCE;
+
+
 
     public static final float MAX_SPEED = 15f;
     public static final float SPEED = 5f;
@@ -36,10 +53,11 @@ public class Dante extends Creature {
 
     private static final int ATTACK_COOLDOWN = 30;
     private static final int ATTACK_DURATION = 12;
-    private static final float ATTACK_DMG = 50f;
+    private static final float BASE_ATTACK_DMG = 50f;
     private static final float KNOCKBACK_FORCE = 15f;
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
+    private int attackDmg;
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
@@ -55,8 +73,9 @@ public class Dante extends Creature {
 
     private static final int FIERY_JUDGEMENT_BASE_CD = 600;
     private static final int FIERY_JUDGEMENT_SPREAD = 40;
-    private final float FIERY_JUDGEMENT_CD_PERCENT;
+    private final float FIERY_JUDGEMENT_DIFF_CD_PERCENT;
     private int fieryJudgementTimer = 0;
+    private int cd;
 
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP);
@@ -76,7 +95,7 @@ public class Dante extends Creature {
             case HARD -> 8;
             default -> 15;
         };
-        FIERY_JUDGEMENT_CD_PERCENT = switch (handler.getDifficulty()) {
+        FIERY_JUDGEMENT_DIFF_CD_PERCENT = switch (handler.getDifficulty()) {
             case EASY -> 0.8f;
             case HARD -> 1.2f;
             default -> 1f;
@@ -94,6 +113,7 @@ public class Dante extends Creature {
     @Override
     public void Update() {
         updateHealth();
+        updateRank();
         applyGravity();
         getDir();
 
@@ -104,7 +124,6 @@ public class Dante extends Creature {
         edenShield();
         fieryJudgement();
     }
-
     private void updateHealth() {
         if (invulnerabilityTimer > 0) {
             invulnerabilityTimer--;
@@ -115,6 +134,18 @@ public class Dante extends Creature {
                 hp = MAX_HP;
             }
         }
+    }
+    private void updateRank() {
+        if(currRank != Ranks.S && currPoints >= currRank.points) {
+            currPoints -= currRank.points;
+            currRank = Ranks.values()[currRank.ordinal() + 1];
+        }
+
+        float attack_modifier = 1f + currRank.ordinal() * 0.2f;
+        float cd_modifier = 1f - currRank.ordinal() * 0.05f;
+
+        attackDmg = (int) (BASE_ATTACK_DMG * attack_modifier);
+        cd = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_DIFF_CD_PERCENT * cd_modifier);
     }
     private void applyGravity() {
         yMove += GRAVITY;
@@ -275,7 +306,9 @@ public class Dante extends Creature {
             for (Entity e : handler.getLevel().getEntityManager().getEntities()) {
                 if (e instanceof Enemy target) {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
-                        if (target.hurt(ATTACK_DMG)) {
+                        if (target.hurt(attackDmg)) {
+                            ++currPoints;
+
                             if (currDirection == Direction.RIGHT) {
                                 target.applyKnockback(KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
                             }
@@ -357,7 +390,7 @@ public class Dante extends Creature {
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
-            fieryJudgementTimer = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_CD_PERCENT);
+            fieryJudgementTimer = cd;
 
             handler.getPadManager().rumble(0.8f, 0.8f, 200);
         }
@@ -415,6 +448,7 @@ public class Dante extends Creature {
         if (edenShieldActive && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
             p.reflect(this);
 
+            currPoints += 3;
             handler.getPadManager().rumble(0.6f, 0.6f, 150);
             return true;
         }
@@ -433,6 +467,11 @@ public class Dante extends Creature {
             return false;
         }
 
+        if(currRank != Ranks.D) {
+            currRank = Ranks.values()[currRank.ordinal() - 1];
+        }
+
+        currPoints = 0;
         hp -= dmg * RESISTANCE;
         invulnerabilityTimer = INVULN_TIME;
         handler.getPadManager().rumble(0.8f, 0.8f, 200);
@@ -451,8 +490,11 @@ public class Dante extends Creature {
 
     @Override
     public void die() {
-        xMove = 0;
+        currRank = Ranks.D;
+        currPoints = 0;
+
         yMove = 0;
+        xMove = 0;
 
         setHp(MAX_HP);
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
