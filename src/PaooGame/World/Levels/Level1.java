@@ -38,6 +38,7 @@ public class Level1 extends Level {
         factory = new Level1Factory(handler);
 
         spawn(); // Dante
+        entityManager.addEntity(factory.createMinorEnemy(2000, 800));
 
         for(int i = 0; i < chkpPos.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(

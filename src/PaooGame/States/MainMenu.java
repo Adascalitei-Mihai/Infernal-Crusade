@@ -88,7 +88,7 @@ public class MainMenu extends State {
         }
 
         if (handler.getPadManager().enter) {
-            handler.setDifficulty(btns[2].getState());
+            setDifficulty(btns[2].getState());
             handler.setState(new PlayState(handler));
             handler.getPadManager().reset();
         }
@@ -101,7 +101,7 @@ public class MainMenu extends State {
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
-                handler.setDifficulty(btns[2].getState());
+                setDifficulty(btns[2].getState());
                 handler.setState(new PlayState(handler));
                 break;
             case 1:
@@ -133,5 +133,14 @@ public class MainMenu extends State {
         for (Button btn : btns) {
             btn.Draw(g, TEXT_COLOR, TEXT_SIZE);
         }
+    }
+
+    public void setDifficulty(int state) {
+        Handler.Difficulty currDifficulty = switch (state) {
+            case 0 -> Handler.Difficulty.EASY;
+            case 2 -> Handler.Difficulty.HARD;
+            default -> Handler.Difficulty.NORMAL;
+        };
+        handler.setDifficulty(currDifficulty);
     }
 }

@@ -30,9 +30,10 @@ public class Handler {
     private String playerName;
     private int currLevel, currChkp;
 
-    private long startTime;
-    private int difficulty;
+    public enum Difficulty { EASY, NORMAL, HARD }
+    private Difficulty currDifficulty;
 
+    private long startTime;
     private int bestScore;
     private int globalScore;
 
@@ -51,7 +52,7 @@ public class Handler {
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
     }
     public void updateCurrChkp(int newChkp) {
-        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, 100 * difficulty);
+        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, 100);
         currChkp = newChkp;
 
         dbMan.updatePlayerCheckpoint(playerID, currChkp);
@@ -163,12 +164,12 @@ public class Handler {
         this.startTime = startTime;
     }
 
-    public int getDifficulty() {
-        return difficulty;
+    public Difficulty getDifficulty() {
+        return currDifficulty;
     }
 
-    public void setDifficulty(int difficulty) {
-        this.difficulty = difficulty;
+    public void setDifficulty(Difficulty difficulty) {
+        currDifficulty = difficulty;
     }
 
     public int getBestScore() {

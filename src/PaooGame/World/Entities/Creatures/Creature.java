@@ -51,6 +51,7 @@ public abstract class Creature extends Entity {
             }
             else {
                 y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
+                yMove = 0;
             }
         }
         else if (yMove > 0) {
@@ -61,6 +62,7 @@ public abstract class Creature extends Entity {
             }
             else {
                 y = ty * TILE_SIZE - bounds.y - bounds.height - 1;
+                yMove = 0;
             }
         }
     }

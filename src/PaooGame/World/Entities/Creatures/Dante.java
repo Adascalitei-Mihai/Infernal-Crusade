@@ -9,7 +9,8 @@ import java.awt.*;
 import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public class Dante extends Creature {
-    private enum direction { RIGHT, UP, LEFT };
+    public enum Direction { RIGHT, UP, LEFT }
+    private Direction currDirection = Direction.LEFT;
 
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
@@ -25,7 +26,6 @@ public class Dante extends Creature {
     private static final int MAX_JUMP_TIME = 20;
 
     private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
-    private direction currDirection = direction.LEFT;
 
     private boolean edenShieldActive = false;
     private static final int EDEN_SHIELD_COOLDOWN = 300;
@@ -50,12 +50,14 @@ public class Dante extends Creature {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
+    private float hp = 1000;
+
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
 
         EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
-            case 0 -> 20;
-            case 2 -> 8;
+            case EASY -> 20;
+            case HARD -> 8;
             default -> 15;
         };
 
@@ -70,6 +72,8 @@ public class Dante extends Creature {
     public void Update() {
         applyGravity();
         getDir();
+
+        System.out.println(x + ", " + y);
 
         move();
         jump();
@@ -87,13 +91,13 @@ public class Dante extends Creature {
     }
     private void getDir() {
         if (handler.getInputManager().up) {
-            currDirection = direction.UP;
+            currDirection = Direction.UP;
         }
         else if (handler.getInputManager().left) {
-            currDirection = direction.LEFT;
+            currDirection = Direction.LEFT;
         }
         else {
-            currDirection = direction.RIGHT;
+            currDirection = Direction.RIGHT;
         }
     }
 
@@ -211,17 +215,17 @@ public class Dante extends Creature {
             int hHeight = (int) (bounds.height * 0.5f);
 
             switch (currDirection) {
-                case direction.RIGHT -> {
+                case Direction.RIGHT -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
-                case direction.UP -> {
+                case Direction.UP -> {
                     attackBounds.setSize(vWidth, vHeight);
                     attackBounds.x = (int) (x + bounds.x - (float) (vWidth - bounds.width) / 2);
                     attackBounds.y = (int) (y + bounds.y - vHeight);
                 }
-                case direction.LEFT -> {
+                case Direction.LEFT -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x - hWidth);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
@@ -237,7 +241,7 @@ public class Dante extends Creature {
 
             int startX, endX;
 
-            if (currDirection != direction.LEFT) {
+            if (currDirection != Direction.LEFT) {
                 startX = centerX - 2;
                 endX = centerX + 5;
             }
