@@ -1,33 +1,18 @@
 package PaooGame.World.Entities.Creatures;
 
 import PaooGame.Handler;
-import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import PaooGame.World.Entities.Entity;
-import PaooGame.World.Entities.Projectiles.Projectile;
-import PaooGame.World.Tile;
+import PaooGame.World.Tiles.Tile;
+import PaooGame.Graphics.Animation; // IMPORT NOU
+import PaooGame.Graphics.Assets;    // IMPORT NOU
 
 import java.awt.*;
 
-import static PaooGame.World.Tile.TILE_SIZE;
+import static PaooGame.World.Tiles.Tile.TILE_SIZE;
 
 public class Dante extends Creature {
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
-    public static final Rectangle BOUNDS = new Rectangle(
-            4, 1, DEFAULT_WIDTH - 8, DEFAULT_HEIGHT - 2
-    );
-
-    public enum Direction {
-        RIGHT,
-        UP,
-        LEFT
-    }
-    private Direction currDirection = Direction.RIGHT;
-
-    private static final float MAX_HP = 1000;
-    private static final float BASE_REGEN = 5f / 60;
-    private final float REGEN_PERCENT;
-    private final float RESISTANCE;
 
     public static final float MAX_SPEED = 15f;
     public static final float SPEED = 5f;
@@ -38,124 +23,157 @@ public class Dante extends Creature {
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
     private static final int MAX_JUMP_TIME = 20;
+
+    private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
+    private int direction = 2;
+
+    private boolean isDying = false;
+    private int deathTimer = 0;
+
+    // --- VARIABILE EDEN SHIELD ---
+    private boolean edenShieldCasting = false; // Faza 1: Se formează scutul
+    private boolean edenShieldActive = false;  // Faza 2: Scutul e activ și te protejează
+
+    private int edenShieldTimer = 0; // Timpul cât rulează animația de formare
+    private final int EDEN_SHIELD_CAST_DURATION = 42; // ~42 de tick-uri (aprox. 7 poze * 100ms)
+
+    private int edenActiveTimer = 0; // Timpul cât stă scutul pe tine
+    private final int EDEN_SHIELD_DURATION; // Setat în funcție de dificultate
+
+    private int edenCooldownTimer = 0; // Timpul de așteptare până la următoarea folosire
+    private static final int EDEN_SHIELD_COOLDOWN = 300;
+
+    private Rectangle edenShieldBounds = new Rectangle();
+
+    private static final int FIERY_JUDGEMENT_COOLDOWN = 600;
+    private static final int FIERY_JUDGEMENT_SPREAD = 40;
+    private int fieryJudgementTimer = 0;
+
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
 
-    public enum MovementState {
-        IDLE,
-        RUNNING,
-        JUMPING,
-        FALLING,
-        HURT,
-        DEAD
-    }
-    private MovementState currMove = MovementState.IDLE;
+    private static final int ATTACK_COOLDOWN = 30;
+    private static final int ATTACK_DURATION = 12;
+    private int attackTimer = 0;
+    private int attackActiveTimer = 0;
 
-    public enum ActionState {
-        IDLE(0, 0, 0),
-        ATTACKING(5, 7, 40),
-        ICE_MORPH(3, 1, 0),
-        EDEN_SHIELD(0, 15, 300),
-        FIERY_JUDGEMENT(10, 1, 600);
+    private boolean isAttacking = false;
+    private Rectangle attackBounds = new Rectangle();
 
-        private final int windup;
-        private final int active;
-        private final int baseCooldown;
+    // ==========================================
+    // --- VARIABILE NOI PENTRU ANIMAȚII ---
+    // ==========================================
+    public static final int IDLE = 0;
+    public static final int RUN = 1;
+    public static final int JUMP = 2;
+    public static final int FALL = 3;
+    public static final int ATTACK1 = 4;
+    public static final int ATTACK2 = 5;
+    public static final int HIT = 6;
+    public static final int DEATH = 7;
+    public static final int ICE_MORPH = 8;
+    public static final int EDEN_SHIELD = 9;
+    public static final int FIERY_JUDGEMENT = 10;
 
-        ActionState(int windup, int active, int baseCooldown) {
-            this.windup = windup;
-            this.active = active;
-            this.baseCooldown = baseCooldown;
-        }
-        public int getDuration() { return windup + active; }
-    }
-    private ActionState currAction = ActionState.IDLE;
-    private int actionTimer = 0;
-    private final int[] cooldowns = new int[ActionState.values().length];
-
-    public enum Ranks {
-        D(3),
-        C(5),
-        B(7),
-        A(15),
-        S(-1);
-
-        private final int points;
-        Ranks(int points) {
-            this.points = points;
-        }
-    }
-    private Ranks currRank = Ranks.D;
-    private int currPoints;
-    private static final float RANK_GAIN_DMG = 0.2f;
-    private static final float RANK_GAIN_CD = 0.05f;
-
-    private static final float BASE_ATTACK_DMG = 50f;
-    private static final float KNOCKBACK_FORCE = 15f;
-    private int attackDmg;
-    private final Rectangle attackBounds = new Rectangle();
-
-    public static final int ICE_TIMER = 600;
-
-    private static final int EDEN_SHIELD_PADDING = TILE_SIZE;
-    private final int EDEN_SHIELD_DURATION;
-    private final Rectangle edenShieldBounds = new Rectangle();
-
-    public static final int FIRE_TIMER = 300;
-    public static final int FIERY_JUDGEMENT_DMG = 50;
-    private static final int FIERY_JUDGEMENT_BASE_CD = 600;
-    private static final int FIERY_JUDGEMENT_SPREAD = 40;
-    private final float FIERY_JUDGEMENT_DIFF_CD_PERCENT;
-    private int cd;
+    private final Animation[] animations = new Animation[11];
+    private int currentState = IDLE;
+    // ==========================================
 
     public Dante(Handler handler, float x, float y) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP);
+        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
 
-        RESISTANCE = switch (handler.getDifficulty()) {
-            case EASY -> 0.75f;
-            case HARD -> 1.25f;
-            default -> 1f;
-        };
-        REGEN_PERCENT = switch (handler.getDifficulty()) {
-            case EASY -> 1.5f;
-            case HARD -> 0f;
-            default -> 1f;
-        };
         EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
-            case EASY -> 20;
-            case HARD -> 8;
+            case 0 -> 20;
+            case 2 -> 8;
             default -> 15;
         };
-        FIERY_JUDGEMENT_DIFF_CD_PERCENT = switch (handler.getDifficulty()) {
-            case EASY -> 0.8f;
-            case HARD -> 1.2f;
-            default -> 1f;
-        };
 
-        this.bounds = new Rectangle(BOUNDS);
+        bounds.x = 4;
+        bounds.width = DEFAULT_WIDTH - 8;
+
+        bounds.y = 1;
+        bounds.height = DEFAULT_HEIGHT - 2;
+
+        // ==========================================
+        // --- INIȚIALIZARE ANIMAȚII ---
+        // ==========================================
+        animations[IDLE] = new Animation(100, Assets.Dante.get("Idle"));
+        animations[RUN] = new Animation(80, Assets.Dante.get("Run"));
+        animations[JUMP] = new Animation(100, Assets.Dante.get("Jump"));
+        animations[FALL] = new Animation(100, Assets.Dante.get("Fall"));
+        animations[ATTACK1] = new Animation(80, Assets.Dante.get("Attack1"));
+        animations[ATTACK2] = new Animation(80, Assets.Dante.get("Attack2"));
+        animations[HIT] = new Animation(100, Assets.Dante.get("Hit"));
+        animations[DEATH] = new Animation(150, Assets.Dante.get("Death"));
+        animations[ICE_MORPH] = new Animation(100, Assets.Dante.get("Ice_Morph"));
+        animations[EDEN_SHIELD] = new Animation(100, Assets.Dante.get("Eden_Shield"));
+        animations[FIERY_JUDGEMENT] = new Animation(100, Assets.Dante.get("Fiery_Judgement"));
     }
 
-    private void updateHealth() {
-        if (invulnerabilityTimer <= 0) {
-            hp += BASE_REGEN * REGEN_PERCENT;
-            if (hp > MAX_HP) {
-                hp = MAX_HP;
+    @Override
+    public void Update() {
+        // --- BLOCUL DE MOARTE ---
+        if (isDying) {
+            currentState = DEATH;         // Setăm starea pe animația de moarte
+            animations[DEATH].tick();     // Avansăm cadrele
+
+            deathTimer--;
+            if (deathTimer <= 0) {
+                isDying = false;          // S-a terminat animația
+                handler.getLevel().spawn(); // Resetăm nivelul
+            }
+            return; // `return` oprește Update-ul aici. Dante nu se mai poate mișca.
+        }
+        // ------------------------
+
+        // ... de aici în jos rămâne exact codul tău normal
+        applyGravity();
+        getDir();
+
+        move();
+        jump();
+        attack();
+        iceMorph();
+        edenShield();
+        fieryJudgement();
+
+        updateAnimationState();
+        animations[currentState].tick();
+    }
+
+    // ==========================================
+    // --- METODĂ NOUĂ: SCHIMBĂ ANIMAȚIA ---
+    // ==========================================
+    private void updateAnimationState() {
+        // Prioritate 1: Atacul și magiile
+        if (isAttacking) {
+            // Dacă atacă în sus (direction == 1), folosește Attack1. Altfel, Attack2.
+            if (direction == 1) {
+                currentState = ATTACK1;
+            } else {
+                currentState = ATTACK2;
             }
         }
-    }
-
-    private void updateRank() {
-        if(currRank != Ranks.S && currPoints >= currRank.points) {
-            currPoints -= currRank.points;
-            currRank = Ranks.values()[currRank.ordinal() + 1];
+        else if (edenShieldCasting || edenShieldActive) {
+            // Rulează animația de scut pe toată perioada formării și cât e activ
+            currentState = EDEN_SHIELD;
         }
-
-        float attack_modifier = 1f + currRank.ordinal() * RANK_GAIN_DMG;
-        float cd_modifier = 1f - currRank.ordinal() * RANK_GAIN_CD;
-
-        attackDmg = (int) (BASE_ATTACK_DMG * attack_modifier);
-        cd = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_DIFF_CD_PERCENT * cd_modifier);
+        // Prioritate 2: Săritul și căderea
+        else if (yMove < 0) {
+            currentState = JUMP;
+        }
+        else if (yMove > 0 && !onGround) {
+            currentState = FALL;
+        }
+        // Prioritate 3: Mersul
+        else if (Math.abs(xMove) > 0.2f) {
+            currentState = RUN;
+        }
+        // Default: Stă pe loc
+        else {
+            currentState = IDLE;
+        }
     }
 
     private void applyGravity() {
@@ -166,91 +184,30 @@ public class Dante extends Creature {
     }
 
     private void getDir() {
-        if (handler.getInputManager().up) {
-            currDirection = Direction.UP;
+        if (handler.getKeyManager().up) {
+            direction = 1;
         }
-        else if (handler.getInputManager().left) {
-            currDirection = Direction.LEFT;
+        else if (handler.getKeyManager().left) {
+            direction = 2;
         }
-        else if (handler.getInputManager().right) {
-            currDirection = Direction.RIGHT;
+        else if (handler.getKeyManager().right) {
+            direction = 0; // Setăm direcția 0 explicit pentru dreapta
         }
     }
 
-    private void updateCooldowns() {
-        for (int i = 0; i < cooldowns.length; i++) {
-            if (cooldowns[i] > 0) {
-                cooldowns[i]--;
-            }
-        }
+    private boolean isOnIce() {
+        int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
+        int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
+        return handler.getLevel().isIce(tx, ty);
     }
 
     @Override
-    public void Update() {
-        if (currMove == MovementState.DEAD) {
-            return;
-        }
-
-        super.Update();
-
-        updateHealth();
-        updateRank();
-        applyGravity();
-        getDir();
-
-        updateCooldowns();
-        updateMovementState();
-
-        if (currMove != MovementState.HURT) {
-            updateActionState();
-        }
-        else {
-            currAction = ActionState.IDLE;
-            actionTimer = 0;
-        }
-    }
-
-    private void updateMovementState() {
-        if (knockbackTimer > 0) {
-            currMove = MovementState.HURT;
-            xMove *= FRICTION;
-            moveX();
-            moveY();
-            return;
-        }
-
-        if (!onGround) {
-            if (yMove < 0) {
-                currMove = MovementState.JUMPING;
-            }
-            else {
-                currMove = MovementState.FALLING;
-            }
-        }
-        else if (handler.getInputManager().right || handler.getInputManager().left) {
-            currMove = MovementState.RUNNING;
-        }
-        else {
-            currMove = MovementState.IDLE;
-        }
-
-        handleHorizontalMovement();
-        handleJumpLogic();
-
-        if (currAction == ActionState.ATTACKING && onGround) {
-            xMove = 0;
-        }
-
-        moveX();
-        moveY();
-    }
-
-    private void handleHorizontalMovement() {
+    public void moveX() {
         if (!isOnIce()) {
-            if (handler.getInputManager().right) {
+            if (handler.getKeyManager().right) {
                 xMove = SPEED;
             }
-            else if (handler.getInputManager().left) {
+            else if (handler.getKeyManager().left) {
                 xMove = -SPEED;
             }
             else {
@@ -258,12 +215,12 @@ public class Dante extends Creature {
             }
         }
         else {
-            if (handler.getInputManager().right) {
+            if (handler.getKeyManager().right) {
                 xMove += ACCELERATION;
                 if (xMove < SPEED) xMove = SPEED;
                 if (xMove > MAX_SPEED) xMove = MAX_SPEED;
             }
-            else if (handler.getInputManager().left) {
+            else if (handler.getKeyManager().left) {
                 xMove -= ACCELERATION;
                 if (xMove > -SPEED) xMove = -SPEED;
                 if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
@@ -272,149 +229,123 @@ public class Dante extends Creature {
                 xMove *= FRICTION;
             }
         }
+
+        super.moveX();
     }
 
-    private void handleJumpLogic() {
-        if (handler.getInputManager().space && onGround) {
+    @Override
+    public void moveY() {
+        if (yMove < 0) {
+            int ty = (int) (y + yMove + bounds.y) / TILE_SIZE;
+            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
+                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
+                y += yMove;
+            }
+            else {
+                y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
+                yMove = 0;
+            }
+        }
+        else if (yMove > 0) {
+            int ty = (int) (y + yMove + bounds.y + bounds.height) / TILE_SIZE;
+            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
+                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
+                y += yMove;
+            }
+            else {
+                y = ty * TILE_SIZE - bounds.y - bounds.height - 1;
+                onGround = true;
+                yMove = 0;
+            }
+        }
+    }
+
+    private void jump() {
+        if(handler.getKeyManager().space && onGround) {
             yMove = JUMP_IMPULSE;
             onGround = false;
             isJumping = true;
-            jumpTimer = MAX_JUMP_TIME;
+            jumpTimer = 0;
         }
 
-        if (handler.getInputManager().space && isJumping) {
-            if (jumpTimer > 0) {
+        if (handler.getKeyManager().space && isJumping) {
+            if (jumpTimer < MAX_JUMP_TIME) {
                 yMove += JUMP_ADDAGE;
-                --jumpTimer;
+                jumpTimer++;
             }
             else {
                 isJumping = false;
             }
         }
 
-        if (!handler.getInputManager().space) {
+        if (!handler.getKeyManager().space) {
             isJumping = false;
-            if (yMove < 0) {
-                yMove *= GRAVITY;
+        }
+    }
+
+    private void attack() {
+        if (attackTimer > 0) {
+            attackTimer--;
+        }
+
+        if (isAttacking) {
+            attackActiveTimer--;
+            if (attackActiveTimer <= 0) {
+                isAttacking = false;
+                return;
             }
         }
-    }
 
-    private void checkInputsForNewAction() {
-        if (handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
-            currAction = ActionState.EDEN_SHIELD;
-            actionTimer = EDEN_SHIELD_DURATION;
-            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
-            return;
+        if (handler.getKeyManager().j && attackTimer <= 0) {
+            isAttacking = true;
+            attackActiveTimer = ATTACK_DURATION;
+            attackTimer = ATTACK_COOLDOWN;
         }
 
-        if (handler.getInputManager().j && cooldowns[ActionState.ATTACKING.ordinal()] <= 0) {
-            currAction = ActionState.ATTACKING;
-            actionTimer = currAction.getDuration();
-            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
-            handler.getPadManager().rumble(0.0f, 0.5f, 100);
-            return;
-        }
-
-        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0) {
-            currAction = ActionState.FIERY_JUDGEMENT;
-            actionTimer = currAction.getDuration();
-            cooldowns[currAction.ordinal()] = cd;
-            handler.getPadManager().rumble(0.8f, 0.8f, 200);
-            return;
-        }
-
-        if (handler.getInputManager().shift && cooldowns[ActionState.ICE_MORPH.ordinal()] <= 0) {
-            currAction = ActionState.ICE_MORPH;
-            actionTimer = currAction.getDuration();
-            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
-        }
-    }
-
-    private void updateActionState() {
-        switch (currAction) {
-            case IDLE:
-                checkInputsForNewAction();
-                break;
-            case ATTACKING:
-                handleAttackState();
-                break;
-            case ICE_MORPH:
-                handleIceMorphState();
-                break;
-            case EDEN_SHIELD:
-                handleEdenShieldState();
-                break;
-            case FIERY_JUDGEMENT:
-                handleFieryJudgementState();
-                break;
-        }
-    }
-
-    private void handleAttackState() {
-        actionTimer--;
-
-        if (actionTimer <= currAction.active) {
+        if (isAttacking) {
             int vWidth = (int) (bounds.width * 1.5f);
-            int vHeight = TILE_SIZE * 3;
-            int hWidth = TILE_SIZE * 4;
+            int vHeight = TILE_SIZE * 2;
+            int hWidth = TILE_SIZE * 2;
             int hHeight = (int) (bounds.height * 0.5f);
 
-            switch (currDirection) {
-                case RIGHT -> {
+            switch (direction) {
+                case 0 -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x + bounds.width);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
-                case UP -> {
+                case 1 -> {
                     attackBounds.setSize(vWidth, vHeight);
                     attackBounds.x = (int) (x + bounds.x - (float) (vWidth - bounds.width) / 2);
                     attackBounds.y = (int) (y + bounds.y - vHeight);
                 }
-                case LEFT -> {
+                case 2 -> {
                     attackBounds.setSize(hWidth, hHeight);
                     attackBounds.x = (int) (x + bounds.x - hWidth);
                     attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
                 }
             }
-
-            for (Entity e : handler.getEntities()) {
-                if (e instanceof Enemy target) {
-                    if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
-                        if (target.hurt(attackDmg)) {
-                            ++currPoints;
-                            handler.getScoreMan().addSuccessfulHit(currRank);
-
-                            if (currDirection == Direction.RIGHT) {
-                                target.applyKnockback(KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
-                            }
-                            else if (currDirection == Direction.LEFT) {
-                                target.applyKnockback(-KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
-                            }
-                            else {
-                                target.applyKnockback(0, -10.0f);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (actionTimer <= 0) {
-            currAction = ActionState.IDLE;
         }
     }
 
-    private void handleIceMorphState() {
-        actionTimer--;
+    private void iceMorph() {
+        if (handler.getKeyManager().shift) {
 
-        if (actionTimer <= currAction.active && actionTimer > 0) {
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
 
-            int startX = (currDirection != Direction.LEFT) ? centerX - 2 : centerX - 5;
-            int endX = (currDirection != Direction.LEFT) ? centerX + 5 : centerX + 2;
+            int startX, endX;
+
+            if (direction == 0 || direction == 1) {
+                startX = centerX - 2;
+                endX = centerX + 5;
+            }
+            else {
+                startX = centerX - 5;
+                endX = centerX + 2;
+            }
+
             int startY = centerY - 1;
             int endY = centerY + 2;
 
@@ -427,51 +358,60 @@ public class Dante extends Creature {
                 }
             }
         }
+    }
 
-        if (actionTimer <= 0) {
-            if (handler.getInputManager().shift) {
-                actionTimer = currAction.getDuration();
+    private void edenShield() {
+        // 1. Scădem timpul de Cooldown
+        if (edenCooldownTimer > 0) {
+            edenCooldownTimer--;
+        }
+
+        // 2. Faza de formare a scutului (Casting)
+        if (edenShieldCasting) {
+            edenShieldTimer--; // Aici scade timpul "de la prima animație până la ultima"
+
+            if (edenShieldTimer <= 0) {
+                edenShieldCasting = false; // S-a terminat animația de formare
+                edenShieldActive = true;   // Acum scutul te protejează oficial!
+                edenActiveTimer = EDEN_SHIELD_DURATION; // Începe timer-ul dat de dificultate
             }
-            else {
-                currAction = ActionState.IDLE;
+        }
+        // 3. Faza în care scutul este activ
+        else if (edenShieldActive) {
+            edenActiveTimer--;
+
+            int padding = 30;
+            edenShieldBounds.x = (int) (x + bounds.x - padding);
+            edenShieldBounds.y = (int) (y + bounds.y - padding);
+            edenShieldBounds.width = bounds.width + (padding * 2);
+            edenShieldBounds.height = bounds.height + (padding * 2);
+
+            if (edenActiveTimer <= 0) {
+                edenShieldActive = false; // S-a consumat scutul
             }
+        }
+
+        // 4. Când apeși K să activezi scutul
+        if (handler.getKeyManager().k && edenCooldownTimer <= 0 && onGround && !edenShieldCasting && !edenShieldActive) {
+            edenShieldCasting = true; // Începe formarea
+            edenShieldTimer = EDEN_SHIELD_CAST_DURATION; // Setăm timpul de animație
+            edenCooldownTimer = EDEN_SHIELD_COOLDOWN; // Resetăm cooldown-ul global
         }
     }
 
-    private void handleEdenShieldState() {
-        actionTimer--;
-
-        if (actionTimer <= currAction.active) {
-            edenShieldBounds.x = (int) (x + bounds.x - EDEN_SHIELD_PADDING);
-            edenShieldBounds.y = (int) (y + bounds.y - EDEN_SHIELD_PADDING);
-            edenShieldBounds.width = bounds.width + (EDEN_SHIELD_PADDING * 2);
-            edenShieldBounds.height = bounds.height + (EDEN_SHIELD_PADDING * 2);
+    private void fieryJudgement() {
+        if (fieryJudgementTimer > 0) {
+            fieryJudgementTimer--;
         }
 
-        if (actionTimer <= 0) {
-            currAction = ActionState.IDLE;
-        }
-    }
-
-    private void handleFieryJudgementState() {
-        actionTimer--;
-
-        if (actionTimer == currAction.active) {
+        if (handler.getKeyManager().l && fieryJudgementTimer <= 0) {
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
             spreadFire(centerX, centerY, FIERY_JUDGEMENT_SPREAD);
-        }
 
-        if (actionTimer <= 0) {
-            currAction = ActionState.IDLE;
+            fieryJudgementTimer = FIERY_JUDGEMENT_COOLDOWN;
         }
-    }
-
-    private boolean isOnIce() {
-        int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
-        int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
-        return handler.getLevel().isIce(tx, ty);
     }
 
     private void spreadFire(int tx, int ty, int remainingSteps) {
@@ -479,20 +419,10 @@ public class Dante extends Creature {
             return;
         }
 
-        if (tx < 0 || ty < 0 || tx >= handler.getLevel().getWidth() || ty >= handler.getLevel().getHeight()) {
-            return;
-        }
-
         Tile t = handler.getLevel().getTile(tx, ty);
-        if (t == null || !t.isSolid()) {
-            return;
-        }
+        if (t == null || !t.isSolid()) return;
 
-        if (handler.getLevel().isFire(tx, ty)) {
-            return;
-        }
-
-        if (handler.getLevel().isFire(tx, ty) || handler.getLevel().isIce(tx, ty)) return;
+        if (handler.getLevel().isFire(tx, ty)) return;
 
         handler.getLevel().setFire(tx, ty, FIRE_TIMER);
 
@@ -504,19 +434,51 @@ public class Dante extends Creature {
 
     @Override
     public void Draw(Graphics g) {
-        g.setColor(Color.RED);
+        int screenX = (int) (x - handler.getGameCamera().getxOffset());
+        int screenY = (int) (y - handler.getGameCamera().getyOffset());
+
+        // ==========================================
+        // --- DESENAREA ANIMAȚIEI ---
+        // ==========================================
+        int imgWidth = 184;
+        int imgHeight = 137;
+
+        // Calculăm poziția ca imaginea să fie centrată pe hitbox-ul jucătorului
+        // (Aliniem la baza hitbox-ului ca picioarele să fie pe pământ)
+        int drawX = screenX + (DEFAULT_WIDTH - imgWidth) / 2;
+        int drawY = screenY + (DEFAULT_HEIGHT - imgHeight);
+
+        // Dacă personajul se uită în stânga (direction == 2), întoarcem imaginea (flip orizontal)
+        if (direction == 2) {
+            g.drawImage(animations[currentState].getCurrentFrame(),
+                    drawX + imgWidth, drawY, -imgWidth, imgHeight, null);
+        } else {
+            // Dacă se uită în dreapta, o desenăm normal
+            g.drawImage(animations[currentState].getCurrentFrame(),
+                    drawX, drawY, imgWidth, imgHeight, null);
+        }
+        // ==========================================
+
+        // Am păstrat desenarea hitbox-urilor cu un nivel de transparență
+        // ca să poți vedea și personajul, dar și coliziunile pentru debug.
+        // Poți șterge liniile de mai jos dacă vrei să vezi DOAR personajul:
+
+        if(handler.getDebugMode()){
+
+
+        g.setColor(new Color(255, 0, 0, 100)); // Roșu transparent
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
-                bounds.width, bounds.height);
+                bounds.width, bounds.height);}
 
-        if (currAction == ActionState.EDEN_SHIELD) {
-            g.setColor(new Color(0, 255, 0));
+        if (edenShieldActive) {
+            g.setColor(new Color(0, 255, 0, 100)); // Verde transparent
             g.fillRect((int) (edenShieldBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (edenShieldBounds.y - handler.getGameCamera().getyOffset()),
                     edenShieldBounds.width, edenShieldBounds.height);
         }
 
-        if (currAction == ActionState.ATTACKING && actionTimer <= currAction.active) {
+        if (isAttacking) {
             g.setColor(new Color(255, 255, 255, 150));
             g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
@@ -529,67 +491,21 @@ public class Dante extends Creature {
         }
     }
 
-    public void projectileHit(Projectile p) {
-        if (currAction == ActionState.EDEN_SHIELD && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
-            p.reflect(this);
-            currPoints += 3;
-            handler.getScoreMan().addReflect();
-            handler.getPadManager().rumble(0.6f, 0.6f, 150);
-            return;
-        }
-
-        if (hurt(p.getDamage())) {
-            float knockX = (p.getSpeedX() > 0) ? p.getKnockbackForce() * p.getKnockPercent() : -p.getKnockbackForce() * p.getKnockPercent();
-            applyKnockback(knockX, -5f);
-        }
-    }
+    @Override
+    public void onInteraction(Entity e) {}
 
     @Override
-    public boolean hurt(float dmg) {
-        if (invulnerabilityTimer > 0 || currAction == ActionState.EDEN_SHIELD) {
-            return false;
-        }
-
-        if(currRank != Ranks.D) {
-            currRank = Ranks.values()[currRank.ordinal() - 1];
-        }
-
-        currPoints = 0;
-        hp -= dmg * RESISTANCE;
-        invulnerabilityTimer = INVULN_TIME;
-        handler.getPadManager().rumble(0.8f, 0.8f, 200);
-
-        if (hp <= 0) {
-            die();
-        }
-        return true;
-    }
-
-    @Override
-    public void applyKnockback(float forceX, float forceY) {
-        super.applyKnockback(forceX, forceY);
-        onGround = false;
-    }
+    public void hurt(float dmg) {}
 
     @Override
     public void die() {
-        currMove = MovementState.DEAD;
-        currAction = ActionState.IDLE;
-        currRank = Ranks.D;
-        currPoints = 0;
+        if (isDying) return; // Ne asigurăm că nu moare de mai multe ori simultan
 
-        yMove = 0;
+        isDying = true;
         xMove = 0;
+        yMove = 0;
 
-        setHp(MAX_HP);
-        handler.getPadManager().rumble(0.8f, 0.8f, 300);
-        handler.getLevel().requestRespawn();
+        // Setăm timer-ul să aștepte exact cât durează animația
+        deathTimer = 90;
     }
-
-    public void setOnGround(boolean onGround) {
-        this.onGround = onGround;
-    }
-
-    @Override
-    public void onInteraction(Entity e) {}
 }

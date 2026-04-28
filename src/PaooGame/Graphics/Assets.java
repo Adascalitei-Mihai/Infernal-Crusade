@@ -9,39 +9,99 @@ import static PaooGame.World.Tile.NO_TILES;
  * Clasa care incarcă fiecare element grafic necesar jocului.
  */
 public class Assets {
+    // Meniuri
     public static BufferedImage startMenuBg;
     public static BufferedImage mainMenuBg;
     public static BufferedImage controlsMenuBg;
 
+    // Entități (Jucător și Inamici)
     public static HashMap<String, BufferedImage[]> Dante;
+    public static HashMap<String, BufferedImage[]> Skeleton;
+    public static HashMap<String, BufferedImage[]> Cyclops;
+    public static HashMap<String, BufferedImage[]> Ghoul;
+    public static HashMap<String, BufferedImage[]> Hunter;
+    public static HashMap<String, BufferedImage[]> Necromancer;
+    public static HashMap<String, BufferedImage[]> Boss;
+
+    // Elemente de hartă
     public static BufferedImage[] worldTiles = new BufferedImage[NO_TILES];
     public static BufferedImage[] bg;
     public static BufferedImage[] chkp;
     public static BufferedImage[] spear_opening, spear_closing;
+
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
      */
     public static void Init() {
         InitMenus();
         InitDante();
+        InitEnemies(); // Noua funcție pentru toți inamicii
 
+        // Obiecte interactive (Sulițe)
         SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
         spear_closing = new BufferedImage[]{
-                spearSheet.crop(0, 0),
-                spearSheet.crop(1, 0),
-                spearSheet.crop(2,0),
-                spearSheet.crop(5, 0),
+                spearSheet.crop(0, 0), spearSheet.crop(1, 0),
+                spearSheet.crop(2, 0), spearSheet.crop(5, 0),
                 spearSheet.crop(6, 0)
         };
         spear_opening = new BufferedImage[]{
-                spearSheet.crop(6, 0),
-                spearSheet.crop(5, 0),
-                spearSheet.crop(2,0),
-                spearSheet.crop(1, 0),
+                spearSheet.crop(6, 0), spearSheet.crop(5, 0),
+                spearSheet.crop(2, 0), spearSheet.crop(1, 0),
                 spearSheet.crop(0, 0)
         };
 
         InitL1();
+    }
+
+    /**
+     * Încarcă animațiile pentru toți inamicii din cele 3 niveluri.
+     */
+    public static void InitEnemies() {
+        // NIVEL 1 - Skeleton
+        Skeleton = new HashMap<>();
+        Skeleton.put("Idle",   loadAnim("L1-Skeleton", "Skeleton_01_White_Idle.png", 8));
+        Skeleton.put("Walk",   loadAnim("L1-Skeleton", "Skeleton_01_White_Walk.png", 10));
+        Skeleton.put("Attack1",loadAnim("L1-Skeleton", "Skeleton_01_White_Attack1.png", 10));
+        Skeleton.put("Attack2",loadAnim("L1-Skeleton", "Skeleton_01_White_Attack2.png", 9));
+        Skeleton.put("Die",    loadAnim("L1-Skeleton", "Skeleton_01_White_Die.png", 13));
+        Skeleton.put("Hurt",   loadAnim("L1-Skeleton", "Skeleton_01_White_Hurt.png", 5));
+
+    }
+
+    public static void InitDante() {
+        Dante = new HashMap<>();
+        Dante.put("Idle", loadDanteAnim("Idle.png", 6));
+        Dante.put("Run", loadDanteAnim("Run.png", 8));
+        Dante.put("Jump", loadDanteAnim("Jump.png", 2));
+        Dante.put("Fall", loadDanteAnim("Fall.png", 2));
+        Dante.put("Hit", loadDanteAnim("Hit.png", 3));
+        Dante.put("Death", loadDanteAnim("Death.png", 10));
+        Dante.put("Attack1", loadDanteAnim("Attack1.png", 4));
+        Dante.put("Attack2", loadDanteAnim("Attack2.png", 4));
+        Dante.put("Ice_Morph", loadDanteAnim("Ice_Morph.png", 3));
+        Dante.put("Eden_Shield", loadDanteAnim("Eden_Shield.png", 7));
+        Dante.put("Fiery_Judgement", loadDanteAnim("Fiery_Judgement.png", 3));
+    }
+
+    /**
+     * Metodă generică pentru a încărca orice animație de entitate (Inamici).
+     */
+    private static BufferedImage[] loadAnim(String folder, String fileName, int frameCount) {
+        String path = "/textures/Entities/" + folder + "/" + fileName;
+        BufferedImage img = ImageLoader.LoadImage(path);
+
+        if (img == null) {
+            System.err.println("EROARE: Nu s-a putut încărca imaginea: " + path);
+            return new BufferedImage[0];   // returnăm array gol ca să nu crape
+        }
+
+        return new SpriteSheet(img, 96, img.getHeight()).sliceRow(0, frameCount);
+    }
+
+    private static BufferedImage[] loadDanteAnim(String fileName, int frameCount) {
+        BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
+        if (img == null) return null;
+        return new SpriteSheet(img, 184, img.getHeight()).sliceRow(0, frameCount);
     }
 
     public static void InitL1() {
@@ -53,16 +113,16 @@ public class Assets {
                 ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer3.png"),
                 ImageLoader.LoadImage("/textures/Maps/L1/fundal_arena.png")
         };
-        
+
         SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
         fillTiles(snowSheet, 1, 11, 121);
-        
+
         SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
         fillTiles(decoSheet, 122, 48, 2304);
-        
+
         SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
         fillTiles(penguinSheet, 2426, 4, 32);
-        
+
         SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
         fillTiles(allSheet, 2458, 64, 2176);
 
@@ -75,9 +135,6 @@ public class Assets {
         };
     }
 
-    /**
-     * Metodă utilitară pentru a umple vectorul worldTiles cu sub-imagini
-     */
     private static void fillTiles(SpriteSheet sheet, int startID, int columns, int totalCount) {
         int id = startID;
         for (int i = 0; i < totalCount; i++) {
@@ -87,35 +144,10 @@ public class Assets {
             id++;
         }
     }
-    /**
-     * Functia care initializeaza meniurile utilizate.
-     */
+
     public static void InitMenus() {
         startMenuBg = ImageLoader.LoadImage("/textures/UI/Start-Menu.png");
         mainMenuBg = ImageLoader.LoadImage("/textures/UI/Main-Menu.png");
         controlsMenuBg = ImageLoader.LoadImage("/textures/UI/Controls-Menu.png");
-    }
-    public static void InitDante() {
-        Dante = new HashMap<>();
-
-        Dante.put("Idle", loadDanteAnim("Idle.png", 6, 32));
-        Dante.put("Run", loadDanteAnim("Run.png", 8, 32));
-        Dante.put("Jump", loadDanteAnim("Jump.png", 2, 32));
-        Dante.put("Fall", loadDanteAnim("Fall.png", 2, 32));
-        Dante.put("Attack1", loadDanteAnim("Attack1.png", 4, 32));
-        Dante.put("Attack2", loadDanteAnim("Attack2.png", 4, 32));
-        Dante.put("Hit", loadDanteAnim("Hit.png", 3, 32));
-        Dante.put("Death", loadDanteAnim("Death.png", 10,32));
-
-        Dante.put("Ice_Morph", loadDanteAnim("Ice_Morph.png", 3, 192));
-        Dante.put("Eden_Shield", loadDanteAnim("Eden_Shield.png", 7, 192));
-        Dante.put("Fiery_Judgement", loadDanteAnim("Fiery_Judgement.png", 3,192));
-    }
-
-    private static BufferedImage[] loadDanteAnim(String fileName, int frameCount, int width) {
-        BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
-        if (img == null) return null;
-
-        return new SpriteSheet(img, width, img.getHeight()).sliceRow(0, frameCount);
     }
 }
