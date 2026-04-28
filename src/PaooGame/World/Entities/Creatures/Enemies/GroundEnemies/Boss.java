@@ -41,7 +41,7 @@ public class Boss extends GroundEnemy {
     private final int BASE_CREATURE_COUNT;
 
     private static final float[][] SUMMON_COORDS = {
-            {5000, 800}, {5500, 800}
+            {6020, 150}, {4532, 150}
     };
     public boolean awaitingSummon;
 
