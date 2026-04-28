@@ -16,6 +16,7 @@ public class Dante extends Creature {
     public static final Rectangle BOUNDS = new Rectangle(
             4, 1, DEFAULT_WIDTH - 8, DEFAULT_HEIGHT - 2
     );
+
     public enum Direction {
         RIGHT,
         UP,
@@ -41,6 +42,16 @@ public class Dante extends Creature {
     private boolean isJumping;
     private boolean onGround = false;
 
+    public enum MovementState {
+        IDLE,
+        RUNNING,
+        JUMPING,
+        FALLING,
+        HURT,
+        DEAD
+    }
+    private MovementState currMove = MovementState.IDLE;
+
     public enum ActionState {
         IDLE(0, 0, 0),
         ATTACKING(5, 7, 40),
@@ -59,7 +70,7 @@ public class Dante extends Creature {
         }
         public int getDuration() { return windup + active; }
     }
-    private ActionState currState = ActionState.IDLE;
+    private ActionState currAction = ActionState.IDLE;
     private int actionTimer = 0;
     private final int[] cooldowns = new int[ActionState.values().length];
 
@@ -133,6 +144,7 @@ public class Dante extends Creature {
             }
         }
     }
+
     private void updateRank() {
         if(currRank != Ranks.S && currPoints >= currRank.points) {
             currPoints -= currRank.points;
@@ -145,12 +157,14 @@ public class Dante extends Creature {
         attackDmg = (int) (BASE_ATTACK_DMG * attack_modifier);
         cd = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_DIFF_CD_PERCENT * cd_modifier);
     }
+
     private void applyGravity() {
         yMove += GRAVITY;
         if (y + DEFAULT_HEIGHT >= (handler.getLevel().getHeight() - 1) * TILE_SIZE) {
             die();
         }
     }
+
     private void getDir() {
         if (handler.getInputManager().up) {
             currDirection = Direction.UP;
@@ -162,6 +176,7 @@ public class Dante extends Creature {
             currDirection = Direction.RIGHT;
         }
     }
+
     private void updateCooldowns() {
         for (int i = 0; i < cooldowns.length; i++) {
             if (cooldowns[i] > 0) {
@@ -172,82 +187,174 @@ public class Dante extends Creature {
 
     @Override
     public void Update() {
+        if (currMove == MovementState.DEAD) {
+            return;
+        }
+
+        super.Update();
+
         updateHealth();
         updateRank();
         applyGravity();
         getDir();
 
         updateCooldowns();
+        updateMovementState();
 
-        if (knockbackTimer > 0) {
-            currState = ActionState.IDLE;
+        if (currMove != MovementState.HURT) {
+            updateActionState();
+        }
+        else {
+            currAction = ActionState.IDLE;
             actionTimer = 0;
-            move();
+        }
+    }
+
+    private void updateMovementState() {
+        if (knockbackTimer > 0) {
+            currMove = MovementState.HURT;
+            xMove *= FRICTION;
+            moveX();
+            moveY();
             return;
         }
 
-        switch (currState) {
+        if (!onGround) {
+            if (yMove < 0) {
+                currMove = MovementState.JUMPING;
+            }
+            else {
+                currMove = MovementState.FALLING;
+            }
+        }
+        else if (handler.getInputManager().right || handler.getInputManager().left) {
+            currMove = MovementState.RUNNING;
+        }
+        else {
+            currMove = MovementState.IDLE;
+        }
+
+        handleHorizontalMovement();
+        handleJumpLogic();
+
+        if (currAction == ActionState.ATTACKING && onGround) {
+            xMove = 0;
+        }
+
+        moveX();
+        moveY();
+    }
+
+    private void handleHorizontalMovement() {
+        if (!isOnIce()) {
+            if (handler.getInputManager().right) {
+                xMove = SPEED;
+            }
+            else if (handler.getInputManager().left) {
+                xMove = -SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+        else {
+            if (handler.getInputManager().right) {
+                xMove += ACCELERATION;
+                if (xMove < SPEED) xMove = SPEED;
+                if (xMove > MAX_SPEED) xMove = MAX_SPEED;
+            }
+            else if (handler.getInputManager().left) {
+                xMove -= ACCELERATION;
+                if (xMove > -SPEED) xMove = -SPEED;
+                if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
+            }
+            else {
+                xMove *= FRICTION;
+            }
+        }
+    }
+
+    private void handleJumpLogic() {
+        if (handler.getInputManager().space && onGround) {
+            yMove = JUMP_IMPULSE;
+            onGround = false;
+            isJumping = true;
+            jumpTimer = MAX_JUMP_TIME;
+        }
+
+        if (handler.getInputManager().space && isJumping) {
+            if (jumpTimer > 0) {
+                yMove += JUMP_ADDAGE;
+                --jumpTimer;
+            }
+            else {
+                isJumping = false;
+            }
+        }
+
+        if (!handler.getInputManager().space) {
+            isJumping = false;
+            if (yMove < 0) {
+                yMove *= GRAVITY;
+            }
+        }
+    }
+
+    private void checkInputsForNewAction() {
+        if (handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
+            currAction = ActionState.EDEN_SHIELD;
+            actionTimer = EDEN_SHIELD_DURATION;
+            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
+            return;
+        }
+
+        if (handler.getInputManager().j && cooldowns[ActionState.ATTACKING.ordinal()] <= 0) {
+            currAction = ActionState.ATTACKING;
+            actionTimer = currAction.getDuration();
+            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
+            handler.getPadManager().rumble(0.0f, 0.5f, 100);
+            return;
+        }
+
+        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0) {
+            currAction = ActionState.FIERY_JUDGEMENT;
+            actionTimer = currAction.getDuration();
+            cooldowns[currAction.ordinal()] = cd;
+            handler.getPadManager().rumble(0.8f, 0.8f, 200);
+            return;
+        }
+
+        if (handler.getInputManager().shift && cooldowns[ActionState.ICE_MORPH.ordinal()] <= 0) {
+            currAction = ActionState.ICE_MORPH;
+            actionTimer = currAction.getDuration();
+            cooldowns[currAction.ordinal()] = currAction.baseCooldown;
+        }
+    }
+
+    private void updateActionState() {
+        switch (currAction) {
             case IDLE:
-                move();
-                jump();
                 checkInputsForNewAction();
                 break;
-
             case ATTACKING:
-                move();
                 handleAttackState();
                 break;
-
             case ICE_MORPH:
-                move();
                 handleIceMorphState();
                 break;
-
             case EDEN_SHIELD:
                 handleEdenShieldState();
                 break;
-
             case FIERY_JUDGEMENT:
                 handleFieryJudgementState();
                 break;
         }
     }
 
-    private void checkInputsForNewAction() {
-        if (handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
-            currState = ActionState.EDEN_SHIELD;
-            actionTimer = EDEN_SHIELD_DURATION;
-            cooldowns[currState.ordinal()] = currState.baseCooldown;
-            return;
-        }
-
-        if (handler.getInputManager().j && cooldowns[ActionState.ATTACKING.ordinal()] <= 0) {
-            currState = ActionState.ATTACKING;
-            actionTimer = currState.getDuration();
-            cooldowns[currState.ordinal()] = currState.baseCooldown;
-            handler.getPadManager().rumble(0.0f, 0.5f, 100);
-            return;
-        }
-
-        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0) {
-            currState = ActionState.FIERY_JUDGEMENT;
-            actionTimer = currState.getDuration();
-            cooldowns[currState.ordinal()] = cd;
-            handler.getPadManager().rumble(0.8f, 0.8f, 200);
-            return;
-        }
-
-        if (handler.getInputManager().shift && cooldowns[ActionState.ICE_MORPH.ordinal()] <= 0) {
-            currState = ActionState.ICE_MORPH;
-            actionTimer = currState.getDuration();
-            cooldowns[currState.ordinal()] = currState.baseCooldown;
-        }
-    }
-
     private void handleAttackState() {
         actionTimer--;
 
-        if (actionTimer <= currState.active) {
+        if (actionTimer <= currAction.active) {
             int vWidth = (int) (bounds.width * 1.5f);
             int vHeight = TILE_SIZE * 3;
             int hWidth = TILE_SIZE * 4;
@@ -294,13 +401,14 @@ public class Dante extends Creature {
         }
 
         if (actionTimer <= 0) {
-            currState = ActionState.IDLE;
+            currAction = ActionState.IDLE;
         }
     }
+
     private void handleIceMorphState() {
         actionTimer--;
 
-        if (actionTimer == currState.active) {
+        if (actionTimer <= currAction.active && actionTimer > 0) {
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
@@ -321,13 +429,19 @@ public class Dante extends Creature {
         }
 
         if (actionTimer <= 0) {
-            currState = ActionState.IDLE;
+            if (handler.getInputManager().shift) {
+                actionTimer = currAction.getDuration();
+            }
+            else {
+                currAction = ActionState.IDLE;
+            }
         }
     }
+
     private void handleEdenShieldState() {
         actionTimer--;
 
-        if (actionTimer <= currState.active) {
+        if (actionTimer <= currAction.active) {
             edenShieldBounds.x = (int) (x + bounds.x - EDEN_SHIELD_PADDING);
             edenShieldBounds.y = (int) (y + bounds.y - EDEN_SHIELD_PADDING);
             edenShieldBounds.width = bounds.width + (EDEN_SHIELD_PADDING * 2);
@@ -335,13 +449,14 @@ public class Dante extends Creature {
         }
 
         if (actionTimer <= 0) {
-            currState = ActionState.IDLE;
+            currAction = ActionState.IDLE;
         }
     }
+
     private void handleFieryJudgementState() {
         actionTimer--;
 
-        if (actionTimer == currState.active) {
+        if (actionTimer == currAction.active) {
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
@@ -349,7 +464,7 @@ public class Dante extends Creature {
         }
 
         if (actionTimer <= 0) {
-            currState = ActionState.IDLE;
+            currAction = ActionState.IDLE;
         }
     }
 
@@ -357,67 +472,6 @@ public class Dante extends Creature {
         int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
         int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
         return handler.getLevel().isIce(tx, ty);
-    }
-
-    @Override
-    public void moveX() {
-        if (knockbackTimer > 0) {
-            knockbackTimer--;
-            xMove *= FRICTION;
-            super.moveX();
-            return;
-        }
-
-        if (!isOnIce()) {
-            if (handler.getInputManager().right) {
-                xMove = SPEED;
-            }
-            else if (handler.getInputManager().left) {
-                xMove = -SPEED;
-            }
-            else {
-                xMove *= FRICTION;
-            }
-        }
-        else {
-            if (handler.getInputManager().right) {
-                xMove += ACCELERATION;
-                if (xMove < SPEED) xMove = SPEED;
-                if (xMove > MAX_SPEED) xMove = MAX_SPEED;
-            }
-            else if (handler.getInputManager().left) {
-                xMove -= ACCELERATION;
-                if (xMove > -SPEED) xMove = -SPEED;
-                if (xMove < -MAX_SPEED) xMove = -MAX_SPEED;
-            }
-            else {
-                xMove *= FRICTION;
-            }
-        }
-
-        super.moveX();
-    }
-    private void jump() {
-        if(handler.getInputManager().space && onGround) {
-            yMove = JUMP_IMPULSE;
-            onGround = false;
-            isJumping = true;
-            jumpTimer = 0;
-        }
-
-        if (handler.getInputManager().space && isJumping) {
-            if (jumpTimer < MAX_JUMP_TIME) {
-                yMove += JUMP_ADDAGE;
-                jumpTimer++;
-            }
-            else {
-                isJumping = false;
-            }
-        }
-
-        if (!handler.getInputManager().space) {
-            isJumping = false;
-        }
     }
 
     private void spreadFire(int tx, int ty, int remainingSteps) {
@@ -430,7 +484,9 @@ public class Dante extends Creature {
         }
 
         Tile t = handler.getLevel().getTile(tx, ty);
-        if (t == null || !t.isSolid()) return;
+        if (t == null || !t.isSolid()) {
+            return;
+        }
 
         if (handler.getLevel().isFire(tx, ty)) {
             return;
@@ -453,14 +509,14 @@ public class Dante extends Creature {
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                 bounds.width, bounds.height);
 
-        if (currState == ActionState.EDEN_SHIELD) {
+        if (currAction == ActionState.EDEN_SHIELD) {
             g.setColor(new Color(0, 255, 0));
             g.fillRect((int) (edenShieldBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (edenShieldBounds.y - handler.getGameCamera().getyOffset()),
                     edenShieldBounds.width, edenShieldBounds.height);
         }
 
-        if (currState == ActionState.ATTACKING && actionTimer <= currState.active) {
+        if (currAction == ActionState.ATTACKING && actionTimer <= currAction.active) {
             g.setColor(new Color(255, 255, 255, 150));
             g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
@@ -474,7 +530,7 @@ public class Dante extends Creature {
     }
 
     public void projectileHit(Projectile p) {
-        if (currState == ActionState.EDEN_SHIELD && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
+        if (currAction == ActionState.EDEN_SHIELD && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
             p.reflect(this);
             currPoints += 3;
             handler.getScoreMan().addReflect();
@@ -490,7 +546,7 @@ public class Dante extends Creature {
 
     @Override
     public boolean hurt(float dmg) {
-        if (invulnerabilityTimer > 0 || currState == ActionState.EDEN_SHIELD) {
+        if (invulnerabilityTimer > 0 || currAction == ActionState.EDEN_SHIELD) {
             return false;
         }
 
@@ -509,7 +565,6 @@ public class Dante extends Creature {
         return true;
     }
 
-
     @Override
     public void applyKnockback(float forceX, float forceY) {
         super.applyKnockback(forceX, forceY);
@@ -518,6 +573,8 @@ public class Dante extends Creature {
 
     @Override
     public void die() {
+        currMove = MovementState.DEAD;
+        currAction = ActionState.IDLE;
         currRank = Ranks.D;
         currPoints = 0;
 
