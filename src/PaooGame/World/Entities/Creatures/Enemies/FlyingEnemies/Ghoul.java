@@ -26,7 +26,7 @@ public class Ghoul extends FlyingEnemy {
     public static final float MAX_HP = 100;
     public static final float KNOCK_PERCENT = 1f;
 
-    private static final int ATTACK_COOLDOWN = 180;
+    private static final int ATTACK_COOLDOWN = 100;
     private static final int ATTACK_DURATION = 15;
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
@@ -72,10 +72,6 @@ public class Ghoul extends FlyingEnemy {
                 isAttacking = false;
                 pauseTimer = PAUSE_DURATION;
             }
-        }
-
-        if (isWindingUp || isAttacking) {
-            move();
         }
     }
 

@@ -65,9 +65,6 @@ public abstract class Enemy extends Creature {
 
         checkEnvironmentDamage();
         if (knockbackTimer > 0) {
-            isAttacking = false;
-            isWindingUp = false;
-
             xMove *= 0.8f;
 
             if (gravity == 0f) {
@@ -85,15 +82,12 @@ public abstract class Enemy extends Creature {
 
             xMove = 0;
 
-            if (gravity != 0f) {
+            if (gravity == 0f) {
                 yMove *= 0.8f;
             }
             else {
                 yMove += gravity;
             }
-
-            isAttacking = false;
-            isWindingUp = false;
 
             move();
             return;
@@ -101,21 +95,16 @@ public abstract class Enemy extends Creature {
 
         makeDecision();
 
-        switch (currState) {
-            case PATROLLING:
-            case CHASING:
-                move();
-                break;
-            case ATTACKING:
-                attack();
-                break;
+        if (currState == EnemyState.ATTACKING) {
+            xMove = 0;
+            attack();
         }
+        move();
     }
 
     public boolean checkHorizontalCollision() {
         int tx = (int) (x + xMove + (xMove > 0 ? bounds.x + bounds.width : bounds.x)) / TILE_SIZE;
-        return collisionWithTile(tx, (int) (y + bounds.y) / TILE_SIZE) ||
-                collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / TILE_SIZE);
+        return isSolidOnEdge(tx, true);
     }
 
     @Override

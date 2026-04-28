@@ -208,32 +208,6 @@ public class Dante extends Creature {
 
         super.moveX();
     }
-    @Override
-    public void moveY() {
-        if (yMove < 0) {
-            int ty = (int) (y + yMove + bounds.y) / TILE_SIZE;
-            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
-                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
-                y += yMove;
-            }
-            else {
-                y = ty * TILE_SIZE + TILE_SIZE - bounds.y;
-                yMove = 0;
-            }
-        }
-        else if (yMove > 0) {
-            int ty = (int) (y + yMove + bounds.y + bounds.height) / TILE_SIZE;
-            if (!collisionWithTile((int) (x + bounds.x) / TILE_SIZE, ty) &&
-                    !collisionWithTile((int) (x + bounds.x + bounds.width) / TILE_SIZE, ty)) {
-                y += yMove;
-            }
-            else {
-                y = ty * TILE_SIZE - bounds.y - bounds.height - 1;
-                onGround = true;
-                yMove = 0;
-            }
-        }
-    }
     private void jump() {
         if(handler.getInputManager().space && onGround) {
             yMove = JUMP_IMPULSE;
@@ -497,5 +471,9 @@ public class Dante extends Creature {
         setHp(MAX_HP);
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
         handler.getLevel().requestRespawn();
+    }
+
+    public void setOnGround(boolean onGround) {
+        this.onGround = onGround;
     }
 }

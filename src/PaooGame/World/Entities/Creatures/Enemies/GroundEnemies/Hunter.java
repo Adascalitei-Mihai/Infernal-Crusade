@@ -35,7 +35,7 @@ public class Hunter extends GroundEnemy {
 
     public Hunter(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP, KNOCK_PERCENT);
-        this.bounds = BOUNDS;
+        this.bounds = new Rectangle(BOUNDS);
 
         this.baseSpeed = BASE_SPEED;
         this.aggroSpeed = AGGRO_SPEED;
@@ -67,11 +67,8 @@ public class Hunter extends GroundEnemy {
             attackActiveTimer--;
             if (attackActiveTimer <= 0) {
                 isAttacking = false;
+                pauseTimer = PAUSE_DURATION;
             }
-        }
-
-        if (isWindingUp || isAttacking) {
-            xMove = 0;
         }
     }
 

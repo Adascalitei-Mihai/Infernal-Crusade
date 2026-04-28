@@ -11,7 +11,7 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public class Screech extends Projectile {
     private final static int DEFAULT_WIDTH = TILE_SIZE;
     private final static int DEFAULT_HEIGHT = TILE_SIZE;
-    private final static float SPEED = 6f;
+    private final static float SPEED = 10f;
     private final static float DMG = 40f;
     private final static float KNOCK_PERCENT = 1.5f;
 
