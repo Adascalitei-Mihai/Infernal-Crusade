@@ -4,8 +4,11 @@ import PaooGame.Database.DatabaseManager;
 
 import PaooGame.Game.Game;
 import PaooGame.Game.GameCamera;
+import PaooGame.Game.Input.GamepadManager;
+import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
+import PaooGame.Score.ScoreManager;
 import PaooGame.States.StartMenu;
 import PaooGame.States.State;
 import PaooGame.World.Entities.Creatures.Dante;
@@ -23,13 +26,14 @@ public class Handler {
     private Game game;
     private Level level;
     private DatabaseManager dbMan;
+    private ScoreManager scoreMan;
 
     private int playerID;
     private String playerName;
     private int currLevel, currChkp;
 
-    private long startTime;
-    private int difficulty;
+    public enum Difficulty { EASY, NORMAL, HARD }
+    private Difficulty currDifficulty;
 
     private int bestScore;
     private int globalScore;
@@ -38,9 +42,10 @@ public class Handler {
         this.game = game;
 
         dbMan = new DatabaseManager();
-        dbMan.connect("jdbc:sqlite:database/game.db");
+        dbMan.connect("jdbc:sqlite:res/database/game.db");
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
 
+        scoreMan = new ScoreManager(this);
         setState(new StartMenu(this));
     }
 
@@ -49,7 +54,10 @@ public class Handler {
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
     }
     public void updateCurrChkp(int newChkp) {
-        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, 100 * difficulty);
+        int score = scoreMan.calculateFinalScore();
+        scoreMan.resetCheckpointTimer();
+
+        dbMan.saveScore(playerID, currLevel, currChkp, newChkp, score);
         currChkp = newChkp;
 
         dbMan.updatePlayerCheckpoint(playerID, currChkp);
@@ -78,9 +86,22 @@ public class Handler {
         game.getWnd().getCanvas().setCursor(c);
     }
 
+    public ScoreManager getScoreMan() {
+        return scoreMan;
+    }
+
+    public void setScoreMan(ScoreManager scoreMan) {
+        this.scoreMan = scoreMan;
+    }
+
     public KeyManager getKeyManager() { return game.getKeyMan(); }
+    public GamepadManager getPadManager() { return game.getPadMan(); }
+    public InputManager getInputManager() { return game.getInputMan(); }
+    public void setInput(InputManager inputMan) { game.setInput(inputMan); }
     public MouseManager getMouseManager() { return game.getMouseMan(); }
     public GameCamera getGameCamera() { return game.getGameCamera(); }
+    public int getCreatureCount() { return level.getEntityManager().getCreatureCount(); }
+    public void addEntity(Entity e) { level.getEntityManager().addEntity(e); }
 
     public int getWidth() { return game.getWidth(); }
     public int getHeight() { return game.getHeight(); }
@@ -149,21 +170,12 @@ public class Handler {
         this.currChkp = currChkp;
     }
 
-
-    public long getStartTime() {
-        return startTime;
+    public Difficulty getDifficulty() {
+        return currDifficulty;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public int getDifficulty() {
-        return difficulty;
-    }
-
-    public void setDifficulty(int difficulty) {
-        this.difficulty = difficulty;
+    public void setDifficulty(Difficulty difficulty) {
+        currDifficulty = difficulty;
     }
 
     public int getBestScore() {

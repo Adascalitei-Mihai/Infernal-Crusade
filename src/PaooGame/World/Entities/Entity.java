@@ -51,6 +51,13 @@ public abstract class Entity {
         return false;
     }
 
+    public float[] getCenter() {
+        return new float[] {
+                x + bounds.x + (float) bounds.width / 2,
+                y + bounds.y + (float) bounds.height / 2
+        };
+    }
+
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }
     public float getY() { return y; }

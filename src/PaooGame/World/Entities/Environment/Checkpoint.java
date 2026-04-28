@@ -8,7 +8,7 @@ import PaooGame.Graphics.Assets;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Checkpoint extends Entity {
     private final Animation flutter;
@@ -54,7 +54,7 @@ public class Checkpoint extends Entity {
     public void onInteraction(Entity e) {
         if(e instanceof Dante && !activated) {
             activated = true;
-            if(id != handler.getCurrChkp()) {
+            if(id > handler.getCurrChkp()) {
                 handler.updateCurrChkp(id);
             }
         }

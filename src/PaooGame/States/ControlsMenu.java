@@ -50,7 +50,7 @@ public class ControlsMenu extends State {
         }
 
         if(handler.getKeyManager().escape) {
-            handler.getKeyManager().resetKeys();
+            handler.getKeyManager().reset();
             handler.setState(new MainMenu(handler, "New Game"));
         }
     }

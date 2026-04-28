@@ -1,5 +1,7 @@
 package PaooGame.Game;
 
+import PaooGame.Game.Input.GamepadManager;
+import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.Graphics.Assets;
@@ -22,7 +24,9 @@ public class Game implements Runnable
     private BufferStrategy bs;
     private Graphics g;
 
+    private InputManager inputMan;
     private KeyManager keyMan;
+    private GamepadManager padMan;
     private MouseManager mouseMan;
 
     private Handler handler;
@@ -58,7 +62,10 @@ public class Game implements Runnable
 
         gameCamera = new GameCamera(handler, 0, 0);
         keyMan = new KeyManager(handler);
+        padMan = new GamepadManager(handler);
         mouseMan = new MouseManager(handler);
+
+        inputMan = keyMan;
 
         wnd.getCanvas().addKeyListener(keyMan); // 2
         wnd.getCanvas().addMouseListener(mouseMan);
@@ -138,6 +145,10 @@ public class Game implements Runnable
             wnd.getFrame().dispose();
         }
 
+        if(padMan != null) {
+            padMan.terminate();
+        }
+
         handler.StopGame();
     }
 
@@ -146,6 +157,7 @@ public class Game implements Runnable
      */
     private void Update() {
         keyMan.Update();
+        padMan.Update();
         handler.Update();
     }
 
@@ -185,6 +197,9 @@ public class Game implements Runnable
      */
     public KeyManager getKeyMan() { return keyMan; }
 
+    public GamepadManager getPadMan() { return padMan; }
+    public InputManager getInputMan() { return inputMan; }
+    public void setInput(InputManager inputMan) { this.inputMan = inputMan; }
     /**
      * Getter pentru managerul de mouse.
      * @return Managerul de mouse actual.
