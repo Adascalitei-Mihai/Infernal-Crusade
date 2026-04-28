@@ -28,9 +28,15 @@ public class Dante extends Creature {
     }
     private Ranks currRank = Ranks.D;
     private int currPoints;
+    private static final float RANK_GAIN_DMG = 0.2f;
+    private static final float RANK_GAIN_CD = 0.05f;
 
     public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 4 * TILE_SIZE;
+    public static final Rectangle BOUNDS = new Rectangle(
+            4, 1, DEFAULT_WIDTH - 8, DEFAULT_HEIGHT - 2
+    );
+
     private static final float MAX_HP = 1000;
     private static final float BASE_REGEN = 8f / 60;
     private final float REGEN_PERCENT;
@@ -63,6 +69,7 @@ public class Dante extends Creature {
     public static final int FIERY_JUDGEMENT_DMG = 50;
 
     private static final int EDEN_SHIELD_COOLDOWN = 300;
+    private static final int EDEN_SHIELD_PADDING = TILE_SIZE;
     private final int EDEN_SHIELD_DURATION;
     private boolean edenShieldActive = false;
     private int edenShieldTimer = 0;
@@ -99,13 +106,7 @@ public class Dante extends Creature {
             default -> 1f;
         };
 
-        bounds.x = 4;
-        bounds.width = DEFAULT_WIDTH - 8;
-
-        bounds.y = 1;
-        bounds.height = DEFAULT_HEIGHT - 2;
-
-        hp = MAX_HP;
+        this.bounds = BOUNDS;
     }
 
     @Override
@@ -139,8 +140,8 @@ public class Dante extends Creature {
             currRank = Ranks.values()[currRank.ordinal() + 1];
         }
 
-        float attack_modifier = 1f + currRank.ordinal() * 0.2f;
-        float cd_modifier = 1f - currRank.ordinal() * 0.05f;
+        float attack_modifier = 1f + currRank.ordinal() * RANK_GAIN_DMG;
+        float cd_modifier = 1f - currRank.ordinal() * RANK_GAIN_CD;
 
         attackDmg = (int) (BASE_ATTACK_DMG * attack_modifier);
         cd = (int) (FIERY_JUDGEMENT_BASE_CD * FIERY_JUDGEMENT_DIFF_CD_PERCENT * cd_modifier);
@@ -361,11 +362,10 @@ public class Dante extends Creature {
         if (edenShieldActive) {
             edenActiveTimer--;
 
-            int padding = 30;
-            edenShieldBounds.x = (int) (x + bounds.x - padding);
-            edenShieldBounds.y = (int) (y + bounds.y - padding);
-            edenShieldBounds.width = bounds.width + (padding * 2);
-            edenShieldBounds.height = bounds.height + (padding * 2);
+            edenShieldBounds.x = (int) (x + bounds.x - Dante.EDEN_SHIELD_PADDING);
+            edenShieldBounds.y = (int) (y + bounds.y - Dante.EDEN_SHIELD_PADDING);
+            edenShieldBounds.width = bounds.width + (Dante.EDEN_SHIELD_PADDING * 2);
+            edenShieldBounds.height = bounds.height + (Dante.EDEN_SHIELD_PADDING * 2);
 
             if (edenActiveTimer <= 0) {
                 edenShieldActive = false;

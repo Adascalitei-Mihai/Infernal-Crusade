@@ -66,10 +66,4 @@ public abstract class GroundEnemy extends Enemy {
             xMove = 0;
         }
     }
-
-    private boolean checkHorizontalCollision() {
-        int tx = (int) (x + xMove + (xMove > 0 ? bounds.x + bounds.width : bounds.x)) / TILE_SIZE;
-        return collisionWithTile(tx, (int) (y + bounds.y) / TILE_SIZE) ||
-                collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / TILE_SIZE);
-    }
 }

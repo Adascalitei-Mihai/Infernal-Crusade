@@ -2,6 +2,7 @@ package PaooGame.World.Levels;
 
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Hunter;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
@@ -75,6 +76,7 @@ public class Level1 extends Level {
         entityManager.addEntity(new Cyclops(handler, 2000, 400));
         entityManager.addEntity(new Hunter(handler, 3000, 800));
         entityManager.addEntity(new Necromancer(handler, 4000, 800));
+        entityManager.addEntity(new Ghoul(handler, 800, 200));
         // entityManager.addEntity(new Skeleton(handler, 1000, 800));
         // entityManager.addEntity(factory.createMinorEnemy(4000, 800));
         // entityManager.addEntity(factory.createMajorEnemy(5000, 800));

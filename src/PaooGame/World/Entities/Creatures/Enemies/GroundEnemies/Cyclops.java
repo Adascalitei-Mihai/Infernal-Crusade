@@ -12,6 +12,16 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public class Cyclops extends GroundEnemy {
     public static final int DEFAULT_WIDTH = 3 * TILE_SIZE;
     public static final int DEFAULT_HEIGHT = 6 * TILE_SIZE;
+    public static final Rectangle BOUNDS = new Rectangle(
+            -2, 1, DEFAULT_WIDTH + 2, DEFAULT_HEIGHT - 2
+    );
+
+    public static final float BASE_SPEED = 1f;
+    public static final float AGGRO_SPEED = 2f;
+    public static final float ATTACK_RANGE = TILE_SIZE * 7;
+    public static final float AGGRO_RANGE = TILE_SIZE * 20;
+    public static final float X_RANGE = TILE_SIZE * 6;
+
     public static final float MAX_HP = 500f;
     public static final float KNOCK_PERCENT = 0.2f;
 
@@ -26,17 +36,13 @@ public class Cyclops extends GroundEnemy {
 
     public Cyclops(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP, KNOCK_PERCENT);
+        this.bounds = BOUNDS;
 
-        bounds.x = 4;
-        bounds.width = DEFAULT_WIDTH - 8;
-        bounds.y = 1;
-        bounds.height = DEFAULT_HEIGHT - 2;
-
-        this.baseSpeed = 1.0f;
-        this.aggroSpeed = 2.0f;
-        this.attackRange = TILE_SIZE * 7;
-        this.aggroRange = TILE_SIZE * 20;
-        this.patrolRange = new float[]{x - Tile.TILE_SIZE * 6, x + Tile.TILE_SIZE * 6};
+        this.baseSpeed = BASE_SPEED;
+        this.aggroSpeed = AGGRO_SPEED;
+        this.attackRange = ATTACK_RANGE;
+        this.aggroRange = AGGRO_RANGE;
+        this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
     }
 
     @Override
@@ -67,11 +73,6 @@ public class Cyclops extends GroundEnemy {
 
         if (isWindingUp || isAttacking) {
             xMove = 0;
-        }
-
-        move();
-        if (currState == EnemyState.ATTACKING) {
-            attack();
         }
     }
 

@@ -25,6 +25,7 @@ public abstract class Enemy extends Creature {
     protected boolean isAttacking;
 
     protected float knockPercent;
+    protected float gravity = 0.5f;
 
     public Enemy(Handler handler, float x, float y, int width, int height, float hp, float knockPercent) {
         super(handler, x, y, width, height, hp);
@@ -68,7 +69,13 @@ public abstract class Enemy extends Creature {
             isWindingUp = false;
 
             xMove *= 0.8f;
-            yMove += 0.5f;
+
+            if (gravity == 0f) {
+                yMove *= 0.8f;
+            }
+            else {
+                yMove += gravity;
+            }
 
             move();
             return;
@@ -77,7 +84,14 @@ public abstract class Enemy extends Creature {
             pauseTimer--;
 
             xMove = 0;
-            yMove += 0.5f;
+
+            if (gravity != 0f) {
+                yMove *= 0.8f;
+            }
+            else {
+                yMove += gravity;
+            }
+
             isAttacking = false;
             isWindingUp = false;
 
@@ -96,6 +110,12 @@ public abstract class Enemy extends Creature {
                 attack();
                 break;
         }
+    }
+
+    public boolean checkHorizontalCollision() {
+        int tx = (int) (x + xMove + (xMove > 0 ? bounds.x + bounds.width : bounds.x)) / TILE_SIZE;
+        return collisionWithTile(tx, (int) (y + bounds.y) / TILE_SIZE) ||
+                collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / TILE_SIZE);
     }
 
     @Override

@@ -12,6 +12,7 @@ public abstract class Creature extends Entity {
     protected static final int KNOCK_TIME = 15;
     protected int knockbackTimer = 0;
 
+
     protected float hp;
 
     protected float xMove, yMove;
