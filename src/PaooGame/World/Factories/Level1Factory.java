@@ -3,14 +3,17 @@ package PaooGame.World.Factories;
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Hunter;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Skeleton;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
-import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.util.Set;
 
-import static PaooGame.World.Tiles.Tile.NO_TILES;
+import static PaooGame.World.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
     private static final Set<Integer> SOLID_TILES = Set.of(
@@ -41,12 +44,12 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public Creature createMinorEnemy(float x, float y) {
-        return null; // new Skeleton(handler, x, y);
+        return new Necromancer(handler, x, y);
     }
 
     @Override
     public Creature createMajorEnemy(float x, float y) {
-        return null; // new Cyclop(handler, x, y);
+        return new Hunter(handler, x, y);
     }
 
     @Override

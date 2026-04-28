@@ -3,7 +3,7 @@ package PaooGame.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
-import static PaooGame.World.Tiles.Tile.NO_TILES;
+import static PaooGame.World.Tile.NO_TILES;
 
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.

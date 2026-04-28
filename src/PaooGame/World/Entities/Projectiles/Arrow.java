@@ -2,22 +2,29 @@ package PaooGame.World.Entities.Projectiles;
 
 import PaooGame.Game.Game;
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Entity;
 import java.awt.*;
 
+import static PaooGame.World.Tile.TILE_SIZE;
+
 public class Arrow extends Projectile {
+    private final static int DEFAULT_WIDTH = (int) (TILE_SIZE * 1.5f);
+    private final static int DEFAULT_HEIGHT = TILE_SIZE;
+    private final static float SPEED = 4f;
+    private final static float DMG = 30f;
+    private final static float KNOCK_PERCENT = 1f;
 
-    public Arrow(Handler handler, float x, float y, float tx, float ty, Entity owner) {
-        super(handler, x, y, 32, 8, tx, ty, 9.0f, owner);
-
-        this.damage = 15;
-
-        this.bounds.x = 4;
-        this.bounds.y = 2;
-        this.bounds.width = 24;
-        this.bounds.height = 4;
+    public Arrow(Handler handler, float x, float y, float tx, float ty, Creature owner) {
+        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, tx, ty,
+                SPEED, owner, DMG, KNOCK_PERCENT);
     }
 
     @Override
-    public void Draw(Graphics g) {}
+    public void Draw(Graphics g) {
+        g.setColor(Color.BLUE);
+        g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
+            (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
+                bounds.width, bounds.height);
+    }
 }

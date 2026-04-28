@@ -4,11 +4,11 @@ import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.EntityManager;
-import PaooGame.World.Tiles.Tile;
+import PaooGame.World.Tile;
 
 import java.awt.*;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Level {
     protected final Handler handler;
@@ -17,6 +17,8 @@ public abstract class Level {
     protected int[][] fireTimers;
     protected int[][] iceTimers;
     protected EntityManager entityManager;
+    private boolean pendingRespawn;
+
 
     public Level(Handler handler, int width, int height, String path) {
         this.handler = handler;
@@ -30,6 +32,7 @@ public abstract class Level {
     }
 
     public abstract void spawn();
+    public abstract void setEnemies();
 
     public void loadLevel(String path) {
         String content = TMXParser.loadFileAsString(path);
@@ -55,6 +58,11 @@ public abstract class Level {
                     iceTimers[x][y] -= 1;
                 }
             }
+        }
+
+        if(pendingRespawn) {
+            spawn();
+            pendingRespawn = false;
         }
     }
 
@@ -104,6 +112,10 @@ public abstract class Level {
         }
 
         entityManager.Draw(g);
+    }
+
+    public void requestRespawn() {
+        pendingRespawn = true;
     }
 
     public Tile getTile(int x, int y) {

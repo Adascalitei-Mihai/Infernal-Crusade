@@ -3,7 +3,7 @@ package PaooGame.Game;
 import PaooGame.World.Entities.Entity;
 import PaooGame.Handler;
 
-import static PaooGame.World.Tiles.Tile.TILE_SIZE;
+import static PaooGame.World.Tile.TILE_SIZE;
 
 public class GameCamera {
 

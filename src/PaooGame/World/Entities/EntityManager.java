@@ -2,7 +2,6 @@ package PaooGame.World.Entities;
 
 import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Dante;
-import PaooGame.Game.Game;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 
 import java.awt.*;
@@ -14,6 +13,10 @@ public class EntityManager {
     private final Dante dante;
     private final ArrayList<Entity> entities;
 
+    private final ArrayList<Entity> entitiesToAdd;
+    private boolean isUpdating = false;
+    private int creatureCount;
+
     private final Comparator<Entity> renderSorter = (a, b) ->
             Float.compare(a.getY() + a.getHeight(), b.getY() + b.getHeight());
 
@@ -21,11 +24,14 @@ public class EntityManager {
         this.dante = dante;
 
         entities = new ArrayList<>();
-        addEntity(dante);
+        entitiesToAdd = new ArrayList<>();
 
+        addEntity(dante);
     }
 
     public void Update() {
+        isUpdating = true;
+
         Iterator<Entity> it = entities.iterator();
 
         while (it.hasNext()) {
@@ -33,9 +39,16 @@ public class EntityManager {
             e.Update();
 
             if (!e.isActive()) {
+                if(it instanceof Creature) {
+                    --creatureCount;
+                }
                 it.remove();
             }
         }
+
+        isUpdating = false;
+        entities.addAll(entitiesToAdd);
+        entitiesToAdd.clear();
 
         entities.sort(renderSorter);
     }
@@ -47,9 +60,25 @@ public class EntityManager {
     }
 
     public void addEntity(Entity e) {
-        entities.add(e);
+        if (e instanceof Enemy) {
+            ++creatureCount;
+        }
+
+        if (isUpdating) {
+            entitiesToAdd.add(e);
+        }
+        else {
+            entities.add(e);
+        }
+    }
+
+    public void resetEntities() {
+        entities.clear();
+        entitiesToAdd.clear();
+        addEntity(dante);
     }
 
     public Dante getDante() { return dante; }
     public ArrayList<Entity> getEntities() { return entities; }
+    public int getCreatureCount() { return creatureCount; }
 }
