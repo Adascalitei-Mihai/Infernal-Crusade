@@ -106,7 +106,7 @@ public class Dante extends Creature {
             default -> 1f;
         };
 
-        this.bounds = BOUNDS;
+        this.bounds = new Rectangle(BOUNDS);
     }
 
     @Override

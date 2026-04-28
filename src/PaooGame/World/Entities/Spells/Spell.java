@@ -2,6 +2,7 @@ package PaooGame.World.Entities.Spells;
 
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
 import PaooGame.World.Entities.Entity;
 
@@ -76,6 +77,10 @@ public abstract class Spell extends Entity {
             return;
         }
         if (e instanceof Necromancer target) {
+            target.heal(LIFESTEAL);
+            return;
+        }
+        if (e instanceof Boss target) {
             target.heal(LIFESTEAL);
             return;
         }
