@@ -3,6 +3,8 @@ package PaooGame.World.Entities.Creatures;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Tiles.Tile;
+import PaooGame.Graphics.Animation; // IMPORT NOU
+import PaooGame.Graphics.Assets;    // IMPORT NOU
 
 import java.awt.*;
 
@@ -25,11 +27,22 @@ public class Dante extends Creature {
     private static final int ICE_TIMER = 600, FIRE_TIMER = 600;
     private int direction = 2;
 
-    private boolean edenShieldActive = false;
+    private boolean isDying = false;
+    private int deathTimer = 0;
+
+    // --- VARIABILE EDEN SHIELD ---
+    private boolean edenShieldCasting = false; // Faza 1: Se formează scutul
+    private boolean edenShieldActive = false;  // Faza 2: Scutul e activ și te protejează
+
+    private int edenShieldTimer = 0; // Timpul cât rulează animația de formare
+    private final int EDEN_SHIELD_CAST_DURATION = 42; // ~42 de tick-uri (aprox. 7 poze * 100ms)
+
+    private int edenActiveTimer = 0; // Timpul cât stă scutul pe tine
+    private final int EDEN_SHIELD_DURATION; // Setat în funcție de dificultate
+
+    private int edenCooldownTimer = 0; // Timpul de așteptare până la următoarea folosire
     private static final int EDEN_SHIELD_COOLDOWN = 300;
-    private int edenShieldTimer = 0;
-    private final int EDEN_SHIELD_DURATION;
-    private int edenActiveTimer = 0;
+
     private Rectangle edenShieldBounds = new Rectangle();
 
     private static final int FIERY_JUDGEMENT_COOLDOWN = 600;
@@ -48,6 +61,25 @@ public class Dante extends Creature {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
+    // ==========================================
+    // --- VARIABILE NOI PENTRU ANIMAȚII ---
+    // ==========================================
+    public static final int IDLE = 0;
+    public static final int RUN = 1;
+    public static final int JUMP = 2;
+    public static final int FALL = 3;
+    public static final int ATTACK1 = 4;
+    public static final int ATTACK2 = 5;
+    public static final int HIT = 6;
+    public static final int DEATH = 7;
+    public static final int ICE_MORPH = 8;
+    public static final int EDEN_SHIELD = 9;
+    public static final int FIERY_JUDGEMENT = 10;
+
+    private final Animation[] animations = new Animation[11];
+    private int currentState = IDLE;
+    // ==========================================
+
     public Dante(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, 1000);
 
@@ -62,10 +94,40 @@ public class Dante extends Creature {
 
         bounds.y = 1;
         bounds.height = DEFAULT_HEIGHT - 2;
+
+        // ==========================================
+        // --- INIȚIALIZARE ANIMAȚII ---
+        // ==========================================
+        animations[IDLE] = new Animation(100, Assets.Dante.get("Idle"));
+        animations[RUN] = new Animation(80, Assets.Dante.get("Run"));
+        animations[JUMP] = new Animation(100, Assets.Dante.get("Jump"));
+        animations[FALL] = new Animation(100, Assets.Dante.get("Fall"));
+        animations[ATTACK1] = new Animation(80, Assets.Dante.get("Attack1"));
+        animations[ATTACK2] = new Animation(80, Assets.Dante.get("Attack2"));
+        animations[HIT] = new Animation(100, Assets.Dante.get("Hit"));
+        animations[DEATH] = new Animation(150, Assets.Dante.get("Death"));
+        animations[ICE_MORPH] = new Animation(100, Assets.Dante.get("Ice_Morph"));
+        animations[EDEN_SHIELD] = new Animation(100, Assets.Dante.get("Eden_Shield"));
+        animations[FIERY_JUDGEMENT] = new Animation(100, Assets.Dante.get("Fiery_Judgement"));
     }
 
     @Override
     public void Update() {
+        // --- BLOCUL DE MOARTE ---
+        if (isDying) {
+            currentState = DEATH;         // Setăm starea pe animația de moarte
+            animations[DEATH].tick();     // Avansăm cadrele
+
+            deathTimer--;
+            if (deathTimer <= 0) {
+                isDying = false;          // S-a terminat animația
+                handler.getLevel().spawn(); // Resetăm nivelul
+            }
+            return; // `return` oprește Update-ul aici. Dante nu se mai poate mișca.
+        }
+        // ------------------------
+
+        // ... de aici în jos rămâne exact codul tău normal
         applyGravity();
         getDir();
 
@@ -75,6 +137,43 @@ public class Dante extends Creature {
         iceMorph();
         edenShield();
         fieryJudgement();
+
+        updateAnimationState();
+        animations[currentState].tick();
+    }
+
+    // ==========================================
+    // --- METODĂ NOUĂ: SCHIMBĂ ANIMAȚIA ---
+    // ==========================================
+    private void updateAnimationState() {
+        // Prioritate 1: Atacul și magiile
+        if (isAttacking) {
+            // Dacă atacă în sus (direction == 1), folosește Attack1. Altfel, Attack2.
+            if (direction == 1) {
+                currentState = ATTACK1;
+            } else {
+                currentState = ATTACK2;
+            }
+        }
+        else if (edenShieldCasting || edenShieldActive) {
+            // Rulează animația de scut pe toată perioada formării și cât e activ
+            currentState = EDEN_SHIELD;
+        }
+        // Prioritate 2: Săritul și căderea
+        else if (yMove < 0) {
+            currentState = JUMP;
+        }
+        else if (yMove > 0 && !onGround) {
+            currentState = FALL;
+        }
+        // Prioritate 3: Mersul
+        else if (Math.abs(xMove) > 0.2f) {
+            currentState = RUN;
+        }
+        // Default: Stă pe loc
+        else {
+            currentState = IDLE;
+        }
     }
 
     private void applyGravity() {
@@ -83,6 +182,7 @@ public class Dante extends Creature {
             die();
         }
     }
+
     private void getDir() {
         if (handler.getKeyManager().up) {
             direction = 1;
@@ -90,17 +190,17 @@ public class Dante extends Creature {
         else if (handler.getKeyManager().left) {
             direction = 2;
         }
-        else {
-            direction = 0;
+        else if (handler.getKeyManager().right) {
+            direction = 0; // Setăm direcția 0 explicit pentru dreapta
         }
     }
-
 
     private boolean isOnIce() {
         int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
         int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
         return handler.getLevel().isIce(tx, ty);
     }
+
     @Override
     public void moveX() {
         if (!isOnIce()) {
@@ -132,6 +232,7 @@ public class Dante extends Creature {
 
         super.moveX();
     }
+
     @Override
     public void moveY() {
         if (yMove < 0) {
@@ -158,6 +259,7 @@ public class Dante extends Creature {
             }
         }
     }
+
     private void jump() {
         if(handler.getKeyManager().space && onGround) {
             yMove = JUMP_IMPULSE;
@@ -225,6 +327,7 @@ public class Dante extends Creature {
             }
         }
     }
+
     private void iceMorph() {
         if (handler.getKeyManager().shift) {
 
@@ -258,11 +361,23 @@ public class Dante extends Creature {
     }
 
     private void edenShield() {
-        if (edenShieldTimer > 0) {
-            edenShieldTimer--;
+        // 1. Scădem timpul de Cooldown
+        if (edenCooldownTimer > 0) {
+            edenCooldownTimer--;
         }
 
-        if (edenShieldActive) {
+        // 2. Faza de formare a scutului (Casting)
+        if (edenShieldCasting) {
+            edenShieldTimer--; // Aici scade timpul "de la prima animație până la ultima"
+
+            if (edenShieldTimer <= 0) {
+                edenShieldCasting = false; // S-a terminat animația de formare
+                edenShieldActive = true;   // Acum scutul te protejează oficial!
+                edenActiveTimer = EDEN_SHIELD_DURATION; // Începe timer-ul dat de dificultate
+            }
+        }
+        // 3. Faza în care scutul este activ
+        else if (edenShieldActive) {
             edenActiveTimer--;
 
             int padding = 30;
@@ -272,16 +387,18 @@ public class Dante extends Creature {
             edenShieldBounds.height = bounds.height + (padding * 2);
 
             if (edenActiveTimer <= 0) {
-                edenShieldActive = false;
+                edenShieldActive = false; // S-a consumat scutul
             }
         }
 
-        if (handler.getKeyManager().k && edenShieldTimer <= 0 && onGround) {
-            edenShieldActive = true;
-            edenActiveTimer = EDEN_SHIELD_DURATION;
-            edenShieldTimer = EDEN_SHIELD_COOLDOWN;
+        // 4. Când apeși K să activezi scutul
+        if (handler.getKeyManager().k && edenCooldownTimer <= 0 && onGround && !edenShieldCasting && !edenShieldActive) {
+            edenShieldCasting = true; // Începe formarea
+            edenShieldTimer = EDEN_SHIELD_CAST_DURATION; // Setăm timpul de animație
+            edenCooldownTimer = EDEN_SHIELD_COOLDOWN; // Resetăm cooldown-ul global
         }
     }
+
     private void fieryJudgement() {
         if (fieryJudgementTimer > 0) {
             fieryJudgementTimer--;
@@ -317,13 +434,45 @@ public class Dante extends Creature {
 
     @Override
     public void Draw(Graphics g) {
-        g.setColor(Color.RED);
+        int screenX = (int) (x - handler.getGameCamera().getxOffset());
+        int screenY = (int) (y - handler.getGameCamera().getyOffset());
+
+        // ==========================================
+        // --- DESENAREA ANIMAȚIEI ---
+        // ==========================================
+        int imgWidth = 184;
+        int imgHeight = 137;
+
+        // Calculăm poziția ca imaginea să fie centrată pe hitbox-ul jucătorului
+        // (Aliniem la baza hitbox-ului ca picioarele să fie pe pământ)
+        int drawX = screenX + (DEFAULT_WIDTH - imgWidth) / 2;
+        int drawY = screenY + (DEFAULT_HEIGHT - imgHeight);
+
+        // Dacă personajul se uită în stânga (direction == 2), întoarcem imaginea (flip orizontal)
+        if (direction == 2) {
+            g.drawImage(animations[currentState].getCurrentFrame(),
+                    drawX + imgWidth, drawY, -imgWidth, imgHeight, null);
+        } else {
+            // Dacă se uită în dreapta, o desenăm normal
+            g.drawImage(animations[currentState].getCurrentFrame(),
+                    drawX, drawY, imgWidth, imgHeight, null);
+        }
+        // ==========================================
+
+        // Am păstrat desenarea hitbox-urilor cu un nivel de transparență
+        // ca să poți vedea și personajul, dar și coliziunile pentru debug.
+        // Poți șterge liniile de mai jos dacă vrei să vezi DOAR personajul:
+
+        if(handler.getDebugMode()){
+
+
+        g.setColor(new Color(255, 0, 0, 100)); // Roșu transparent
         g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                 (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
-                bounds.width, bounds.height);
+                bounds.width, bounds.height);}
 
         if (edenShieldActive) {
-            g.setColor(new Color(0, 255, 0));
+            g.setColor(new Color(0, 255, 0, 100)); // Verde transparent
             g.fillRect((int) (edenShieldBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (edenShieldBounds.y - handler.getGameCamera().getyOffset()),
                     edenShieldBounds.width, edenShieldBounds.height);
@@ -350,9 +499,13 @@ public class Dante extends Creature {
 
     @Override
     public void die() {
+        if (isDying) return; // Ne asigurăm că nu moare de mai multe ori simultan
+
+        isDying = true;
         xMove = 0;
         yMove = 0;
 
-        handler.getLevel().spawn();
+        // Setăm timer-ul să aștepte exact cât durează animația
+        deathTimer = 90;
     }
 }

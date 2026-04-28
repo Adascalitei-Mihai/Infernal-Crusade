@@ -44,6 +44,18 @@ public class Level1 extends Level {
                     chkpPos[i][0] * TILE_SIZE, chkpPos[i][1] * TILE_SIZE, i));
         } // Checkpoints
 
+        // ==========================================
+        // --- ADĂUGARE INAMICI (SCHELEȚI) ---
+        // ==========================================
+        // Aici adaugi scheleții pe hartă. Am pus 3 exemple.
+        // Schimbă valorile "30", "60", "90" cu coordonatele X din Tiled
+        // Schimbă "20" cu coordonata Y a platformelor tale din Tiled
+        //entityManager.addEntity(factory.createMinorEnemy(5 * TILE_SIZE, 20 * TILE_SIZE));
+        //entityManager.addEntity(factory.createMinorEnemy(30 * TILE_SIZE, 20 * TILE_SIZE));
+        //entityManager.addEntity(factory.createMinorEnemy(60 * TILE_SIZE, 20 * TILE_SIZE));
+        //entityManager.addEntity(factory.createMinorEnemy(90 * TILE_SIZE, 20 * TILE_SIZE));
+        // ==========================================
+
         entityManager.addEntity(factory.createCameraTrigger(
                 gateCoords[0] * TILE_SIZE, gateCoords[1] * TILE_SIZE, TILE_SIZE, 4 * TILE_SIZE,
                 arenaCoords[0] * TILE_SIZE, arenaCoords[1] * TILE_SIZE,

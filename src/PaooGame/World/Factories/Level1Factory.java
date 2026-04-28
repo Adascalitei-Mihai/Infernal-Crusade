@@ -3,6 +3,7 @@ package PaooGame.World.Factories;
 import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Creatures.Enemies.Skeleton; // <--- Importul adăugat pentru Schelet
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.SpearGate;
 import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
@@ -13,6 +14,8 @@ import java.util.Set;
 import static PaooGame.World.Tiles.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
+
+    // Lista cu dalele (tiles) solide pe care se poate călca
     private static final Set<Integer> SOLID_TILES = Set.of(
             1, 2, 9, 20, 38, 22, 12, 43, 42, 32, 45, 46, 56, 67, 57, 58, 68, 47, 13, 24, 21, 10, 31, 4, 15, 848, 849, 850, 656, 657, 658, 720, 721, 722
     );
@@ -39,14 +42,18 @@ public class Level1Factory extends EntityFactory {
         }
     }
 
+    // ========================================================
+    // AICI ESTE METODA LIPSĂ CARE REZOLVĂ EROAREA:
     @Override
     public Creature createMinorEnemy(float x, float y) {
-        return null; // new Skeleton(handler, x, y);
+        return new Skeleton(handler, x, y);
     }
+    // ========================================================
 
     @Override
     public Creature createMajorEnemy(float x, float y) {
-        return null; // new Cyclop(handler, x, y);
+        // Deocamdată returnează null până când vom crea clasa Cyclop
+        return null;
     }
 
     @Override
@@ -58,4 +65,5 @@ public class Level1Factory extends EntityFactory {
     public SpearGate createSpearGate(float x, float y) {
         return new SpearGate(handler, x, y);
     }
+
 }
