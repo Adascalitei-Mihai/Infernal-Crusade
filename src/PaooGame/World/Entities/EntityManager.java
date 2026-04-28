@@ -1,6 +1,8 @@
 package PaooGame.World.Entities;
 
+import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ public class EntityManager {
 
     private final ArrayList<Entity> entitiesToAdd;
     private boolean isUpdating = false;
+    private int creatureCount;
 
     private final Comparator<Entity> renderSorter = (a, b) ->
             Float.compare(a.getY() + a.getHeight(), b.getY() + b.getHeight());
@@ -36,6 +39,9 @@ public class EntityManager {
             e.Update();
 
             if (!e.isActive()) {
+                if(it instanceof Creature) {
+                    --creatureCount;
+                }
                 it.remove();
             }
         }
@@ -54,6 +60,10 @@ public class EntityManager {
     }
 
     public void addEntity(Entity e) {
+        if (e instanceof Enemy) {
+            ++creatureCount;
+        }
+
         if (isUpdating) {
             entitiesToAdd.add(e);
         }
@@ -70,4 +80,5 @@ public class EntityManager {
 
     public Dante getDante() { return dante; }
     public ArrayList<Entity> getEntities() { return entities; }
+    public int getCreatureCount() { return creatureCount; }
 }

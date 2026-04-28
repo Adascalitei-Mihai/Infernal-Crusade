@@ -32,6 +32,7 @@ public class PlayState extends State {
             initializedFullscreen = true;
         }
 
+        handler.getScoreMan().Update();
         level.Update();
         handler.getGameCamera().center(level.getEntityManager().getDante());
 

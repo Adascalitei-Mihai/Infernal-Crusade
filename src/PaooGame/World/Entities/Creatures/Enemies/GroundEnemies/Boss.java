@@ -32,12 +32,13 @@ public class Boss extends GroundEnemy {
     private Attacks currAttack;
 
     private static final int[] PROJECTILE_SPELL_PERC = {60, 100};
-    private static final int[] PROJECTILE_SPELL_MELEE_PERC = {30, 60, 100};
-    private static final int[] PROJECTILE_SPELL_SUMMON_PERC = {50, 90, 100};
+    private static final int[] PROJECTILE_SPELL_MELEE_PERC = {40, 60, 100};
+    private static final int[] PROJECTILE_SPELL_SUMMON_PERC = {60, 90, 100};
     private static final int[] PROJECTILE_SPELL_SUMMON_MELEE_PERC = {30, 60, 70, 100};
 
     private static final int SPELL_COUNT = 5;
     private int currSpellCount;
+    private final int BASE_CREATURE_COUNT;
 
     private static final float[][] SUMMON_COORDS = {
             {5000, 800}, {5500, 800}
@@ -79,6 +80,7 @@ public class Boss extends GroundEnemy {
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
         this.rand = new Random();
+        this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getCreatureCount();
     }
 
     @Override
@@ -120,8 +122,10 @@ public class Boss extends GroundEnemy {
         }
 
         float distance = getDistanceToPlayer();
+        int creatureCount = handler.getCreatureCount();
         int randomNumber = rand.nextInt(100);
-        if (!isPhaseTwo) {
+
+        if (!isPhaseTwo || creatureCount != BASE_CREATURE_COUNT) {
             if (distance > MELEE_RANGE) {
                 if (randomNumber < PROJECTILE_SPELL_PERC[0]) {
                     return Attacks.PROJECTILE;
@@ -239,10 +243,10 @@ public class Boss extends GroundEnemy {
         );
     }
     private void summon() {
-        handler.getLevel().getEntityManager().addEntity(
+        handler.addEntity(
                 new Necromancer(handler, SUMMON_COORDS[0][0], SUMMON_COORDS[0][1])
         );
-        handler.getLevel().getEntityManager().addEntity(
+        handler.addEntity(
                 new Necromancer(handler, SUMMON_COORDS[1][0], SUMMON_COORDS[1][1])
         );
     }

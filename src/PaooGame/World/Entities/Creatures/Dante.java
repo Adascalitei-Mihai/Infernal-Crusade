@@ -38,7 +38,7 @@ public class Dante extends Creature {
     );
 
     private static final float MAX_HP = 1000;
-    private static final float BASE_REGEN = 8f / 60;
+    private static final float BASE_REGEN = 5f / 60;
     private final float REGEN_PERCENT;
     private final float RESISTANCE;
 
@@ -65,7 +65,8 @@ public class Dante extends Creature {
     private boolean isAttacking = false;
     private Rectangle attackBounds = new Rectangle();
 
-    public static final int ICE_TIMER = 300, FIRE_TIMER = 300;
+    public static final int ICE_TIMER = 600;
+    public static final int FIRE_TIMER = 300;
     public static final int FIERY_JUDGEMENT_DMG = 50;
 
     private static final int EDEN_SHIELD_COOLDOWN = 300;
@@ -91,8 +92,8 @@ public class Dante extends Creature {
             default -> 1f;
         };
         REGEN_PERCENT = switch (handler.getDifficulty()) {
-            case EASY -> 2f;
-            case HARD -> 0.5f;
+            case EASY -> 1.5f;
+            case HARD -> 0f;
             default -> 1f;
         };
         EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
@@ -244,7 +245,7 @@ public class Dante extends Creature {
             }
         }
 
-        if (handler.getInputManager().j && attackTimer <= 0) {
+        if (handler.getInputManager().j && attackTimer <= 0 && !handler.getInputManager().shift) {
             isAttacking = true;
             attackActiveTimer = ATTACK_DURATION;
             attackTimer = ATTACK_COOLDOWN;
@@ -281,6 +282,7 @@ public class Dante extends Creature {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
                         if (target.hurt(attackDmg)) {
                             ++currPoints;
+                            handler.getScoreMan().addSuccessfulHit(currRank);
 
                             if (currDirection == Direction.RIGHT) {
                                 target.applyKnockback(KNOCKBACK_FORCE * target.getKnockPercent(), -5.0f);
@@ -373,10 +375,18 @@ public class Dante extends Creature {
             return;
         }
 
+        if (tx < 0 || ty < 0 || tx >= handler.getLevel().getWidth() || ty >= handler.getLevel().getHeight()) {
+            return;
+        }
+
         Tile t = handler.getLevel().getTile(tx, ty);
         if (t == null || !t.isSolid()) return;
 
-        if (handler.getLevel().isFire(tx, ty)) return;
+        if (handler.getLevel().isFire(tx, ty)) {
+            return;
+        }
+
+        if (handler.getLevel().isFire(tx, ty) || handler.getLevel().isIce(tx, ty)) return;
 
         handler.getLevel().setFire(tx, ty, FIRE_TIMER);
 
@@ -416,13 +426,15 @@ public class Dante extends Creature {
     @Override
     public void onInteraction(Entity e) {}
 
-    public boolean projectileHit(Projectile p) {
+    public void projectileHit(Projectile p) {
         if (edenShieldActive && edenShieldBounds.intersects(p.getCollisionBounds(0f, 0f))) {
             p.reflect(this);
 
             currPoints += 3;
+            handler.getScoreMan().addReflect();
+
             handler.getPadManager().rumble(0.6f, 0.6f, 150);
-            return true;
+            return;
         }
 
         if (hurt(p.getDamage())) {
@@ -430,7 +442,6 @@ public class Dante extends Creature {
             applyKnockback(knockX, -5f);
         }
 
-        return false;
     }
 
     @Override

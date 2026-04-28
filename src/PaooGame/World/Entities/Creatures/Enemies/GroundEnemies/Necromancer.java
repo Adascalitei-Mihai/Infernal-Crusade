@@ -96,7 +96,7 @@ public class Necromancer extends GroundEnemy {
         float spellX = danteCenter[0] - SummonCircle.DEFAULT_WIDTH / 2f;
         float spellY = danteCenter[1] - SummonCircle.DEFAULT_HEIGHT / 2f;
 
-        handler.getLevel().getEntityManager().addEntity(
+        handler.addEntity(
                 new SummonCircle(handler, spellX, spellY, this)
         );
     }

@@ -85,7 +85,7 @@ public class Hunter extends GroundEnemy {
     private void executeAttackHitbox() {
         float[] spawnCoords = getCenter(), targetCoords = handler.getDante().getCenter();
 
-        handler.getLevel().getEntityManager().addEntity(
+        handler.addEntity(
                 new Arrow(handler, spawnCoords[0], spawnCoords[1],
                         targetCoords[0], targetCoords[1], this)
         );
