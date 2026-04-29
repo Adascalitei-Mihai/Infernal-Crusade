@@ -4,11 +4,9 @@ import PaooGame.Graphics.Assets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
-import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Hunter;
-import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Skeleton;
 import PaooGame.World.Entities.Environment.Checkpoint;
-import PaooGame.World.Entities.Environment.SpearGate;
+import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Tile;
 
 import java.util.Set;
@@ -44,12 +42,12 @@ public class Level1Factory extends EntityFactory {
 
     @Override
     public Creature createMinorEnemy(float x, float y) {
-        return new Necromancer(handler, x, y);
+        return new Skeleton(handler, x, y);
     }
 
     @Override
     public Creature createMajorEnemy(float x, float y) {
-        return new Hunter(handler, x, y);
+        return new Cyclops(handler, x, y);
     }
 
     @Override
@@ -58,7 +56,7 @@ public class Level1Factory extends EntityFactory {
     }
 
     @Override
-    public SpearGate createSpearGate(float x, float y) {
-        return new SpearGate(handler, x, y);
+    public Gate createGate(float x, float y) {
+        return new Gate(handler, x, y);
     }
 }

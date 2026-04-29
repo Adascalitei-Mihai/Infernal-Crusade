@@ -1,11 +1,11 @@
 package PaooGame.World.Factories;
 
 import PaooGame.Handler;
+import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Environment.ArenaTrigger;
 import PaooGame.World.Entities.Environment.Checkpoint;
-import PaooGame.World.Entities.Environment.SpearGate;
-import PaooGame.World.Entities.Environment.Triggers.CameraTrigger;
-import PaooGame.World.Entities.Environment.Triggers.EnemyTrigger;
+import PaooGame.World.Entities.Environment.Gate;
 
 public abstract class EntityFactory {
     protected final Handler handler;
@@ -15,17 +15,14 @@ public abstract class EntityFactory {
     }
 
     public abstract void InitTiles();
+    public ArenaTrigger createArenaTrigger(float x, float y, int width, int height,
+                                           Arena arena, Gate[] gates) {
+        return new ArenaTrigger(handler, x, y, width, height, arena, gates);
+    }
+
     public abstract Creature createMinorEnemy(float x, float y);
     public abstract Creature createMajorEnemy(float x, float y);
 
     public abstract Checkpoint createCheckpoint(float x, float y, int id);
-    public abstract SpearGate createSpearGate(float x, float y);
-    public CameraTrigger createCameraTrigger(float x, float y, int width, int height,
-                                                float minX, float minY, float maxX, float maxY,
-                                                boolean isLockTrigger) {
-        return new CameraTrigger(handler, x, y, width, height, minX, minY, maxX, maxY, isLockTrigger);
-    }
-    public EnemyTrigger createEnemyTrigger(float x, float y, int width, int height) {
-        return new EnemyTrigger(handler, x, y, width, height);
-    }
+    public abstract Gate createGate(float x, float y);
 }

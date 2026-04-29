@@ -5,7 +5,6 @@ import PaooGame.Graphics.Animation;
 import PaooGame.Graphics.Assets;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
-import PaooGame.World.Tile;
 
 import java.awt.*;
 
@@ -35,21 +34,16 @@ public class Skeleton extends GroundEnemy {
     private int attackTimer = 0;
     private int attackActiveTimer = 0;
 
-    private Rectangle attackBounds = new Rectangle();
+    private final Rectangle attackBounds = new Rectangle();
     private static final float ATTACK_DMG = 50f;
     private static final float COLLISION_DMG = 20f;
 
-    // ==========================================
-    // --- VARIABILE PENTRU ANIMAȚII ---
-    // ==========================================
-    public static final int ANIM_IDLE = 0;
-    public static final int ANIM_WALK = 1;
-    public static final int ANIM_ATTACK = 2;
-    public static final int ANIM_DIE = 3;
-    public static final int ANIM_HURT = 4;
+    public enum AnimationState {
+        IDLE, WALK, ATTACK, DIE, HURT
+    }
 
-    private final Animation[] animations = new Animation[5];
-    private int currAnim = ANIM_IDLE;
+    private final Animation[] animations = new Animation[AnimationState.values().length];
+    private AnimationState currAnim = AnimationState.IDLE;
     private int deathTimer = 0;
     private boolean isDead = false;
 
@@ -63,11 +57,11 @@ public class Skeleton extends GroundEnemy {
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
 
-        animations[ANIM_IDLE] = new Animation(150, Assets.Skeleton.get("Idle"));
-        animations[ANIM_WALK] = new Animation(120, Assets.Skeleton.get("Walk"));
-        animations[ANIM_ATTACK] = new Animation(100, Assets.Skeleton.get("Attack1"));
-        animations[ANIM_HURT] = new Animation(100, Assets.Skeleton.get("Hurt"));
-        animations[ANIM_DIE] = new Animation(150, Assets.Skeleton.get("Die"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(150, Assets.Skeleton.get("Idle"));
+        animations[AnimationState.WALK.ordinal()] = new Animation(120, Assets.Skeleton.get("Walk"));
+        animations[AnimationState.ATTACK.ordinal()] = new Animation(100, Assets.Skeleton.get("Attack1"));
+        animations[AnimationState.HURT.ordinal()] = new Animation(100, Assets.Skeleton.get("Hurt"));
+        animations[AnimationState.DIE.ordinal()] = new Animation(150, Assets.Skeleton.get("Die"));
     }
 
     @Override
@@ -75,7 +69,7 @@ public class Skeleton extends GroundEnemy {
         if (isDead) {
             if (deathTimer > 0) {
                 deathTimer--;
-                animations[ANIM_DIE].tick();
+                animations[AnimationState.DIE.ordinal()].tick();
             }
             else {
                 active = false;
@@ -87,7 +81,7 @@ public class Skeleton extends GroundEnemy {
 
         if (knockbackTimer > 0 || pauseTimer > 0) {
             updateAnimationState();
-            animations[currAnim].tick();
+            animations[currAnim.ordinal()].tick();
             return;
         }
 
@@ -112,21 +106,21 @@ public class Skeleton extends GroundEnemy {
         }
 
         updateAnimationState();
-        animations[currAnim].tick();
+        animations[currAnim.ordinal()].tick();
     }
 
     private void updateAnimationState() {
         if (knockbackTimer > 0) {
-            currAnim = ANIM_HURT;
+            currAnim = AnimationState.HURT;
         }
         else if (isWindingUp || isAttacking) {
-            currAnim = ANIM_ATTACK;
+            currAnim = AnimationState.ATTACK;
         }
         else if (Math.abs(xMove) > 0.1f) {
-            currAnim = ANIM_WALK;
+            currAnim = AnimationState.WALK;
         }
         else {
-            currAnim = ANIM_IDLE;
+            currAnim = AnimationState.IDLE;
         }
     }
 
@@ -139,8 +133,7 @@ public class Skeleton extends GroundEnemy {
         attackTimer = ATTACK_COOLDOWN;
         isWindingUp = true;
 
-        // Resetăm animația de atac pentru a rula curat de la cadul 0
-        animations[ANIM_ATTACK].reset();
+        animations[AnimationState.ATTACK.ordinal()].reset();
     }
 
     private void executeAttackHitbox() {
@@ -149,10 +142,10 @@ public class Skeleton extends GroundEnemy {
 
         attackBounds.setSize(hWidth, hHeight);
 
-        if (direction == 1) { // 1 înseamnă se uită la dreapta
+        if (direction == 1) {
             attackBounds.x = (int) (x + bounds.x + bounds.width);
         }
-        else { // se uită la stânga
+        else {
             attackBounds.x = (int) (x + bounds.x - hWidth);
         }
         attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
@@ -173,35 +166,28 @@ public class Skeleton extends GroundEnemy {
         int screenX = (int) (x - handler.getGameCamera().getxOffset());
         int screenY = (int) (y - handler.getGameCamera().getyOffset());
 
-        // Calculăm poziția de desenare astfel încât imaginea vizuală (care e mai lată)
-        // să fie perfect centrată pe hitbox-ul logic pe axa X,
-        // și aliniată la baza hitbox-ului pe axa Y.
         int drawX = screenX + (LOGIC_WIDTH - VISUAL_WIDTH) / 2;
         int drawY = screenY + (LOGIC_HEIGHT - VISUAL_HEIGHT);
 
         if (direction != 1) {
-            // Inversare pentru mersul la stânga (Flip orizontal)
-            g.drawImage(animations[currAnim].getCurrentFrame(),
+            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
                     drawX + VISUAL_WIDTH, drawY,
                     -VISUAL_WIDTH, VISUAL_HEIGHT, null);
-        } else {
-            // Desenare normală pentru dreapta
-            g.drawImage(animations[currAnim].getCurrentFrame(),
+        }
+        else {
+            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
                     drawX, drawY,
                     VISUAL_WIDTH, VISUAL_HEIGHT, null);
         }
 
-        // =====================================
-        // --- HITBOX-URI (Pentru Debug) ---
-        // =====================================
         if (handler.getDebugMode()) {
-            g.setColor(new Color(255, 0, 0, 100)); // Roșu transparent (Hitbox Bază)
+            g.setColor(new Color(255, 0, 0, 100));
             g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                     (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                     bounds.width, bounds.height);
 
             if (isAttacking || isWindingUp) {
-                g.setColor(new Color(255, 255, 255, 150)); // Alb transparent (Hitbox Atac)
+                g.setColor(new Color(255, 255, 255, 150));
                 g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
                         (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
                         attackBounds.width, attackBounds.height);
@@ -216,6 +202,10 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void onInteraction(Entity e) {
+        if (isDead) {
+            return;
+        }
+
         if (e instanceof Dante dante) {
             if (dante.hurt(COLLISION_DMG)) {
                 float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
@@ -237,8 +227,8 @@ public class Skeleton extends GroundEnemy {
         if (isDead) return;
 
         isDead = true;
-        currAnim = ANIM_DIE;
-        deathTimer = 90; // Ex: 90 cadre până dispare corpul de pe hartă
+        currAnim = AnimationState.DIE;
+        deathTimer = 90;
         xMove = 0;
     }
 }

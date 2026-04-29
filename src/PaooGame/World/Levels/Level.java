@@ -4,6 +4,7 @@ import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.EntityManager;
+import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Tile;
 
 import java.awt.*;
@@ -12,6 +13,8 @@ import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Level {
     protected final Handler handler;
+    protected final EntityFactory factory;
+
     protected int width, height;
     protected int[][] tiles;
     protected int[][] fireTimers;
@@ -20,8 +23,10 @@ public abstract class Level {
     private boolean pendingRespawn;
 
 
-    public Level(Handler handler, int width, int height, String path) {
+    public Level(Handler handler, EntityFactory factory, int width, int height, String path) {
         this.handler = handler;
+        this.factory = factory;
+
         this.width = width;
         this.height = height;
 
@@ -161,6 +166,10 @@ public abstract class Level {
     public void setWidth(int width) { this.width = width; }
     public int getHeight() { return height;}
     public void setHeight(int height) { this.height = height; }
+
+    public EntityFactory getFactory() {
+        return factory;
+    }
 
     public EntityManager getEntityManager() {
         return entityManager;

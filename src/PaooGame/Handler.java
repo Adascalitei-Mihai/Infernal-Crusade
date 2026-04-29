@@ -28,6 +28,7 @@ public class Handler {
     private DatabaseManager dbMan;
     private ScoreManager scoreMan;
 
+
     private int playerID;
     private String playerName;
     private int currLevel, currChkp;

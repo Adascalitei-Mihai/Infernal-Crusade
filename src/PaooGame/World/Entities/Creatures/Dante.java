@@ -42,7 +42,7 @@ public class Dante extends Creature {
     private static final float GRAVITY = 0.5f;
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
-    private static final int MAX_JUMP_TIME = 20;
+    private static final int MAX_JUMP_TIME = 10;
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
@@ -102,20 +102,11 @@ public class Dante extends Creature {
     private final float FIERY_JUDGEMENT_DIFF_CD_PERCENT;
     private int cd;
 
-    public static final int ANIM_IDLE = 0;
-    public static final int ANIM_RUN = 1;
-    public static final int ANIM_JUMP = 2;
-    public static final int ANIM_FALL = 3;
-    public static final int ANIM_ATTACK1 = 4;
-    public static final int ANIM_ATTACK2 = 5;
-    public static final int ANIM_HIT = 6;
-    public static final int ANIM_DEATH = 7;
-    public static final int ANIM_ICE_MORPH = 8;
-    public static final int ANIM_EDEN_SHIELD = 9;
-    public static final int ANIM_FIERY_JUDGEMENT = 10;
-
-    private final Animation[] animations = new Animation[11];
-    private int currAnim = ANIM_IDLE;
+    public enum AnimationState {
+        IDLE, RUN, JUMP, FALL, ATTACK1, ATTACK2, HIT, DEATH, ICE_MORPH, EDEN_SHIELD, FIERY_JUDGEMENT
+    }
+    private final Animation[] animations = new Animation[AnimationState.values().length];
+    private AnimationState currAnim = AnimationState.IDLE;
     private int deathTimer = 0;
 
     public Dante(Handler handler, float x, float y) {
@@ -144,17 +135,17 @@ public class Dante extends Creature {
 
         this.bounds = new Rectangle(BOUNDS);
 
-        animations[ANIM_IDLE] = new Animation(100, Assets.Dante.get("Idle"));
-        animations[ANIM_RUN] = new Animation(80, Assets.Dante.get("Run"));
-        animations[ANIM_JUMP] = new Animation(100, Assets.Dante.get("Jump"));
-        animations[ANIM_FALL] = new Animation(100, Assets.Dante.get("Fall"));
-        animations[ANIM_ATTACK1] = new Animation(80, Assets.Dante.get("Attack1"));
-        animations[ANIM_ATTACK2] = new Animation(80, Assets.Dante.get("Attack2"));
-        animations[ANIM_HIT] = new Animation(100, Assets.Dante.get("Hit"));
-        animations[ANIM_DEATH] = new Animation(150, Assets.Dante.get("Death"));
-        animations[ANIM_ICE_MORPH] = new Animation(100, Assets.Dante.get("Ice_Morph"));
-        animations[ANIM_EDEN_SHIELD] = new Animation(100, Assets.Dante.get("Eden_Shield"));
-        animations[ANIM_FIERY_JUDGEMENT] = new Animation(100, Assets.Dante.get("Fiery_Judgement"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(100, Assets.Dante.get("Idle"));
+        animations[AnimationState.RUN.ordinal()] = new Animation(80, Assets.Dante.get("Run"));
+        animations[AnimationState.JUMP.ordinal()] = new Animation(100, Assets.Dante.get("Jump"));
+        animations[AnimationState.FALL.ordinal()] = new Animation(100, Assets.Dante.get("Fall"));
+        animations[AnimationState.ATTACK1.ordinal()] = new Animation(80, Assets.Dante.get("Attack1"));
+        animations[AnimationState.ATTACK2.ordinal()] = new Animation(80, Assets.Dante.get("Attack2"));
+        animations[AnimationState.HIT.ordinal()] = new Animation(100, Assets.Dante.get("Hit"));
+        animations[AnimationState.DEATH.ordinal()] = new Animation(150, Assets.Dante.get("Death"));
+        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(100, Assets.Dante.get("Ice_Morph"));
+        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(100, Assets.Dante.get("Eden_Shield"));
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(100, Assets.Dante.get("Fiery_Judgement"));
     }
 
     private void updateHealth() {
@@ -216,13 +207,12 @@ public class Dante extends Creature {
         getDir();
 
         if (currMove == MovementState.DEAD) {
-
             applyGravity();
-            moveY();
+            move();
 
             if (deathTimer > 0) {
                 deathTimer--;
-                animations[ANIM_DEATH].tick();
+                animations[AnimationState.DEATH.ordinal()].tick();
             }
             else {
                 handler.getLevel().requestRespawn();
@@ -243,29 +233,29 @@ public class Dante extends Creature {
         }
 
         updateAnimationState();
-        animations[currAnim].tick();
+        animations[currAnim.ordinal()].tick();
     }
 
     private void updateAnimationState() {
         if (currAction != ActionState.IDLE) {
             switch (currAction) {
                 case ATTACKING -> {
-                    if (currDirection == Direction.UP) currAnim = ANIM_ATTACK1;
-                    else currAnim = ANIM_ATTACK2;
+                    if (currDirection == Direction.UP) currAnim = AnimationState.ATTACK1;
+                    else currAnim = AnimationState.ATTACK2;
                 }
-                case EDEN_SHIELD -> currAnim = ANIM_EDEN_SHIELD;
-                case ICE_MORPH -> currAnim = ANIM_ICE_MORPH;
-                case FIERY_JUDGEMENT -> currAnim = ANIM_FIERY_JUDGEMENT;
+                case EDEN_SHIELD -> currAnim = AnimationState.EDEN_SHIELD;
+                case ICE_MORPH -> currAnim = AnimationState.ICE_MORPH;
+                case FIERY_JUDGEMENT -> currAnim = AnimationState.FIERY_JUDGEMENT;
             }
             return;
         }
 
         switch (currMove) {
-            case HURT -> currAnim = ANIM_HIT;
-            case JUMPING -> currAnim = ANIM_JUMP;
-            case FALLING -> currAnim = ANIM_FALL;
-            case RUNNING -> currAnim = ANIM_RUN;
-            default -> currAnim = ANIM_IDLE;
+            case HURT -> currAnim = AnimationState.HIT;
+            case JUMPING -> currAnim = AnimationState.JUMP;
+            case FALLING -> currAnim = AnimationState.FALL;
+            case RUNNING -> currAnim = AnimationState.RUN;
+            default -> currAnim = AnimationState.IDLE;
         }
     }
 
@@ -273,10 +263,9 @@ public class Dante extends Creature {
         if (knockbackTimer > 0) {
             currMove = MovementState.HURT;
             xMove *= FRICTION;
-            moveX();
 
             onGround = false;
-            moveY();
+            move();
             return;
         }
 
@@ -302,8 +291,7 @@ public class Dante extends Creature {
             xMove = 0;
         }
 
-        moveX();
-        moveY();
+        move();
     }
 
     private void handleHorizontalMovement() {
@@ -572,11 +560,11 @@ public class Dante extends Creature {
         int drawY = screenY + (LOGIC_HEIGHT - VISUAL_HEIGHT);
 
         if (currDirection == Direction.LEFT) {
-            g.drawImage(animations[currAnim].getCurrentFrame(),
+            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
                     drawX + VISUAL_WIDTH, drawY, -VISUAL_WIDTH, VISUAL_HEIGHT, null);
         }
         else {
-            g.drawImage(animations[currAnim].getCurrentFrame(),
+            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
                     drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
         }
 
@@ -664,7 +652,7 @@ public class Dante extends Creature {
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
 
         deathTimer = 90;
-        currAnim = ANIM_DEATH;
+        currAnim = AnimationState.DEATH;
     }
 
     public void setOnGround(boolean onGround) {
