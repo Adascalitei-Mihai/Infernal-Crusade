@@ -208,23 +208,28 @@ public class Dante extends Creature {
 
     @Override
     public void Update() {
-        if (currMove == MovementState.DEAD) {
-            if (deathTimer > 0) {
-                deathTimer--;
-                animations[ANIM_DEATH].tick();
-            }
-            else {
-                handler.getLevel().requestRespawn();
-            }
-            return;
-        }
-
         super.Update();
 
         updateHealth();
         updateRank();
         applyGravity();
         getDir();
+
+        if (currMove == MovementState.DEAD) {
+
+            applyGravity();
+            moveY();
+
+            if (deathTimer > 0) {
+                deathTimer--;
+                animations[ANIM_DEATH].tick();
+            }
+            else {
+                handler.getLevel().requestRespawn();
+                currMove = MovementState.IDLE;
+            }
+            return;
+        }
 
         updateCooldowns();
         updateMovementState();
@@ -653,7 +658,6 @@ public class Dante extends Creature {
         currRank = Ranks.D;
         currPoints = 0;
 
-        yMove = 0;
         xMove = 0;
 
         setHp(MAX_HP);
