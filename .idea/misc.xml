@@ -8,13 +8,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/game-maven-module/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/game-maven-module/pom.xml" />
-      </set>
     </option>
   </component>
   <component name="ProjectKey">
