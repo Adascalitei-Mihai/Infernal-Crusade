@@ -21,13 +21,11 @@ public abstract class FlyingEnemy extends Enemy {
 
     @Override
     protected void makeDecision() {
-        // 1. ACTUALIZĂM UNGHIUL DE PLUTIRE (Se întâmplă mereu)
         hoverAngle += hoverSpeed;
         if (hoverAngle > Math.PI * 2) {
             hoverAngle -= (float) (Math.PI * 2);
         }
 
-        // 2. CALCULĂM MIȘCAREA PE OY (Se întâmplă mereu, chiar și când atacă!)
         float targetY = startY + (float) Math.sin(hoverAngle) * yRange;
         float diffY = targetY - this.y;
         float maxRecoverySpeed = baseSpeed * 0.8f;
@@ -42,14 +40,12 @@ public abstract class FlyingEnemy extends Enemy {
             yMove = diffY;
         }
 
-        // 3. VERIFICĂM ATACUL PENTRU OX
         if (isWindingUp || isAttacking) {
             currState = EnemyState.ATTACKING;
-            xMove = 0; // Oprim doar mișcarea stânga-dreapta
-            return;    // Ieșim din metodă ca să nu mai calculăm patrularea
+            xMove = 0;
+            return;
         }
 
-        // 4. LOGICA DE PATRULARE / URMĂRIRE PE OX
         float distance = getDistanceToPlayer();
         float speed = baseSpeed;
 
