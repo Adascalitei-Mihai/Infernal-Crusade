@@ -84,9 +84,10 @@ public class Assets {
         Dante.put("Death", loadDanteAnim("Death.png", 9));
         Dante.put("Attack1", loadDanteAnim("Attack1.png", 4));
         Dante.put("Attack2", loadDanteAnim("Attack2.png", 4));
-        Dante.put("Ice_Morph", loadDanteAnim("Ice_Morph.png", 3));
-        Dante.put("Eden_Shield", loadDanteAnim("Eden_Shield.png", 7));
-        Dante.put("Fiery_Judgement", loadDanteAnim("Fiery_Judgement.png", 3));
+
+        Dante.put("Ice_Morph", loadDanteAbility("Ice_Morph.png", 3));
+        Dante.put("Eden_Shield", loadDanteAbility("Eden_Shield.png", 7));
+        Dante.put("Fiery_Judgement", loadDanteAbility("Fiery_Judgement.png", 3));
     }
 
     /**
@@ -108,6 +109,11 @@ public class Assets {
         BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
         if (img == null) return null;
         return new SpriteSheet(img, 184, img.getHeight() - 16).sliceRow(0, frameCount);
+    }
+    private static BufferedImage[] loadDanteAbility(String fileName, int frameCount) {
+        BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
+        if (img == null) return null;
+        return new SpriteSheet(img, 340, img.getHeight() - 32).sliceRow(0, frameCount);
     }
 
     public static void InitL1() {

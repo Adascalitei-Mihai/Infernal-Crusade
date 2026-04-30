@@ -35,13 +35,13 @@ public class Gate extends Entity {
     @Override
     public void Update() {
         if (currentState == GateState.CLOSING) {
-            closeAnim.tick();
+            closeAnim.Update();
             if (closeAnim.isFinished()) {
                 currentState = GateState.CLOSED;
             }
         }
         else if (currentState == GateState.OPENING) {
-            openAnim.tick();
+            openAnim.Update();
             if (openAnim.isFinished()) {
                 currentState = GateState.OPEN;
                 closeAnim.reset();

@@ -91,11 +91,12 @@ public class Level1 extends Level {
 
     @Override
     public void spawn() {
+        handler.getGameCamera().resetToLevelBounds();
+
         entityManager.getDante().setX(CHKP_POS[handler.getCurrChkp()][0] * TILE_SIZE);
         entityManager.getDante().setY(CHKP_POS[handler.getCurrChkp()][1] * TILE_SIZE);
 
         entityManager.resetEntities();
-        setEnemies();
 
         for(int i = 0; i < CHKP_POS.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
@@ -110,8 +111,8 @@ public class Level1 extends Level {
 
         entityManager.addEntity(gate);
         entityManager.addEntity(factory.createArenaTrigger(
-            GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
-            gate.getWidth(), gate.getHeight(),
+                GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
+                gate.getWidth(), gate.getHeight(),
                 arena, new Gate[]{gate}
         ));
 
@@ -126,8 +127,6 @@ public class Level1 extends Level {
         entityManager.addEntity(new Necromancer(handler, 4000, 800));
         entityManager.addEntity(new Ghoul(handler, 800, 200));
         entityManager.addEntity(new Boss(handler, 5100, 640));
-        // entityManager.addEntity(factory.createMinorEnemy(18400, 680));
-        // entityManager.addEntity(factory.createMajorEnemy(5000, 800));
     }
 
     @Override

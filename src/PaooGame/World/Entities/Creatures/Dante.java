@@ -135,17 +135,21 @@ public class Dante extends Creature {
 
         this.bounds = new Rectangle(BOUNDS);
 
-        animations[AnimationState.IDLE.ordinal()] = new Animation(100, Assets.Dante.get("Idle"));
-        animations[AnimationState.RUN.ordinal()] = new Animation(80, Assets.Dante.get("Run"));
-        animations[AnimationState.JUMP.ordinal()] = new Animation(100, Assets.Dante.get("Jump"));
-        animations[AnimationState.FALL.ordinal()] = new Animation(100, Assets.Dante.get("Fall"));
-        animations[AnimationState.ATTACK1.ordinal()] = new Animation(80, Assets.Dante.get("Attack1"));
-        animations[AnimationState.ATTACK2.ordinal()] = new Animation(80, Assets.Dante.get("Attack2"));
-        animations[AnimationState.HIT.ordinal()] = new Animation(100, Assets.Dante.get("Hit"));
-        animations[AnimationState.DEATH.ordinal()] = new Animation(150, Assets.Dante.get("Death"));
-        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(100, Assets.Dante.get("Ice_Morph"));
-        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(100, Assets.Dante.get("Eden_Shield"));
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(100, Assets.Dante.get("Fiery_Judgement"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(6, Assets.Dante.get("Idle"));
+        animations[AnimationState.RUN.ordinal()] = new Animation(5, Assets.Dante.get("Run"));
+        animations[AnimationState.JUMP.ordinal()] = new Animation(6, Assets.Dante.get("Jump"));
+        animations[AnimationState.FALL.ordinal()] = new Animation(6, Assets.Dante.get("Fall"));
+        animations[AnimationState.FALL.ordinal()].setFrameDuration(Assets.Dante.get("Fall").length - 1, -1);
+        animations[AnimationState.ATTACK1.ordinal()] = new Animation(5, Assets.Dante.get("Attack1"));
+        animations[AnimationState.ATTACK2.ordinal()] = new Animation(5, Assets.Dante.get("Attack2"));
+        animations[AnimationState.HIT.ordinal()] = new Animation(6, Assets.Dante.get("Hit"));
+        animations[AnimationState.DEATH.ordinal()] = new Animation(9, Assets.Dante.get("Death"));
+        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1); // Ingheata pe ultimul cadru cand e mort
+
+        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, Assets.Dante.get("Ice_Morph"));
+        animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(Assets.Dante.get("Ice_Morph").length - 1, -1);
+        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(6, Assets.Dante.get("Eden_Shield"));
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(6, Assets.Dante.get("Fiery_Judgement"));
     }
 
     private void updateHealth() {
@@ -212,12 +216,17 @@ public class Dante extends Creature {
 
             if (deathTimer > 0) {
                 deathTimer--;
-                animations[AnimationState.DEATH.ordinal()].tick();
+                animations[AnimationState.DEATH.ordinal()].Update();
             }
             else {
+                // Curatam tot inainte de respawn ca sa nu sara aiurea
                 handler.getLevel().requestRespawn();
                 hp = MAX_HP;
                 currMove = MovementState.IDLE;
+                currAnim = AnimationState.IDLE;
+                xMove = 0;
+                yMove = 0;
+                knockbackTimer = 0;
             }
             return;
         }
@@ -233,8 +242,14 @@ public class Dante extends Creature {
             actionTimer = 0;
         }
 
+        AnimationState prevAnim = currAnim;
         updateAnimationState();
-        animations[currAnim.ordinal()].tick();
+
+        if (currAnim != prevAnim) {
+            animations[currAnim.ordinal()].reset();
+        }
+
+        animations[currAnim.ordinal()].Update();
     }
 
     private void updateAnimationState() {
@@ -432,7 +447,7 @@ public class Dante extends Creature {
                 if (e instanceof Enemy target) {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
                         if (target.hurt(attackDmg)) {
-                            currPoints += 21;
+                            currPoints++;
                             handler.getScoreMan().addSuccessfulHit(currRank);
 
                             if (currDirection == Direction.RIGHT) {
@@ -456,9 +471,11 @@ public class Dante extends Creature {
     }
 
     private void handleIceMorphState() {
-        actionTimer--;
+        if (actionTimer > 0) {
+            actionTimer--;
+        }
 
-        if (actionTimer <= currAction.active && actionTimer > 0) {
+        if (actionTimer <= currAction.active) {
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
@@ -476,15 +493,16 @@ public class Dante extends Creature {
                     }
                 }
             }
+
+            if (handler.getInputManager().shift) {
+                actionTimer = currAction.active;
+            } else {
+                actionTimer = 0;
+            }
         }
 
         if (actionTimer <= 0) {
-            if (handler.getInputManager().shift) {
-                actionTimer = currAction.getDuration();
-            }
-            else {
-                currAction = ActionState.IDLE;
-            }
+            currAction = ActionState.IDLE;
         }
     }
 
@@ -634,6 +652,7 @@ public class Dante extends Creature {
 
     @Override
     public void applyKnockback(float forceX, float forceY) {
+        if (currMove == MovementState.DEAD) return;
         super.applyKnockback(forceX, forceY);
         onGround = false;
     }
@@ -648,11 +667,13 @@ public class Dante extends Creature {
         currPoints = 0;
 
         xMove = 0;
+        yMove = 0; // Oprim miscarea de pe y cand moare ca sa pice frumos in jos in caz ca sarea
         hp = 0;
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
 
         deathTimer = 90;
         currAnim = AnimationState.DEATH;
+        animations[AnimationState.DEATH.ordinal()].reset(); // REPARAT: Pornim animatia de la 0
     }
 
     public void setOnGround(boolean onGround) {

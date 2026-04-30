@@ -57,11 +57,13 @@ public class Skeleton extends GroundEnemy {
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
 
-        animations[AnimationState.IDLE.ordinal()] = new Animation(150, Assets.Skeleton.get("Idle"));
-        animations[AnimationState.WALK.ordinal()] = new Animation(120, Assets.Skeleton.get("Walk"));
-        animations[AnimationState.ATTACK.ordinal()] = new Animation(100, Assets.Skeleton.get("Attack1"));
-        animations[AnimationState.HURT.ordinal()] = new Animation(100, Assets.Skeleton.get("Hurt"));
-        animations[AnimationState.DIE.ordinal()] = new Animation(150, Assets.Skeleton.get("Die"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(9, Assets.Skeleton.get("Idle"));
+        animations[AnimationState.WALK.ordinal()] = new Animation(7, Assets.Skeleton.get("Walk"));
+        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, Assets.Skeleton.get("Attack1"));
+        animations[AnimationState.HURT.ordinal()] = new Animation(6, Assets.Skeleton.get("Hurt"));
+
+        animations[AnimationState.DIE.ordinal()] = new Animation(9, Assets.Skeleton.get("Die"));
+        animations[AnimationState.DIE.ordinal()].setFrameDuration(Assets.Skeleton.get("Die").length - 1, -1);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class Skeleton extends GroundEnemy {
         if (isDead) {
             if (deathTimer > 0) {
                 deathTimer--;
-                animations[AnimationState.DIE.ordinal()].tick();
+                animations[AnimationState.DIE.ordinal()].Update();
             }
             else {
                 active = false;
@@ -80,8 +82,7 @@ public class Skeleton extends GroundEnemy {
         super.Update();
 
         if (knockbackTimer > 0 || pauseTimer > 0) {
-            updateAnimationState();
-            animations[currAnim.ordinal()].tick();
+            updateAndPlayAnimation();
             return;
         }
 
@@ -105,8 +106,18 @@ public class Skeleton extends GroundEnemy {
             }
         }
 
+        updateAndPlayAnimation();
+    }
+
+    private void updateAndPlayAnimation() {
+        AnimationState prevAnim = currAnim;
         updateAnimationState();
-        animations[currAnim.ordinal()].tick();
+
+        if (currAnim != prevAnim) {
+            animations[currAnim.ordinal()].reset();
+        }
+
+        animations[currAnim.ordinal()].Update();
     }
 
     private void updateAnimationState() {
@@ -228,7 +239,13 @@ public class Skeleton extends GroundEnemy {
 
         isDead = true;
         currAnim = AnimationState.DIE;
+
+        animations[AnimationState.DIE.ordinal()].reset();
+
         deathTimer = 90;
         xMove = 0;
+
+        bounds.width = 0;
+        bounds.height = 0;
     }
 }
