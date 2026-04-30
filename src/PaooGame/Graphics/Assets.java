@@ -14,6 +14,11 @@ public class Assets {
     public static BufferedImage mainMenuBg;
     public static BufferedImage controlsMenuBg;
 
+    // Elemente UI
+    public static BufferedImage[] uiHealth;
+    public static BufferedImage[] uiRanks;
+    public static BufferedImage[] uiCd;
+
     // Entități (Jucător și Inamici)
     public static HashMap<String, BufferedImage[]> Dante;
     public static HashMap<String, BufferedImage[]> Skeleton;
@@ -36,6 +41,7 @@ public class Assets {
         InitMenus();
         InitDante();
         InitEnemies(); // Noua funcție pentru toți inamicii
+        InitUI();
 
         // Obiecte interactive (Sulițe)
         SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
@@ -75,7 +81,7 @@ public class Assets {
         Dante.put("Jump", loadDanteAnim("Jump.png", 2));
         Dante.put("Fall", loadDanteAnim("Fall.png", 2));
         Dante.put("Hit", loadDanteAnim("Hit.png", 3));
-        Dante.put("Death", loadDanteAnim("Death.png", 10));
+        Dante.put("Death", loadDanteAnim("Death.png", 9));
         Dante.put("Attack1", loadDanteAnim("Attack1.png", 4));
         Dante.put("Attack2", loadDanteAnim("Attack2.png", 4));
         Dante.put("Ice_Morph", loadDanteAnim("Ice_Morph.png", 3));
@@ -133,6 +139,37 @@ public class Assets {
                 checkSheet.crop(1, 0),
                 checkSheet.crop(1, 1)
         };
+    }
+
+    public static void InitUI() {
+        BufferedImage uiSheetImg = ImageLoader.LoadImage("/textures/UI/Overlay.png");
+
+        if (uiSheetImg == null) {
+            System.err.println("EROARE: Overlay.png nu a fost găsit la calea specificată!");
+            return;
+        }
+
+        try {
+            uiHealth = new BufferedImage[7];
+            for(int i = 0; i < 7; i++) {
+                uiHealth[i] = uiSheetImg.getSubimage(550 + (int) (i * 45.5f), 60, 40, 16);
+            }
+
+            uiRanks = new BufferedImage[5];
+            uiRanks[4] = uiSheetImg.getSubimage(75, 245, 77, 40);
+            for(int i = 0; i < 4; i++) {
+                uiRanks[3 - i] = uiSheetImg.getSubimage(75 + (i * 46), 204, 46, 32);
+            }
+
+            uiCd = new BufferedImage[5];
+            for(int i = 0; i < 5; i++) {
+                uiCd[i] = uiSheetImg.getSubimage(272 + (i * 46), 195, 46, 48);
+            }
+
+        } catch (Exception e) {
+            System.err.println("EROARE FATALĂ la decuparea UI: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private static void fillTiles(SpriteSheet sheet, int startID, int columns, int totalCount) {
