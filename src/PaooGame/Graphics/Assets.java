@@ -156,14 +156,14 @@ public class Assets {
             }
 
             uiRanks = new BufferedImage[5];
-            uiRanks[4] = uiSheetImg.getSubimage(75, 245, 77, 40);
+            uiRanks[4] = uiSheetImg.getSubimage(76, 245, 77, 40);
             for(int i = 0; i < 4; i++) {
                 uiRanks[3 - i] = uiSheetImg.getSubimage(75 + (i * 46), 204, 46, 32);
             }
 
             uiCd = new BufferedImage[5];
             for(int i = 0; i < 5; i++) {
-                uiCd[i] = uiSheetImg.getSubimage(272 + (i * 46), 195, 46, 48);
+                uiCd[i] = uiSheetImg.getSubimage(272 + (i * 46), 152, 46, 48);
             }
 
         } catch (Exception e) {

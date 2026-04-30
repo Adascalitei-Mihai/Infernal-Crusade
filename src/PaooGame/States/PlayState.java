@@ -3,6 +3,7 @@ package PaooGame.States;
 import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Handler;
+import PaooGame.States.VisualElements.UI;
 import PaooGame.World.Levels.Level;
 import PaooGame.World.Levels.Level1;
 
@@ -12,6 +13,7 @@ import java.awt.*;
 
 public class PlayState extends State {
     private Level level;
+    private UI overlay;
     private boolean initializedFullscreen = false;
     private boolean debugKeyPressed = false;
 
@@ -19,6 +21,7 @@ public class PlayState extends State {
         super(handler);
 
         level = new Level1(handler);
+        overlay = new UI(handler);
     }
 
 
@@ -48,7 +51,8 @@ public class PlayState extends State {
                 handler.setDebugMode(!handler.getDebugMode());
                 debugKeyPressed = true;
             }
-        } else {
+        }
+        else {
             debugKeyPressed = false;
         }
     }
@@ -77,5 +81,6 @@ public class PlayState extends State {
     @Override
     public void Draw(Graphics g) {
         level.Draw(g);
+        overlay.Draw(g);
     }
 }
