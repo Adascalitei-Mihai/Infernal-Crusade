@@ -15,8 +15,9 @@ public class ImageLoader {
      * @param path Calea relativa pentru localizarea fisierul imagine.
      * @return Imaginea incarcata in memorie.
      */
-    public static BufferedImage LoadImage(String path) {
+    public static BufferedImage LoadImage(String path) throws IllegalArgumentException {
         URL resourceUrl = ImageLoader.class.getResource(path);
+
         if (resourceUrl == null) {
             throw new IllegalArgumentException("Eroare: path imagine invalid: " + path);
         }

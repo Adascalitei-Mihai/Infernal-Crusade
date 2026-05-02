@@ -245,12 +245,17 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void setAnimations() {
-        animations[AnimationState.IDLE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Idle"));
-        animations[AnimationState.WALK.ordinal()] = new Animation(7, VisualAssets.Skeleton.get("Walk"));
-        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Attack1"));
-        animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Hurt"));
+        try {
+            animations[AnimationState.IDLE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Idle"));
+            animations[AnimationState.WALK.ordinal()] = new Animation(7, VisualAssets.Skeleton.get("Walk"));
+            animations[AnimationState.ATTACK.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Attack"));
+            animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Hurt"));
 
-        animations[AnimationState.DIE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Die"));
-        animations[AnimationState.DIE.ordinal()].setFrameDuration(VisualAssets.Skeleton.get("Die").length - 1, -1);
+            animations[AnimationState.DIE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Die"));
+            animations[AnimationState.DIE.ordinal()].setFrameDuration(VisualAssets.Skeleton.get("Die").length - 1, -1);
+        }
+        catch (Exception e) {
+            System.out.println("Eroare la afisare Skeleton: " + e.getMessage());
+        }
     }
 }

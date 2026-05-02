@@ -121,6 +121,7 @@ public class Level1 extends Level {
         ));
 
         setEnemies();
+        handler.getDante().resetDeath();
         handler.getGameCamera().snapTo(handler.getDante());
     }
 

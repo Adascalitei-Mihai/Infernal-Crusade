@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class TransitionManager {
-    private static final int TRANZITION_TIME = 60;
+    public static final int TRANSITION_TIME = 60;
 
     private float alpha = 0;
     private boolean fadingOut = false;
@@ -16,7 +16,7 @@ public class TransitionManager {
         if (!fadingOut && !fadingIn) {
             this.onBlackScreen = action;
             this.fadingOut = true;
-            this.currentFrame = TRANZITION_TIME;
+            this.currentFrame = TRANSITION_TIME;
         }
     }
 
@@ -24,7 +24,7 @@ public class TransitionManager {
         if (fadingOut) {
             currentFrame--;
 
-            alpha = ((float) (TRANZITION_TIME - currentFrame) / TRANZITION_TIME) * 255f;
+            alpha = ((float) (TRANSITION_TIME - currentFrame) / TRANSITION_TIME) * 255f;
 
             if (currentFrame <= 0) {
                 alpha = 255;
@@ -40,9 +40,9 @@ public class TransitionManager {
         } else if (fadingIn) {
             currentFrame++;
 
-            alpha = ((float) (TRANZITION_TIME - currentFrame) / TRANZITION_TIME) * 255f;
+            alpha = ((float) (TRANSITION_TIME - currentFrame) / TRANSITION_TIME) * 255f;
 
-            if (currentFrame >= TRANZITION_TIME) {
+            if (currentFrame >= TRANSITION_TIME) {
                 alpha = 0;
                 fadingIn = false;
                 currentFrame = 0;

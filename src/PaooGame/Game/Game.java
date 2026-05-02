@@ -32,17 +32,9 @@ public class Game implements Runnable
 
     private Handler handler;
     private GameCamera gameCamera;
-    /**
-     * Constructor cu parametrii, acesta: <br>
-     * 1. Indica thread-ului ca inca nu ruleaza. <br>
-     * 2. Instantiaza managerii pentru taste si mouse.
-     * @param title Titlul jocului.
-     * @param width Latimea ferestrei.
-     * @param height Inaltimea ferestrei.
-     */
-    public Game(String title, int width, int height)
+
+    public Game()
     {
-        wnd = new GameWindow(title, width, height); // 1
         runState = false;
     }
 
