@@ -10,7 +10,7 @@ import static PaooGame.World.Tile.NO_TILES;
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.
  */
-public class VisualAssets {
+public class VisualAssets implements Runnable {
     public record AnimationData(String label, int offset, int row, int col, int count) {
         public AnimationData(String label, int count) {
             this(label, 0, 0, 0, count);
@@ -50,45 +50,31 @@ public class VisualAssets {
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
      */
-    public static void Init() {
+    public void run() {
         InitMenus();
         InitDante();
         InitEnemies();
         InitUI();
+        InitEnvironment();
         InitEffects();
 
-        SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
-
-        try {
-            spear_closing = new BufferedImage[]{
-                    spearSheet.crop(0, 0), spearSheet.crop(1, 0),
-                    spearSheet.crop(2, 0), spearSheet.crop(5, 0),
-                    spearSheet.crop(6, 0)
-            };
-            spear_opening = new BufferedImage[]{
-                    spearSheet.crop(6, 0), spearSheet.crop(5, 0),
-                    spearSheet.crop(2, 0), spearSheet.crop(1, 0),
-                    spearSheet.crop(0, 0)
-            };
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea gate-urilor:" + e.getMessage());
-        }
 
         InitL1();
+        InitL2();
+        InitL3();
     }
 
     /**
      * Încarcă animațiile pentru toți inamicii din cele 3 niveluri.
      */
-    public static void InitEnemies() {
+    private static void InitEnemies() {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
                 new AnimationData("Attack", 10), new AnimationData("Die", 13), new AnimationData("Hurt", 5)};
         Skeleton = loadAnim("L1-Skeleton", skeletonFrames);
 
     }
 
-    public static void InitDante() {
+    private static void InitDante() {
         AnimationData[] frames = {new AnimationData("Idle", 16, 6), new AnimationData("Run", 16, 8),
             new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
             new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
@@ -143,6 +129,31 @@ public class VisualAssets {
         catch (Exception e) {
             System.out.println("Eroare la incarcarea dalelor nivelului 1: " + e.getMessage());
         }
+    }
+    public static void InitL2() {
+
+    }
+    public static void InitL3() {
+
+    }
+
+    private static void InitEnvironment() {
+        try {
+            SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
+            spear_closing = new BufferedImage[]{
+                    spearSheet.crop(0, 0), spearSheet.crop(1, 0),
+                    spearSheet.crop(2, 0), spearSheet.crop(5, 0),
+                    spearSheet.crop(6, 0)
+            };
+            spear_opening = new BufferedImage[]{
+                    spearSheet.crop(6, 0), spearSheet.crop(5, 0),
+                    spearSheet.crop(2, 0), spearSheet.crop(1, 0),
+                    spearSheet.crop(0, 0)
+            };
+        }
+        catch (Exception e) {
+            System.out.println("Eroare la incarcarea gate-urilor:" + e.getMessage());
+        }
 
         try {
             SpriteSheet checkSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/checkpoint.png"), 32, 32);
@@ -154,11 +165,11 @@ public class VisualAssets {
             };
         }
         catch (Exception e) {
-            System.out.println("Eroare la incarcarea checkpoint-urilor nivelului 1: " + e.getMessage());
+            System.out.println("Eroare la incarcarea checkpoint-urilor: " + e.getMessage());
         }
     }
 
-    public static void InitUI() {
+    private static void InitUI() {
         try {
             BufferedImage uiSheetImg = ImageLoader.LoadImage("/textures/UI/Overlay.png");
             uiHealth = new BufferedImage[7];
@@ -200,7 +211,7 @@ public class VisualAssets {
         fire = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/fire.png"), 24, 32).makeSelection(0, 0, 8);
     }
 
-    public static void InitMenus() {
+    private static void InitMenus() {
         startMenuBg = ImageLoader.LoadImage("/textures/UI/Start-Menu.png");
         mainMenuBg = ImageLoader.LoadImage("/textures/UI/Main-Menu.png");
         controlsMenuBg = ImageLoader.LoadImage("/textures/UI/Controls-Menu.png");

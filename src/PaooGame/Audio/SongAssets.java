@@ -8,7 +8,7 @@ import javax.sound.sampled.Clip;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
-public class SongAssets {
+public class SongAssets implements Runnable {
     public static Clip menu;
     public static Clip level1;
     public static Clip level2;
@@ -16,7 +16,7 @@ public class SongAssets {
     public static Clip arena;
     public static Clip boss;
 
-    public static void Init() {
+    public void run() {
         menu = loadClip("/audio/menu.wav");
         level1 = loadClip("/audio/level1.wav");
         level2 = loadClip("/audio/level2.wav");
