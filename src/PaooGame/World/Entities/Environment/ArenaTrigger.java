@@ -1,24 +1,28 @@
 package PaooGame.World.Entities.Environment;
 
+import PaooGame.Audio.SongAssets;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 
+import javax.sound.sampled.Clip;
 import java.awt.*;
 
 public class ArenaTrigger extends Entity {
-
+    private final Clip bgSong;
     private boolean triggered;
     private boolean finished;
     private final Arena arena;
     private final Gate[] gates;
 
     public ArenaTrigger(Handler handler, float x, float y, int width, int height,
-                        Arena arena, Gate[] gates) {
+                        Arena arena, Gate[] gates, Clip bgSong) {
         super(handler, x, y, width, height);
         this.arena = arena;
         this.gates = gates;
+        this.bgSong = bgSong;
     }
 
     @Override
@@ -58,6 +62,7 @@ public class ArenaTrigger extends Entity {
             }
 
             arena.start();
+            AudioManager.playBGM(bgSong);
         }
     }
 }

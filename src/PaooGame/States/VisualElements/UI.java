@@ -1,6 +1,6 @@
 package PaooGame.States.VisualElements;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 
@@ -44,16 +44,16 @@ public class UI {
 
         int barIndex = getBarIndex(hp, maxHp);
 
-        if (barIndex > 0 && barIndex < Assets.uiHealth.length) {
-            int fillWidth = Assets.uiHealth[barIndex].getWidth() * 4;
-            int fillHeight = Assets.uiHealth[barIndex].getHeight() * 4;
-            g.drawImage(Assets.uiHealth[barIndex], xHealth, yHealth, fillWidth, fillHeight, null);
+        if (barIndex > 0 && barIndex < VisualAssets.uiHealth.length) {
+            int fillWidth = VisualAssets.uiHealth[barIndex].getWidth() * 4;
+            int fillHeight = VisualAssets.uiHealth[barIndex].getHeight() * 4;
+            g.drawImage(VisualAssets.uiHealth[barIndex], xHealth, yHealth, fillWidth, fillHeight, null);
         }
 
-        if (Assets.uiHealth[0] != null) {
-            int borderWidth = Assets.uiHealth[0].getWidth() * 4;
-            int borderHeight = Assets.uiHealth[0].getHeight() * 4;
-            g.drawImage(Assets.uiHealth[0], xHealth, yHealth, borderWidth, borderHeight, null);
+        if (VisualAssets.uiHealth[0] != null) {
+            int borderWidth = VisualAssets.uiHealth[0].getWidth() * 4;
+            int borderHeight = VisualAssets.uiHealth[0].getHeight() * 4;
+            g.drawImage(VisualAssets.uiHealth[0], xHealth, yHealth, borderWidth, borderHeight, null);
         }
     }
 
@@ -73,29 +73,29 @@ public class UI {
 
     private void drawCooldowns(Graphics g) {
         float cooldownProgress = handler.getDante().getCooldownProgress();
-        int frameIndex = (int) (cooldownProgress * (Assets.uiCd.length - 1));
+        int frameIndex = (int) (cooldownProgress * (VisualAssets.uiCd.length - 1));
 
         if (frameIndex < 0) frameIndex = 0;
-        if (frameIndex >= Assets.uiCd.length) frameIndex = Assets.uiCd.length - 1;
+        if (frameIndex >= VisualAssets.uiCd.length) frameIndex = VisualAssets.uiCd.length - 1;
 
-        if (Assets.uiCd[frameIndex] != null) {
-            int cdWidth = Assets.uiCd[frameIndex].getWidth() * 2;
-            int cdHeight = Assets.uiCd[frameIndex].getHeight() * 2;
-            g.drawImage(Assets.uiCd[frameIndex], xCdStart, yCd, cdWidth, cdHeight, null);
+        if (VisualAssets.uiCd[frameIndex] != null) {
+            int cdWidth = VisualAssets.uiCd[frameIndex].getWidth() * 2;
+            int cdHeight = VisualAssets.uiCd[frameIndex].getHeight() * 2;
+            g.drawImage(VisualAssets.uiCd[frameIndex], xCdStart, yCd, cdWidth, cdHeight, null);
         }
     }
 
     private void drawRank(Graphics g) {
         int rankOrdinal = handler.getDante().getCurrRank().ordinal();
 
-        if (Assets.uiRanks != null && rankOrdinal < Assets.uiRanks.length && Assets.uiRanks[rankOrdinal] != null) {
-            int rankWidth = Assets.uiRanks[rankOrdinal].getWidth() * 2;
-            int rankHeight = Assets.uiRanks[rankOrdinal].getHeight() * 2;
+        if (VisualAssets.uiRanks != null && rankOrdinal < VisualAssets.uiRanks.length && VisualAssets.uiRanks[rankOrdinal] != null) {
+            int rankWidth = VisualAssets.uiRanks[rankOrdinal].getWidth() * 2;
+            int rankHeight = VisualAssets.uiRanks[rankOrdinal].getHeight() * 2;
 
             int drawX = xRankCenter - (rankWidth / 2);
             int drawY = yRankCenter - (rankHeight / 2);
 
-            g.drawImage(Assets.uiRanks[rankOrdinal], drawX, drawY, rankWidth, rankHeight, null);
+            g.drawImage(VisualAssets.uiRanks[rankOrdinal], drawX, drawY, rankWidth, rankHeight, null);
 
             if (rankOrdinal >= 0 && rankOrdinal <= 4) {
                 String letter = rankLetters[rankOrdinal];

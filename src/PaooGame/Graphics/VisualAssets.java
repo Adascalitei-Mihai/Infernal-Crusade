@@ -1,6 +1,5 @@
 package PaooGame.Graphics;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
@@ -9,7 +8,7 @@ import static PaooGame.World.Tile.NO_TILES;
 /**
  * Clasa care incarcă fiecare element grafic necesar jocului.
  */
-public class Assets {
+public class VisualAssets {
     // Meniuri
     public static BufferedImage startMenuBg;
     public static BufferedImage mainMenuBg;
@@ -34,7 +33,7 @@ public class Assets {
     public static BufferedImage[] bg;
     public static BufferedImage[] chkp;
     public static BufferedImage[] spear_opening, spear_closing;
-    public static BufferedImage ice;
+    public static BufferedImage[] ice;
     public static BufferedImage[] fire;
 
     /**
@@ -105,18 +104,18 @@ public class Assets {
             return new BufferedImage[0];   // returnăm array gol ca să nu crape
         }
 
-        return new SpriteSheet(img, 96, img.getHeight()).sliceRow(0, frameCount);
+        return new SpriteSheet(img, 96, img.getHeight()).makeSelection(0, 0, frameCount);
     }
 
     private static BufferedImage[] loadDanteAnim(String fileName, int frameCount) {
         BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
         if (img == null) return null;
-        return new SpriteSheet(img, 184, img.getHeight() - 16).sliceRow(0, frameCount);
+        return new SpriteSheet(img, 184, img.getHeight() - 16).makeSelection(0, 0, frameCount);
     }
     private static BufferedImage[] loadDanteAbility(String fileName, int frameCount) {
         BufferedImage img = ImageLoader.LoadImage("/textures/Entities/Dante/" + fileName);
         if (img == null) return null;
-        return new SpriteSheet(img, 340, img.getHeight() - 32).sliceRow(0, frameCount);
+        return new SpriteSheet(img, 340, img.getHeight() - 32).makeSelection(0, 0, frameCount);
     }
 
     public static void InitL1() {
@@ -192,8 +191,8 @@ public class Assets {
     }
 
     private static void InitEffects() {
-        ice = ImageLoader.LoadImage("/textures/Maps/ice.png");
-        fire = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/fire.png"), 24, 32).sliceRow(0, 8);
+        ice = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/ice.png"), 32, 32).makeSelection(0, 2, 6);
+        fire = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/fire.png"), 24, 32).makeSelection(0, 0, 8);
     }
 
     public static void InitMenus() {

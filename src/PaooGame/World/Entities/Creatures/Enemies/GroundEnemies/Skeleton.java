@@ -2,7 +2,7 @@ package PaooGame.World.Entities.Creatures.Enemies.GroundEnemies;
 
 import PaooGame.Handler;
 import PaooGame.Graphics.Animation;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 
@@ -245,12 +245,12 @@ public class Skeleton extends GroundEnemy {
 
     @Override
     public void setAnimations() {
-        animations[AnimationState.IDLE.ordinal()] = new Animation(9, Assets.Skeleton.get("Idle"));
-        animations[AnimationState.WALK.ordinal()] = new Animation(7, Assets.Skeleton.get("Walk"));
-        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, Assets.Skeleton.get("Attack1"));
-        animations[AnimationState.HURT.ordinal()] = new Animation(6, Assets.Skeleton.get("Hurt"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Idle"));
+        animations[AnimationState.WALK.ordinal()] = new Animation(7, VisualAssets.Skeleton.get("Walk"));
+        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Attack1"));
+        animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Hurt"));
 
-        animations[AnimationState.DIE.ordinal()] = new Animation(9, Assets.Skeleton.get("Die"));
-        animations[AnimationState.DIE.ordinal()].setFrameDuration(Assets.Skeleton.get("Die").length - 1, -1);
+        animations[AnimationState.DIE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Die"));
+        animations[AnimationState.DIE.ordinal()].setFrameDuration(VisualAssets.Skeleton.get("Die").length - 1, -1);
     }
 }

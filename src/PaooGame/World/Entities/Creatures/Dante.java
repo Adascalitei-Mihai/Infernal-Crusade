@@ -4,9 +4,8 @@ import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Projectiles.Projectile;
-import PaooGame.World.Tile;
 import PaooGame.Graphics.Animation;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 
 import java.awt.*;
 
@@ -377,7 +376,7 @@ public class Dante extends Creature {
             return;
         }
 
-        if (handler.getCurrLevel() == 3 && handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
+        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
             currAction = ActionState.FIERY_JUDGEMENT;
             actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = cd;
@@ -679,36 +678,36 @@ public class Dante extends Creature {
 
     @Override
     public void setAnimations() {
-        animations[AnimationState.IDLE.ordinal()] = new Animation(6, Assets.Dante.get("Idle"));
-        animations[AnimationState.RUN.ordinal()] = new Animation(5, Assets.Dante.get("Run"));
-        animations[AnimationState.JUMP.ordinal()] = new Animation(6, Assets.Dante.get("Jump"));
+        animations[AnimationState.IDLE.ordinal()] = new Animation(6, VisualAssets.Dante.get("Idle"));
+        animations[AnimationState.RUN.ordinal()] = new Animation(5, VisualAssets.Dante.get("Run"));
+        animations[AnimationState.JUMP.ordinal()] = new Animation(6, VisualAssets.Dante.get("Jump"));
 
-        animations[AnimationState.FALL.ordinal()] = new Animation(6, Assets.Dante.get("Fall"));
-        animations[AnimationState.FALL.ordinal()].setFrameDuration(Assets.Dante.get("Fall").length - 1, -1);
+        animations[AnimationState.FALL.ordinal()] = new Animation(6, VisualAssets.Dante.get("Fall"));
+        animations[AnimationState.FALL.ordinal()].setFrameDuration(VisualAssets.Dante.get("Fall").length - 1, -1);
 
         int atkWindup = ActionState.ATTACKING.windup / 2;
-        animations[AnimationState.ATTACK1.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack1"));
+        animations[AnimationState.ATTACK1.ordinal()] = new Animation(atkWindup, VisualAssets.Dante.get("Attack1"));
         animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
         animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
 
-        animations[AnimationState.ATTACK2.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack2"));
+        animations[AnimationState.ATTACK2.ordinal()] = new Animation(atkWindup, VisualAssets.Dante.get("Attack2"));
         animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
         animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
 
-        animations[AnimationState.HIT.ordinal()] = new Animation(6, Assets.Dante.get("Hit"));
+        animations[AnimationState.HIT.ordinal()] = new Animation(6, VisualAssets.Dante.get("Hit"));
 
-        animations[AnimationState.DEATH.ordinal()] = new Animation(9, Assets.Dante.get("Death"));
-        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1);
+        animations[AnimationState.DEATH.ordinal()] = new Animation(9, VisualAssets.Dante.get("Death"));
+        animations[AnimationState.DEATH.ordinal()].setFrameDuration(VisualAssets.Dante.get("Death").length - 1, -1);
 
-        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, Assets.Dante.get("Ice_Morph"));
-        animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(Assets.Dante.get("Ice_Morph").length - 1, -1);
+        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, VisualAssets.Dante.get("Ice_Morph"));
+        animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(VisualAssets.Dante.get("Ice_Morph").length - 1, -1);
 
         int edenWindup = ActionState.EDEN_SHIELD.windup / 4;
-        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(edenWindup, Assets.Dante.get("Eden_Shield"));
+        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(edenWindup, VisualAssets.Dante.get("Eden_Shield"));
         animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(4, ActionState.EDEN_SHIELD.active);
         animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(5, ActionState.EDEN_SHIELD.recovery);
 
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(ActionState.FIERY_JUDGEMENT.windup, Assets.Dante.get("Fiery_Judgement"));
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(ActionState.FIERY_JUDGEMENT.windup, VisualAssets.Dante.get("Fiery_Judgement"));
         animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(1, ActionState.FIERY_JUDGEMENT.active);
         animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(2, ActionState.FIERY_JUDGEMENT.recovery);
     }

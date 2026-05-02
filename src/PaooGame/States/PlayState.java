@@ -1,8 +1,10 @@
 package PaooGame.States;
 
+import PaooGame.Audio.SongAssets;
 import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.UI;
 import PaooGame.World.Levels.Level;
 import PaooGame.World.Levels.Level1;

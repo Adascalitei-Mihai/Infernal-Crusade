@@ -1,6 +1,6 @@
 package PaooGame.World.Factories;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
@@ -30,11 +30,11 @@ public class Level1Factory extends EntityFactory {
         }
 
         for(int i = 0; i < NO_TILES; i++) {
-            if(Assets.worldTiles[i] != null) {
+            if(VisualAssets.worldTiles[i] != null) {
                 if (SOLID_TILES.contains(i)) {
-                    new Tile(Assets.worldTiles[i], i, true);
+                    new Tile(VisualAssets.worldTiles[i], i, true);
                 } else {
-                    new Tile(Assets.worldTiles[i], i, false);
+                    new Tile(VisualAssets.worldTiles[i], i, false);
                 }
             }
         }

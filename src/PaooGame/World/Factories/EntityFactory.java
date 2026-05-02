@@ -7,6 +7,8 @@ import PaooGame.World.Entities.Environment.ArenaTrigger;
 import PaooGame.World.Entities.Environment.Checkpoint;
 import PaooGame.World.Entities.Environment.Gate;
 
+import javax.sound.sampled.Clip;
+
 public abstract class EntityFactory {
     protected final Handler handler;
 
@@ -16,8 +18,8 @@ public abstract class EntityFactory {
 
     public abstract void InitTiles();
     public ArenaTrigger createArenaTrigger(float x, float y, int width, int height,
-                                           Arena arena, Gate[] gates) {
-        return new ArenaTrigger(handler, x, y, width, height, arena, gates);
+                                           Arena arena, Gate[] gates, Clip bgSong) {
+        return new ArenaTrigger(handler, x, y, width, height, arena, gates, bgSong);
     }
 
     public abstract Creature createMinorEnemy(float x, float y);

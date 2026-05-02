@@ -1,7 +1,9 @@
 package PaooGame.States;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Audio.SongAssets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.Button;
 import PaooGame.States.VisualElements.TextBox;
 
@@ -31,6 +33,8 @@ public class StartMenu extends State {
         nameInput = new TextBox(0, 0, BOX_WIDTH, BOX_HEIGTH);
         quitBtn = new Button(0, 0, BOX_WIDTH, BOX_HEIGTH,
                 new String[]{"Quit (ESC)"});
+
+        AudioManager.playBGM(SongAssets.menu);
     }
 
     /**
@@ -100,7 +104,7 @@ public class StartMenu extends State {
      */
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.startMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
+        g.drawImage(VisualAssets.startMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));

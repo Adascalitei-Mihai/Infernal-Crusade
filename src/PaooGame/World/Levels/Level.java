@@ -1,21 +1,27 @@
 package PaooGame.World.Levels;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.Animation;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.EntityManager;
 import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Tile;
 
+import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+import static PaooGame.World.Entities.Creatures.Dante.FIRE_TIMER;
+import static PaooGame.World.Entities.Creatures.Dante.ICE_TIMER;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Level {
     protected final Handler handler;
     protected final EntityFactory factory;
+    protected final Clip bgSong;
 
     protected int width, height;
     protected int[][] tiles;
@@ -31,10 +37,10 @@ public abstract class Level {
     public static final int EXPOSED_SOUTH  = 1 << 3;
     protected int[][] exposureMask;
 
-    // Contor folosit pentru a animația de foc
-    private int effectTick = 0;
+    protected Animation fireAnim;
+    protected Animation iceAnim;
 
-    public Level(Handler handler, EntityFactory factory, int width, int height, String path) {
+    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong) {
         this.handler = handler;
         this.factory = factory;
 
@@ -45,7 +51,9 @@ public abstract class Level {
         loadLevel(path);
 
         calculateExposureMasks();
+        setAnimations();
 
+        this.bgSong = bgSong;
         entityManager = new EntityManager(new Dante(handler, 0, 0));
     }
 
@@ -66,17 +74,17 @@ public abstract class Level {
     public void Update() {
         entityManager.Update();
 
-        // Creștem contorul pentru animația efectelor
-        effectTick++;
+        fireAnim.Update();
+        iceAnim.Update();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 if (fireTimers[x][y] > 0) {
-                    fireTimers[x][y] -= 1;
+                    fireTimers[x][y]--;
                 }
 
                 if (iceTimers[x][y] > 0) {
-                    iceTimers[x][y] -= 1;
+                    iceTimers[x][y]--;
                 }
             }
         }
@@ -95,7 +103,6 @@ public abstract class Level {
         int yStart = (int) Math.max(0, handler.getyOffset() / TILE_SIZE);
         int yEnd = (int) Math.min(height, (handler.getyOffset() + handler.getHeight()) / TILE_SIZE + 1);
 
-        // Pasul 1: Desenăm Tile-urile hărții
         for(int y = yStart; y < yEnd; y++) {
             for(int x = xStart; x < xEnd; x++) {
                 Tile t = getTile(x, y);
@@ -122,8 +129,6 @@ public abstract class Level {
             }
         }
 
-        // ... (restul funcției Draw până la Pasul 2)
-
         int xStartFx = Math.max(0, xStart - 1);
         int xEndFx = Math.min(width, xEnd + 1);
         int yStartFx = Math.max(0, yStart - 1);
@@ -133,21 +138,19 @@ public abstract class Level {
             for(int x = xStartFx; x < xEndFx; x++) {
                 if (isFire(x, y) || isIce(x, y)) {
                     int mask = exposureMask[x][y];
-                    // Acum dăm mai departe fix coordonatele blocului solid care arde/îngheață
                     int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
                     int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
 
                     BufferedImage fxImg;
                     if (isFire(x, y)) {
-                        int frameIndex = (effectTick / 5) % 8;
-                        fxImg = Assets.fire[frameIndex];
-                    } else {
-                        fxImg = Assets.ice;
+                        fxImg = fireAnim.getCurrentFrame();
+                    }
+                    else {
+                        fxImg = iceAnim.getCurrentFrame();
                     }
 
-                    int offset = TILE_SIZE / 4; // Offset-ul tău calculat (40 * 2 / 16) pentru a intra în tile
+                    int offset = TILE_SIZE / 2;
 
-                    // Transmitem direct screenX și screenY (marginea stânga-sus a tile-ului solid)
                     if ((mask & EXPOSED_NORTH) != 0) {
                         drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
                     }
@@ -164,7 +167,6 @@ public abstract class Level {
             }
         }
 
-        // Desenăm UI-ul de Debug pentru FPS la final
         if (handler.getDebugMode()) {
             g.setColor(Color.RED);
             g.setFont(new Font("MONOSPACED", Font.BOLD, 36));
@@ -172,41 +174,27 @@ public abstract class Level {
             g.drawString(fpsText, handler.getWidth() - 200, 50);
         }
 
-        // Pasul 3: Desenăm Entitățile (Dante, inamici etc) PESTE mediu
         entityManager.Draw(g);
     }
 
     /**
-     * Rotește și desenează un efect dublu pe înălțime lipit de o margine a tile-ului curent.
+     * Rotește și desenează un efect dublu pe lățime și înălțime lipit de o margine a tile-ului curent.
      */
     private void drawRotatedEffect(Graphics g, BufferedImage img, int tileX, int tileY, double angleInRadians, int offset) {
         if (img == null) return;
 
         Graphics2D g2d = (Graphics2D) g.create();
 
-        // 1. Mutăm pivotul de rotație EXACT în centrul blocului solid care este afectat.
         g2d.translate(tileX + TILE_SIZE / 2.0, tileY + TILE_SIZE / 2.0);
-
-        // 2. Rotim mediul. Dacă e Est (PI/2), tot ce desenăm în SUS va ajunge automat în DREAPTA.
         g2d.rotate(angleInRadians);
 
-        // 3. Setăm dimensiunile (înălțime dublă)
-        int drawW = TILE_SIZE;
+        int drawW = TILE_SIZE * 2;
         int drawH = TILE_SIZE * 2;
 
-        // 4. Calculăm coordonatele relativ la pivotul care e în centrul blocului:
-        // X-ul e centrat (deci jumătate în stânga)
-        int drawX = -TILE_SIZE / 2;
-
-        // Y-ul: Vrem ca baza flăcării să fie pe marginea de sus a blocului (-TILE_SIZE / 2).
-        // Adăugăm offset-ul ca să o scufundăm puțin în bloc.
-        // Pentru că imaginea se desenează din colțul ei de sus-stânga, trebuie să scădem înălțimea completă (drawH).
+        int drawX = -TILE_SIZE;
         int drawY = (-TILE_SIZE / 2) + offset - drawH;
 
-        // Desenăm efectul
         g2d.drawImage(img, drawX, drawY, drawW, drawH, null);
-
-        // Curățăm
         g2d.dispose();
     }
 
@@ -286,6 +274,11 @@ public abstract class Level {
         if (exposureMask[x][y] > EXPOSED_NONE && !isFire(x, y)) {
             iceTimers[x][y] = time;
         }
+    }
+
+    public void setAnimations() {
+        iceAnim = new Animation(ICE_TIMER / 60, VisualAssets.ice);
+        fireAnim = new Animation(FIRE_TIMER / 60, VisualAssets.fire);
     }
 
     public int getWidth() { return width; }

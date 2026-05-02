@@ -4,7 +4,7 @@ import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 import PaooGame.Graphics.Animation;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 
 import java.awt.*;
 
@@ -17,7 +17,7 @@ public class Checkpoint extends Entity {
 
     public Checkpoint(Handler handler, float x, float y, int id) {
         super(handler, x, y, 4 * TILE_SIZE, 4 * TILE_SIZE);
-        flutter = new Animation(10, Assets.chkp);
+        flutter = new Animation(10, VisualAssets.chkp);
         this.id = id;
 
         this.bounds = new Rectangle(0, -2000, 4 * TILE_SIZE, 4000);
@@ -45,7 +45,7 @@ public class Checkpoint extends Entity {
                 g.drawImage(flutter.getCurrentFrame(), screenX, screenY, width, height, null);
             }
             else {
-                g.drawImage(Assets.chkp[0], screenX, screenY, width, height, null);
+                g.drawImage(VisualAssets.chkp[0], screenX, screenY, width, height, null);
             }
         }
     }

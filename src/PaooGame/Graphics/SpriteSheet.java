@@ -22,10 +22,10 @@ public class SpriteSheet {
         this.tileHeight = tileHeight;
     }
 
-    public BufferedImage[] sliceRow(int row, int count) {
+    public BufferedImage[] makeSelection(int row, int col, int count) {
         BufferedImage[] frames = new BufferedImage[count];
         for (int i = 0; i < count; i++) {
-            frames[i] = crop(i, row);
+            frames[i] = crop(i + col, row);
         }
         return frames;
     }

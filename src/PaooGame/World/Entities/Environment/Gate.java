@@ -3,7 +3,7 @@ package PaooGame.World.Entities.Environment;
 import PaooGame.Handler;
 import PaooGame.World.Entities.Entity;
 import PaooGame.Graphics.Animation;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 
 import java.awt.*;
 
@@ -26,8 +26,8 @@ public class Gate extends Entity {
     public Gate(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-        closeAnim = new Animation(30, Assets.spear_closing);
-        openAnim = new Animation(30, Assets.spear_opening);
+        closeAnim = new Animation(30, VisualAssets.spear_closing);
+        openAnim = new Animation(30, VisualAssets.spear_opening);
 
         this.bounds = new Rectangle(2, 0, 12, 64);
     }
@@ -57,7 +57,7 @@ public class Gate extends Entity {
         switch (currentState) {
             case CLOSING -> g.drawImage(closeAnim.getCurrentFrame(), screenX, screenY, width, height, null);
             case OPENING -> g.drawImage(openAnim.getCurrentFrame(), screenX, screenY, width, height, null);
-            case CLOSED -> g.drawImage(Assets.spear_closing[Assets.spear_closing.length - 1], screenX, screenY, width, height, null);
+            case CLOSED -> g.drawImage(VisualAssets.spear_closing[VisualAssets.spear_closing.length - 1], screenX, screenY, width, height, null);
             case OPEN -> {}
         }
     }

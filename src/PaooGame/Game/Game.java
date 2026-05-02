@@ -1,10 +1,11 @@
 package PaooGame.Game;
 
+import PaooGame.Audio.SongAssets;
 import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 
 import PaooGame.Handler;
 
@@ -57,7 +58,8 @@ public class Game implements Runnable
         wnd = new GameWindow("Infernal Crusaders", 1000, 800); // 1
         wnd.BuildGameWindow();
 
-        Assets.Init(); // 3
+        VisualAssets.Init(); // 3
+        SongAssets.Init();
         handler = new Handler(this);
 
         gameCamera = new GameCamera(handler, 0, 0);

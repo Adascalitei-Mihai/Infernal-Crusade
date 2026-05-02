@@ -1,7 +1,9 @@
 package PaooGame.World.Levels;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Audio.SongAssets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
@@ -84,16 +86,16 @@ public class Level1 extends Level {
 
     public Level1(Handler handler) {
         super(handler, new Level1Factory(handler),
-                L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
+                L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx", SongAssets.level1);
 
         calculateExposureMasks();
         requestRespawn();
-
     }
 
     @Override
     public void spawn() {
         handler.getGameCamera().resetToLevelBounds();
+        AudioManager.playBGM(bgSong);
 
         entityManager.getDante().setX(CHKP_POS[handler.getCurrChkp()][0] * TILE_SIZE);
         entityManager.getDante().setY(CHKP_POS[handler.getCurrChkp()][1] * TILE_SIZE);
@@ -115,7 +117,7 @@ public class Level1 extends Level {
         entityManager.addEntity(factory.createArenaTrigger(
                 GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
                 gate.getWidth(), gate.getHeight(),
-                arena, new Gate[]{gate}
+                arena, new Gate[]{gate}, SongAssets.arena
         ));
 
         setEnemies();
@@ -133,24 +135,24 @@ public class Level1 extends Level {
 
     @Override
     public void drawBackground(Graphics g) {
-        for (int i = 0; i < Assets.bg.length; i++) {
-            if (Assets.bg[i] == null) continue;
+        for (int i = 0; i < VisualAssets.bg.length; i++) {
+            if (VisualAssets.bg[i] == null) continue;
 
             int x = (int) (OX[i] * SCALE - (handler.getGameCamera().getxOffset() * PX[i]));
             int y = (int) (OY[i] * SCALE - (handler.getGameCamera().getyOffset() * PY[i]));
 
-            int imgW = (int) (Assets.bg[i].getWidth() * SCALE);
-            int imgH = (int) (Assets.bg[i].getHeight() * SCALE);
+            int imgW = (int) (VisualAssets.bg[i].getWidth() * SCALE);
+            int imgH = (int) (VisualAssets.bg[i].getHeight() * SCALE);
 
             if (i < 5) {
                 int movingX = x % imgW;
                 if (movingX > 0) movingX -= imgW;
 
                 for (int j = movingX; j < handler.getWidth(); j += imgW) {
-                    g.drawImage(Assets.bg[i], j, y, imgW, imgH, null);
+                    g.drawImage(VisualAssets.bg[i], j, y, imgW, imgH, null);
                 }
             } else {
-                g.drawImage(Assets.bg[i], x, y, imgW, imgH, null);
+                g.drawImage(VisualAssets.bg[i], x, y, imgW, imgH, null);
             }
         }
     }
