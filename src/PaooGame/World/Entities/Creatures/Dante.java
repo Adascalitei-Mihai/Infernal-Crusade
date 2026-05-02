@@ -42,7 +42,7 @@ public class Dante extends Creature {
     private static final float GRAVITY = 0.5f;
     private static final float JUMP_IMPULSE = -10.0f;
     private static final float JUMP_ADDAGE = -0.6f;
-    private static final int MAX_JUMP_TIME = 10;
+    private static final int MAX_JUMP_TIME = 20;
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
@@ -53,23 +53,26 @@ public class Dante extends Creature {
     private MovementState currMove = MovementState.IDLE;
 
     public enum ActionState {
-        IDLE(0, 0, 0),
-        ATTACKING(5, 7, 40),
-        ICE_MORPH(3, 1, 0),
-        EDEN_SHIELD(0, 15, 300),
-        FIERY_JUDGEMENT(10, 1, 600);
+        IDLE(0, 0, 0, 0),
+        ATTACKING(6, 7, 5, 40),
+        ICE_MORPH(3, 1, 4, 0),
+        EDEN_SHIELD(2, 15, 3, 300),
+        FIERY_JUDGEMENT(10, 1, 8, 600);
 
-        private final int windup;
-        private final int active;
-        private final int baseCooldown;
+        public final int windup;
+        public final int active;
+        public final int recovery;
+        public final int baseCooldown;
 
-        ActionState(int windup, int active, int baseCooldown) {
+        ActionState(int windup, int active, int recovery, int baseCooldown) {
             this.windup = windup;
             this.active = active;
+            this.recovery = recovery;
             this.baseCooldown = baseCooldown;
         }
-        public int getDuration() { return windup + active; }
+        public int getDuration() { return windup + active + recovery; }
     }
+
     private ActionState currAction = ActionState.IDLE;
     private int actionTimer = 0;
     private final int[] cooldowns = new int[ActionState.values().length];
@@ -138,18 +141,35 @@ public class Dante extends Creature {
         animations[AnimationState.IDLE.ordinal()] = new Animation(6, Assets.Dante.get("Idle"));
         animations[AnimationState.RUN.ordinal()] = new Animation(5, Assets.Dante.get("Run"));
         animations[AnimationState.JUMP.ordinal()] = new Animation(6, Assets.Dante.get("Jump"));
+
         animations[AnimationState.FALL.ordinal()] = new Animation(6, Assets.Dante.get("Fall"));
         animations[AnimationState.FALL.ordinal()].setFrameDuration(Assets.Dante.get("Fall").length - 1, -1);
-        animations[AnimationState.ATTACK1.ordinal()] = new Animation(5, Assets.Dante.get("Attack1"));
-        animations[AnimationState.ATTACK2.ordinal()] = new Animation(5, Assets.Dante.get("Attack2"));
+
+        int atkWindup = ActionState.ATTACKING.windup / 2;
+        animations[AnimationState.ATTACK1.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack1"));
+        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
+        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
+
+        animations[AnimationState.ATTACK2.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack2"));
+        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
+        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
+
         animations[AnimationState.HIT.ordinal()] = new Animation(6, Assets.Dante.get("Hit"));
+
         animations[AnimationState.DEATH.ordinal()] = new Animation(9, Assets.Dante.get("Death"));
-        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1); // Ingheata pe ultimul cadru cand e mort
+        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1);
 
         animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, Assets.Dante.get("Ice_Morph"));
         animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(Assets.Dante.get("Ice_Morph").length - 1, -1);
-        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(6, Assets.Dante.get("Eden_Shield"));
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(6, Assets.Dante.get("Fiery_Judgement"));
+
+        int edenWindup = ActionState.EDEN_SHIELD.windup / 4;
+        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(edenWindup, Assets.Dante.get("Eden_Shield"));
+        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(4, ActionState.EDEN_SHIELD.active);
+        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(5, ActionState.EDEN_SHIELD.recovery);
+
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(ActionState.FIERY_JUDGEMENT.windup, Assets.Dante.get("Fiery_Judgement"));
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(1, ActionState.FIERY_JUDGEMENT.active);
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(2, ActionState.FIERY_JUDGEMENT.recovery);
     }
 
     private void updateHealth() {
@@ -219,7 +239,6 @@ public class Dante extends Creature {
                 animations[AnimationState.DEATH.ordinal()].Update();
             }
             else {
-                // Curatam tot inainte de respawn ca sa nu sara aiurea
                 handler.getLevel().requestRespawn();
                 hp = MAX_HP;
                 currMove = MovementState.IDLE;
@@ -368,7 +387,8 @@ public class Dante extends Creature {
     private void checkInputsForNewAction() {
         if (handler.getCurrLevel() != 1 && handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
             currAction = ActionState.EDEN_SHIELD;
-            actionTimer = EDEN_SHIELD_DURATION;
+            // Aici setam timer-ul pe toata durata (inclusiv windup si recovery)
+            actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = currAction.baseCooldown;
             return;
         }
@@ -419,7 +439,11 @@ public class Dante extends Creature {
     private void handleAttackState() {
         actionTimer--;
 
-        if (actionTimer <= currAction.active) {
+        // Calculam daca timer-ul se afla in fereastra de ACTIVE (intre windup si recovery)
+        boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
+                && actionTimer >= currAction.recovery;
+
+        if (isActiveFrame) {
             int vWidth = (int) (bounds.width * 1.5f);
             int vHeight = TILE_SIZE * 3;
             int hWidth = TILE_SIZE * 4;
@@ -446,6 +470,7 @@ public class Dante extends Creature {
             for (Entity e : handler.getEntities()) {
                 if (e instanceof Enemy target) {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
+                        // Cum are invulnerabilityTimer, isi va lua hit doar o data per atac
                         if (target.hurt(attackDmg)) {
                             currPoints++;
                             handler.getScoreMan().addSuccessfulHit(currRank);
@@ -475,7 +500,10 @@ public class Dante extends Creature {
             actionTimer--;
         }
 
-        if (actionTimer <= currAction.active) {
+        boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
+                && actionTimer >= currAction.recovery;
+
+        if (isActiveFrame) {
             getDir();
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height) / TILE_SIZE;
@@ -494,10 +522,9 @@ public class Dante extends Creature {
                 }
             }
 
-            if (handler.getInputManager().shift) {
-                actionTimer = currAction.active;
-            } else {
-                actionTimer = 0;
+            // Daca tine Shift apasat si am ajuns fix la finalul fazei active, nu lasam timerul sa scada!
+            if (handler.getInputManager().shift && actionTimer == currAction.recovery) {
+                actionTimer++; // Anuleaza decrementarea de la inceputul functiei
             }
         }
 
@@ -509,11 +536,18 @@ public class Dante extends Creature {
     private void handleEdenShieldState() {
         actionTimer--;
 
-        if (actionTimer <= currAction.active) {
+        boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
+                && actionTimer >= currAction.recovery;
+
+        if (isActiveFrame) {
             edenShieldBounds.x = (int) (x + bounds.x - EDEN_SHIELD_PADDING);
             edenShieldBounds.y = (int) (y + bounds.y - EDEN_SHIELD_PADDING);
             edenShieldBounds.width = bounds.width + (EDEN_SHIELD_PADDING * 2);
             edenShieldBounds.height = bounds.height + (EDEN_SHIELD_PADDING * 2);
+        } else {
+            // Curatam hitbox-ul in faza de recovery sau windup
+            edenShieldBounds.width = 0;
+            edenShieldBounds.height = 0;
         }
 
         if (actionTimer <= 0) {
@@ -524,7 +558,8 @@ public class Dante extends Creature {
     private void handleFieryJudgementState() {
         actionTimer--;
 
-        if (actionTimer == currAction.active) {
+        // Focul explodeaza fix in primul frame din starea "active"
+        if (actionTimer == currAction.active + currAction.recovery - 1) {
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
 
@@ -593,7 +628,11 @@ public class Dante extends Creature {
                     (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                     bounds.width, bounds.height);
 
-            if (currAction == ActionState.ATTACKING && actionTimer <= currAction.active) {
+            // Desenam hitbox-ul DOAR daca este in cadrul activ
+            boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
+                    && actionTimer >= currAction.recovery;
+
+            if (currAction == ActionState.ATTACKING && isActiveFrame) {
                 g.setColor(new Color(255, 255, 255, 150));
                 g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
                         (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
@@ -606,7 +645,7 @@ public class Dante extends Creature {
             }
         }
 
-        if (currAction == ActionState.EDEN_SHIELD) {
+        if (currAction == ActionState.EDEN_SHIELD && edenShieldBounds.width > 0) {
             g.setColor(new Color(0, 255, 0, 100));
             g.fillRect((int) (edenShieldBounds.x - handler.getGameCamera().getxOffset()),
                     (int) (edenShieldBounds.y - handler.getGameCamera().getyOffset()),
@@ -667,13 +706,13 @@ public class Dante extends Creature {
         currPoints = 0;
 
         xMove = 0;
-        yMove = 0; // Oprim miscarea de pe y cand moare ca sa pice frumos in jos in caz ca sarea
+        yMove = 0;
         hp = 0;
         handler.getPadManager().rumble(0.8f, 0.8f, 300);
 
         deathTimer = 90;
         currAnim = AnimationState.DEATH;
-        animations[AnimationState.DEATH.ordinal()].reset(); // REPARAT: Pornim animatia de la 0
+        animations[AnimationState.DEATH.ordinal()].reset();
     }
 
     public void setOnGround(boolean onGround) {

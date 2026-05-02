@@ -26,8 +26,8 @@ public class Gate extends Entity {
     public Gate(Handler handler, float x, float y) {
         super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-        closeAnim = new Animation(80, Assets.spear_closing);
-        openAnim = new Animation(80, Assets.spear_opening);
+        closeAnim = new Animation(30, Assets.spear_closing);
+        openAnim = new Animation(30, Assets.spear_opening);
 
         this.bounds = new Rectangle(2, 0, 12, 64);
     }
