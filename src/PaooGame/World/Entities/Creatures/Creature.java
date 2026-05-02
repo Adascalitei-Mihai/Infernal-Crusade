@@ -143,6 +143,7 @@ public abstract class Creature extends Entity {
 
     public abstract boolean hurt(float dmg);
     public abstract void die();
+    public abstract void setAnimations();
 
     public void applyKnockback(float forceX, float forceY) {
         xMove = forceX;

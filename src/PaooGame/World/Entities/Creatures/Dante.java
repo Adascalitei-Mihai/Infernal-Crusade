@@ -46,6 +46,7 @@ public class Dante extends Creature {
     private int jumpTimer = 0;
     private boolean isJumping;
     private boolean onGround = false;
+    private boolean slipperyMovement = false;
 
     public enum MovementState {
         IDLE, RUNNING, JUMPING, FALLING, HURT, DEAD
@@ -54,13 +55,13 @@ public class Dante extends Creature {
 
     public enum ActionState {
         IDLE(0, 0, 0, 0),
-        ATTACKING(6, 7, 5, 40),
+        ATTACKING(6, 7, 15, 20),
         ICE_MORPH(3, 1, 4, 0),
-        EDEN_SHIELD(2, 15, 3, 300),
+        EDEN_SHIELD(16, 0, 16, 240),
         FIERY_JUDGEMENT(10, 1, 8, 600);
 
         public final int windup;
-        public final int active;
+        public int active;
         public final int recovery;
         public final int baseCooldown;
 
@@ -71,6 +72,7 @@ public class Dante extends Creature {
             this.baseCooldown = baseCooldown;
         }
         public int getDuration() { return windup + active + recovery; }
+        public void setActive(int duration) { active = duration; }
     }
 
     private ActionState currAction = ActionState.IDLE;
@@ -95,7 +97,6 @@ public class Dante extends Creature {
     public static final int ICE_TIMER = 600;
 
     private static final int EDEN_SHIELD_PADDING = TILE_SIZE;
-    private final int EDEN_SHIELD_DURATION;
     private final Rectangle edenShieldBounds = new Rectangle();
 
     public static final int FIRE_TIMER = 300;
@@ -125,11 +126,11 @@ public class Dante extends Creature {
             case HARD -> 0f;
             default -> 1f;
         };
-        EDEN_SHIELD_DURATION = switch (handler.getDifficulty()) {
+        ActionState.EDEN_SHIELD.setActive(switch (handler.getDifficulty()) {
             case EASY -> 20;
             case HARD -> 8;
             default -> 15;
-        };
+        });
         FIERY_JUDGEMENT_DIFF_CD_PERCENT = switch (handler.getDifficulty()) {
             case EASY -> 0.8f;
             case HARD -> 1.2f;
@@ -137,40 +138,8 @@ public class Dante extends Creature {
         };
 
         this.bounds = new Rectangle(BOUNDS);
-
-        animations[AnimationState.IDLE.ordinal()] = new Animation(6, Assets.Dante.get("Idle"));
-        animations[AnimationState.RUN.ordinal()] = new Animation(5, Assets.Dante.get("Run"));
-        animations[AnimationState.JUMP.ordinal()] = new Animation(6, Assets.Dante.get("Jump"));
-
-        animations[AnimationState.FALL.ordinal()] = new Animation(6, Assets.Dante.get("Fall"));
-        animations[AnimationState.FALL.ordinal()].setFrameDuration(Assets.Dante.get("Fall").length - 1, -1);
-
-        int atkWindup = ActionState.ATTACKING.windup / 2;
-        animations[AnimationState.ATTACK1.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack1"));
-        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
-        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
-
-        animations[AnimationState.ATTACK2.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack2"));
-        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
-        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
-
-        animations[AnimationState.HIT.ordinal()] = new Animation(6, Assets.Dante.get("Hit"));
-
-        animations[AnimationState.DEATH.ordinal()] = new Animation(9, Assets.Dante.get("Death"));
-        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1);
-
-        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, Assets.Dante.get("Ice_Morph"));
-        animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(Assets.Dante.get("Ice_Morph").length - 1, -1);
-
-        int edenWindup = ActionState.EDEN_SHIELD.windup / 4;
-        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(edenWindup, Assets.Dante.get("Eden_Shield"));
-        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(4, ActionState.EDEN_SHIELD.active);
-        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(5, ActionState.EDEN_SHIELD.recovery);
-
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(ActionState.FIERY_JUDGEMENT.windup, Assets.Dante.get("Fiery_Judgement"));
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(1, ActionState.FIERY_JUDGEMENT.active);
-        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(2, ActionState.FIERY_JUDGEMENT.recovery);
-    }
+        setAnimations();
+}
 
     private void updateHealth() {
         if (invulnerabilityTimer <= 0) {
@@ -304,6 +273,10 @@ public class Dante extends Creature {
             return;
         }
 
+        if (onGround) {
+            slipperyMovement = isOnIce();
+        }
+
         if (!onGround) {
             if (yMove < 0) {
                 currMove = MovementState.JUMPING;
@@ -330,7 +303,7 @@ public class Dante extends Creature {
     }
 
     private void handleHorizontalMovement() {
-        if (!isOnIce()) {
+        if (!slipperyMovement) {
             if (handler.getInputManager().right) {
                 xMove = SPEED;
             }
@@ -359,6 +332,10 @@ public class Dante extends Creature {
     }
 
     private void handleJumpLogic() {
+        if (yMove > GRAVITY + 0.1f) {
+            onGround = false;
+        }
+
         if (handler.getInputManager().space && onGround) {
             yMove = JUMP_IMPULSE;
             onGround = false;
@@ -387,7 +364,6 @@ public class Dante extends Creature {
     private void checkInputsForNewAction() {
         if (handler.getCurrLevel() != 1 && handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
             currAction = ActionState.EDEN_SHIELD;
-            // Aici setam timer-ul pe toata durata (inclusiv windup si recovery)
             actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = currAction.baseCooldown;
             return;
@@ -439,7 +415,6 @@ public class Dante extends Creature {
     private void handleAttackState() {
         actionTimer--;
 
-        // Calculam daca timer-ul se afla in fereastra de ACTIVE (intre windup si recovery)
         boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
                 && actionTimer >= currAction.recovery;
 
@@ -470,7 +445,6 @@ public class Dante extends Creature {
             for (Entity e : handler.getEntities()) {
                 if (e instanceof Enemy target) {
                     if (attackBounds.intersects(target.getCollisionBounds(0f, 0f))) {
-                        // Cum are invulnerabilityTimer, isi va lua hit doar o data per atac
                         if (target.hurt(attackDmg)) {
                             currPoints++;
                             handler.getScoreMan().addSuccessfulHit(currRank);
@@ -515,16 +489,12 @@ public class Dante extends Creature {
 
             for (int tx = startX; tx <= endX; tx++) {
                 for (int ty = startY; ty <= endY; ty++) {
-                    if (tx >= 0 && tx < handler.getLevel().getWidth() &&
-                            ty >= 0 && ty < handler.getLevel().getHeight()) {
-                        handler.getLevel().setIce(tx, ty, ICE_TIMER);
-                    }
+                    handler.getLevel().setIce(tx, ty, ICE_TIMER);
                 }
             }
 
-            // Daca tine Shift apasat si am ajuns fix la finalul fazei active, nu lasam timerul sa scada!
             if (handler.getInputManager().shift && actionTimer == currAction.recovery) {
-                actionTimer++; // Anuleaza decrementarea de la inceputul functiei
+                actionTimer++;
             }
         }
 
@@ -545,7 +515,6 @@ public class Dante extends Creature {
             edenShieldBounds.width = bounds.width + (EDEN_SHIELD_PADDING * 2);
             edenShieldBounds.height = bounds.height + (EDEN_SHIELD_PADDING * 2);
         } else {
-            // Curatam hitbox-ul in faza de recovery sau windup
             edenShieldBounds.width = 0;
             edenShieldBounds.height = 0;
         }
@@ -558,7 +527,6 @@ public class Dante extends Creature {
     private void handleFieryJudgementState() {
         actionTimer--;
 
-        // Focul explodeaza fix in primul frame din starea "active"
         if (actionTimer == currAction.active + currAction.recovery - 1) {
             int centerX = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
             int centerY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
@@ -586,23 +554,18 @@ public class Dante extends Creature {
             return;
         }
 
-        Tile t = handler.getLevel().getTile(tx, ty);
-        if (t == null || !t.isSolid()) {
+        if (handler.getLevel().isFire(tx, ty) || handler.getLevel().isIce(tx, ty)) {
             return;
         }
-
-        if (handler.getLevel().isFire(tx, ty)) {
-            return;
-        }
-
-        if (handler.getLevel().isFire(tx, ty) || handler.getLevel().isIce(tx, ty)) return;
 
         handler.getLevel().setFire(tx, ty, FIRE_TIMER);
 
-        spreadFire(tx + 1, ty, remainingSteps - 1);
-        spreadFire(tx - 1, ty, remainingSteps - 1);
-        spreadFire(tx, ty + 1, remainingSteps - 1);
-        spreadFire(tx, ty - 1, remainingSteps - 1);
+        if (handler.getLevel().isFire(tx, ty)) {
+            spreadFire(tx + 1, ty, remainingSteps - 1);
+            spreadFire(tx - 1, ty, remainingSteps - 1);
+            spreadFire(tx, ty + 1, remainingSteps - 1);
+            spreadFire(tx, ty - 1, remainingSteps - 1);
+        }
     }
 
     @Override
@@ -628,7 +591,6 @@ public class Dante extends Creature {
                     (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                     bounds.width, bounds.height);
 
-            // Desenam hitbox-ul DOAR daca este in cadrul activ
             boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
                     && actionTimer >= currAction.recovery;
 
@@ -713,6 +675,42 @@ public class Dante extends Creature {
         deathTimer = 90;
         currAnim = AnimationState.DEATH;
         animations[AnimationState.DEATH.ordinal()].reset();
+    }
+
+    @Override
+    public void setAnimations() {
+        animations[AnimationState.IDLE.ordinal()] = new Animation(6, Assets.Dante.get("Idle"));
+        animations[AnimationState.RUN.ordinal()] = new Animation(5, Assets.Dante.get("Run"));
+        animations[AnimationState.JUMP.ordinal()] = new Animation(6, Assets.Dante.get("Jump"));
+
+        animations[AnimationState.FALL.ordinal()] = new Animation(6, Assets.Dante.get("Fall"));
+        animations[AnimationState.FALL.ordinal()].setFrameDuration(Assets.Dante.get("Fall").length - 1, -1);
+
+        int atkWindup = ActionState.ATTACKING.windup / 2;
+        animations[AnimationState.ATTACK1.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack1"));
+        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
+        animations[AnimationState.ATTACK1.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
+
+        animations[AnimationState.ATTACK2.ordinal()] = new Animation(atkWindup, Assets.Dante.get("Attack2"));
+        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(2, ActionState.ATTACKING.active);
+        animations[AnimationState.ATTACK2.ordinal()].setFrameDuration(3, ActionState.ATTACKING.recovery);
+
+        animations[AnimationState.HIT.ordinal()] = new Animation(6, Assets.Dante.get("Hit"));
+
+        animations[AnimationState.DEATH.ordinal()] = new Animation(9, Assets.Dante.get("Death"));
+        animations[AnimationState.DEATH.ordinal()].setFrameDuration(Assets.Dante.get("Death").length - 1, -1);
+
+        animations[AnimationState.ICE_MORPH.ordinal()] = new Animation(6, Assets.Dante.get("Ice_Morph"));
+        animations[AnimationState.ICE_MORPH.ordinal()].setFrameDuration(Assets.Dante.get("Ice_Morph").length - 1, -1);
+
+        int edenWindup = ActionState.EDEN_SHIELD.windup / 4;
+        animations[AnimationState.EDEN_SHIELD.ordinal()] = new Animation(edenWindup, Assets.Dante.get("Eden_Shield"));
+        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(4, ActionState.EDEN_SHIELD.active);
+        animations[AnimationState.EDEN_SHIELD.ordinal()].setFrameDuration(5, ActionState.EDEN_SHIELD.recovery);
+
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()] = new Animation(ActionState.FIERY_JUDGEMENT.windup, Assets.Dante.get("Fiery_Judgement"));
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(1, ActionState.FIERY_JUDGEMENT.active);
+        animations[AnimationState.FIERY_JUDGEMENT.ordinal()].setFrameDuration(2, ActionState.FIERY_JUDGEMENT.recovery);
     }
 
     public void setOnGround(boolean onGround) {

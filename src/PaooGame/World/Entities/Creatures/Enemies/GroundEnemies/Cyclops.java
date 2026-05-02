@@ -145,4 +145,7 @@ public class Cyclops extends GroundEnemy {
             }
         }
     }
+
+    @Override
+    public void setAnimations() {}
 }

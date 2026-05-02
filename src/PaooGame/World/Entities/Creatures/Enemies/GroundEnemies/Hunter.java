@@ -116,4 +116,7 @@ public class Hunter extends GroundEnemy {
             }
         }
     }
+
+    @Override
+    public void setAnimations() {}
 }

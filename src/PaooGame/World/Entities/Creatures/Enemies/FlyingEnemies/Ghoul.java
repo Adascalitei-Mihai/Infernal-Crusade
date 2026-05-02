@@ -119,4 +119,7 @@ public class Ghoul extends FlyingEnemy {
             }
         }
     }
+
+    @Override
+    public void setAnimations() {}
 }

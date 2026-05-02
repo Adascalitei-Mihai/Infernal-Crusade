@@ -57,13 +57,7 @@ public class Skeleton extends GroundEnemy {
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
 
-        animations[AnimationState.IDLE.ordinal()] = new Animation(9, Assets.Skeleton.get("Idle"));
-        animations[AnimationState.WALK.ordinal()] = new Animation(7, Assets.Skeleton.get("Walk"));
-        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, Assets.Skeleton.get("Attack1"));
-        animations[AnimationState.HURT.ordinal()] = new Animation(6, Assets.Skeleton.get("Hurt"));
-
-        animations[AnimationState.DIE.ordinal()] = new Animation(9, Assets.Skeleton.get("Die"));
-        animations[AnimationState.DIE.ordinal()].setFrameDuration(Assets.Skeleton.get("Die").length - 1, -1);
+        setAnimations();
     }
 
     @Override
@@ -247,5 +241,16 @@ public class Skeleton extends GroundEnemy {
 
         bounds.width = 0;
         bounds.height = 0;
+    }
+
+    @Override
+    public void setAnimations() {
+        animations[AnimationState.IDLE.ordinal()] = new Animation(9, Assets.Skeleton.get("Idle"));
+        animations[AnimationState.WALK.ordinal()] = new Animation(7, Assets.Skeleton.get("Walk"));
+        animations[AnimationState.ATTACK.ordinal()] = new Animation(6, Assets.Skeleton.get("Attack1"));
+        animations[AnimationState.HURT.ordinal()] = new Animation(6, Assets.Skeleton.get("Hurt"));
+
+        animations[AnimationState.DIE.ordinal()] = new Animation(9, Assets.Skeleton.get("Die"));
+        animations[AnimationState.DIE.ordinal()].setFrameDuration(Assets.Skeleton.get("Die").length - 1, -1);
     }
 }

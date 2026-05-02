@@ -307,4 +307,7 @@ public class Boss extends GroundEnemy {
             lifestealTimer = LIFESTEAL_COOLDOWN;
         }
     }
+
+    @Override
+    public void setAnimations() {}
 }

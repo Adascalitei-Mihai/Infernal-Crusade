@@ -1,5 +1,6 @@
 package PaooGame.Graphics;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
@@ -33,6 +34,8 @@ public class Assets {
     public static BufferedImage[] bg;
     public static BufferedImage[] chkp;
     public static BufferedImage[] spear_opening, spear_closing;
+    public static BufferedImage ice;
+    public static BufferedImage[] fire;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
@@ -40,10 +43,10 @@ public class Assets {
     public static void Init() {
         InitMenus();
         InitDante();
-        InitEnemies(); // Noua funcție pentru toți inamicii
+        InitEnemies();
         InitUI();
+        InitEffects();
 
-        // Obiecte interactive (Sulițe)
         SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
         spear_closing = new BufferedImage[]{
                 spearSheet.crop(0, 0), spearSheet.crop(1, 0),
@@ -186,6 +189,11 @@ public class Assets {
             worldTiles[id] = sheet.crop(x, y);
             id++;
         }
+    }
+
+    private static void InitEffects() {
+        ice = ImageLoader.LoadImage("/textures/Maps/ice.png");
+        fire = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/fire.png"), 24, 32).sliceRow(0, 8);
     }
 
     public static void InitMenus() {

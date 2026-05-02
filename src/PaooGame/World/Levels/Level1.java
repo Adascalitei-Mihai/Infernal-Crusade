@@ -86,7 +86,9 @@ public class Level1 extends Level {
         super(handler, new Level1Factory(handler),
                 L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx");
 
+        calculateExposureMasks();
         requestRespawn();
+
     }
 
     @Override
