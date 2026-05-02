@@ -86,8 +86,12 @@ public class StartMenu extends State {
             if(!playerName.trim().isEmpty()) {
                 handler.playerLogin(playerName.trim());
 
-                handler.setState(new MainMenu(handler,
-                        (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+                handler.getKeyManager().reset();
+                handler.getTransitionManager().start(() -> {
+
+                    handler.setState(new MainMenu(handler,
+                            (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+                });
             }
         }
 

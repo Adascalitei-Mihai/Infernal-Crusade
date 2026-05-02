@@ -45,6 +45,7 @@ public class PlayState extends State {
             handler.getGame().getGameCamera().resetToLevelBounds();
             handler.getGame().getWnd().setWindowed();
             handler.getInputManager().reset();
+
             handler.setState(new MainMenu(handler, "Continue"));
         }
 

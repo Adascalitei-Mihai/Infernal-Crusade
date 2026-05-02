@@ -54,7 +54,7 @@ public class Dante extends Creature {
 
     public enum ActionState {
         IDLE(0, 0, 0, 0),
-        ATTACKING(6, 7, 15, 20),
+        ATTACKING(6, 15, 10, 45),
         ICE_MORPH(3, 1, 4, 0),
         EDEN_SHIELD(16, 0, 16, 240),
         FIERY_JUDGEMENT(10, 1, 8, 600);
@@ -376,7 +376,7 @@ public class Dante extends Creature {
             return;
         }
 
-        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
+        if (handler.getCurrLevel() == 2 && handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
             currAction = ActionState.FIERY_JUDGEMENT;
             actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = cd;

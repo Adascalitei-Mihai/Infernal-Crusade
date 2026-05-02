@@ -45,8 +45,11 @@ public class ControlsMenu extends State {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             if(handler.getMouseManager().isLeftPressed()) {
-                handler.setState(new MainMenu(handler,
-                        (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+
+                handler.getTransitionManager().start(() -> {
+                    handler.setState(new MainMenu(handler,
+                            (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+                });
             }
         }
         else {
@@ -54,8 +57,11 @@ public class ControlsMenu extends State {
         }
 
         if(handler.getKeyManager().escape) {
-            handler.getKeyManager().reset();
-            handler.setState(new MainMenu(handler, "New Game"));
+            handler.getKeyManager().escape = false;
+
+            handler.getTransitionManager().start(() -> {
+                handler.setState(new MainMenu(handler, "New Game"));
+            });
         }
     }
 

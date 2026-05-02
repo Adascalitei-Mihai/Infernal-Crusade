@@ -47,6 +47,21 @@ public class GameCamera {
         xOffset = Math.round(xOffset);
         yOffset = Math.round(yOffset);
     }
+    public void snapTo(Entity e) {
+        previousEntityX = e.getX();
+
+        float targetY = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
+        float idealXOffset = e.getX() - ((float) handler.getWidth() * currentScreenTargetX);
+
+        // Aici aplicăm direct offset-ul ideal, fără netezire (lerp)
+        xOffset = idealXOffset;
+        yOffset = targetY;
+
+        checkBlankSpace();
+
+        xOffset = Math.round(xOffset);
+        yOffset = Math.round(yOffset);
+    }
 
     public void centerOnPosition(float x, float y) {
         xOffset = x - (float) handler.getWidth() / 2;
