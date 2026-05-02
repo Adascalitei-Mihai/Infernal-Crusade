@@ -128,13 +128,32 @@ public class Game implements Runnable
             return;
         }
         g = bs.getDrawGraphics();
-        g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
 
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
+
+        int barWidth = 400;
+        int barHeight = 30;
+        int x = (wnd.getWndWidth() - barWidth) / 2;
+        int y = (wnd.getWndHeight() - barHeight) / 2;
+
+        float progress = (float) VisualAssets.loadPercent / VisualAssets.TOTAL_LOAD;
+        progress = Math.min(1.0f, Math.max(0.0f, progress));
+
+        g.setColor(new Color(50, 50, 50));
+        g.fillRect(x, y, barWidth, barHeight);
+
+        g.setColor(new Color(255, 140, 0));
+        g.fillRect(x, y, (int) (barWidth * progress), barHeight);
+
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 24));
-        g.drawString("Incarcare...", wnd.getWndWidth() / 2 - 100, wnd.getWndHeight() / 2);
+        g.drawRect(x, y, barWidth, barHeight);
+
+
+        g.setFont(new Font("Monospaced", Font.BOLD, 18));
+        String status = "AWAKENING DANTE: " + (int)(progress * 100) + "%";
+        int textWidth = g.getFontMetrics().stringWidth(status);
+        g.drawString(status, (wnd.getWndWidth() - textWidth) / 2, y + barHeight + 25);
 
         bs.show();
         g.dispose();

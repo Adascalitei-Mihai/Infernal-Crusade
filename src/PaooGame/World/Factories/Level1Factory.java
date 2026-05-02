@@ -30,11 +30,11 @@ public class Level1Factory extends EntityFactory {
         }
 
         for(int i = 0; i < NO_TILES; i++) {
-            if(VisualAssets.worldTiles[i] != null) {
+            if(VisualAssets.worldTiles1[i] != null) {
                 if (SOLID_TILES.contains(i)) {
-                    new Tile(VisualAssets.worldTiles[i], i, true);
+                    new Tile(VisualAssets.worldTiles1[i], i, true);
                 } else {
-                    new Tile(VisualAssets.worldTiles[i], i, false);
+                    new Tile(VisualAssets.worldTiles1[i], i, false);
                 }
             }
         }

@@ -40,26 +40,35 @@ public class VisualAssets implements Runnable {
     public static HashMap<String, BufferedImage[]> Boss;
 
     // Elemente de hartă
-    public static BufferedImage[] worldTiles = new BufferedImage[NO_TILES];
-    public static BufferedImage[] bg;
+    public static BufferedImage[] bg1, bg2, bg3;
+    public static BufferedImage[] worldTiles1 = new BufferedImage[NO_TILES] , worldTiles2 = new BufferedImage[NO_TILES], worldTiles3 = new BufferedImage[NO_TILES];
     public static BufferedImage[] chkp;
     public static BufferedImage[] spear_opening, spear_closing;
     public static BufferedImage[] ice;
     public static BufferedImage[] fire;
+
+    public static int loadPercent;
+    public static int TOTAL_LOAD = 9;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
      */
     public void run() {
         InitMenus();
+        ++loadPercent;
         InitDante();
+        ++loadPercent;
         InitEnemies();
+        ++loadPercent;
         InitUI();
+        ++loadPercent;
         InitEnvironment();
+        ++loadPercent;
         InitEffects();
-
+        ++loadPercent;
 
         InitL1();
+        loadPercent += 3;
         InitL2();
         InitL3();
     }
@@ -70,8 +79,7 @@ public class VisualAssets implements Runnable {
     private static void InitEnemies() {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
                 new AnimationData("Attack", 10), new AnimationData("Die", 13), new AnimationData("Hurt", 5)};
-        Skeleton = loadAnim("L1-Skeleton", skeletonFrames);
-
+        Skeleton = loadAnim("L1-Skeleton", skeletonFrames, null);
     }
 
     private static void InitDante() {
@@ -79,14 +87,15 @@ public class VisualAssets implements Runnable {
             new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
             new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
             new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 3)};
-        Dante = loadAnim("Dante", frames);
+        Dante = loadAnim("Dante", frames, null);
     }
 
-    private static HashMap<String, BufferedImage[]> loadAnim(String folder, AnimationData[] frames) {
+    private static HashMap<String, BufferedImage[]> loadAnim(String folder, AnimationData[] frames, String singlePath) {
         HashMap<String, BufferedImage[]> animations = new HashMap<>();
         for(AnimationData anim : frames) {
             try {
-                BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" + folder + "/" + anim.label + ".png");
+                BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" +
+                        ((singlePath == null) ? folder + "/" + anim.label : singlePath) + ".png");
 
                 animations.put(anim.label, new SpriteSheet(img, img.getWidth() / anim.count, img.getHeight() - anim.offset)
                         .makeSelection(anim.row, anim.col, anim.count));
@@ -100,7 +109,7 @@ public class VisualAssets implements Runnable {
     }
     public static void InitL1() {
         try {
-            bg = new BufferedImage[]{
+            bg1 = new BufferedImage[]{
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer5.png"),
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer4.png"),
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer2.png"),
@@ -115,16 +124,16 @@ public class VisualAssets implements Runnable {
 
         try {
             SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
-            fillTiles(snowSheet, 1, 11, 121);
+            fillTiles(worldTiles1, snowSheet, 1, 11, 121);
 
             SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
-            fillTiles(decoSheet, 122, 48, 2304);
+            fillTiles(worldTiles1, decoSheet, 122, 48, 2304);
 
             SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
-            fillTiles(penguinSheet, 2426, 4, 32);
+            fillTiles(worldTiles1, penguinSheet, 2426, 4, 32);
 
             SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
-            fillTiles(allSheet, 2458, 64, 2176);
+            fillTiles(worldTiles1, allSheet, 2458, 64, 2176);
         }
         catch (Exception e) {
             System.out.println("Eroare la incarcarea dalelor nivelului 1: " + e.getMessage());
@@ -196,7 +205,7 @@ public class VisualAssets implements Runnable {
         }
     }
 
-    private static void fillTiles(SpriteSheet sheet, int startID, int columns, int totalCount) {
+    private static void fillTiles(BufferedImage[] worldTiles, SpriteSheet sheet, int startID, int columns, int totalCount) {
         int id = startID;
         for (int i = 0; i < totalCount; i++) {
             int x = i % columns;

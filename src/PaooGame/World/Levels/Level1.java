@@ -137,24 +137,24 @@ public class Level1 extends Level {
 
     @Override
     public void drawBackground(Graphics g) {
-        for (int i = 0; i < VisualAssets.bg.length; i++) {
-            if (VisualAssets.bg[i] == null) continue;
+        for (int i = 0; i < VisualAssets.bg1.length; i++) {
+            if (VisualAssets.bg1[i] == null) continue;
 
             int x = (int) (OX[i] * SCALE - (handler.getGameCamera().getxOffset() * PX[i]));
             int y = (int) (OY[i] * SCALE - (handler.getGameCamera().getyOffset() * PY[i]));
 
-            int imgW = (int) (VisualAssets.bg[i].getWidth() * SCALE);
-            int imgH = (int) (VisualAssets.bg[i].getHeight() * SCALE);
+            int imgW = (int) (VisualAssets.bg1[i].getWidth() * SCALE);
+            int imgH = (int) (VisualAssets.bg1[i].getHeight() * SCALE);
 
             if (i < 5) {
                 int movingX = x % imgW;
                 if (movingX > 0) movingX -= imgW;
 
                 for (int j = movingX; j < handler.getWidth(); j += imgW) {
-                    g.drawImage(VisualAssets.bg[i], j, y, imgW, imgH, null);
+                    g.drawImage(VisualAssets.bg1[i], j, y, imgW, imgH, null);
                 }
             } else {
-                g.drawImage(VisualAssets.bg[i], x, y, imgW, imgH, null);
+                g.drawImage(VisualAssets.bg1[i], x, y, imgW, imgH, null);
             }
         }
     }
