@@ -13,12 +13,10 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public class Skeleton extends GroundEnemy {
     public static final int LOGIC_WIDTH = 2 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 4 * TILE_SIZE;
-    public static final Rectangle BOUNDS = new Rectangle(
-            4, 1, LOGIC_WIDTH - 8, LOGIC_HEIGHT - 2
-    );
+    public static final Rectangle BOUNDS = new Rectangle(4, 1, LOGIC_WIDTH - 8, LOGIC_HEIGHT - 2);
 
     public static final int VISUAL_WIDTH = 5 * TILE_SIZE;
-    public static final int VISUAL_HEIGHT = 4 * TILE_SIZE;
+    public static final int VISUAL_HEIGHT = 5 * TILE_SIZE;
 
     public static final float BASE_SPEED = 2f;
     public static final float AGGRO_SPEED = 2.5f;
@@ -29,10 +27,28 @@ public class Skeleton extends GroundEnemy {
     public static final float MAX_HP = 100;
     public static final float KNOCK_PERCENT = 1f;
 
-    private static final int ATTACK_COOLDOWN = 60;
-    private static final int ATTACK_DURATION = 15;
-    private int attackTimer = 0;
-    private int attackActiveTimer = 0;
+    public enum ActionState {
+        IDLE(0, 0, 0, 0),
+        ATTACKING(30, 15, 20, 120);
+
+        public final int windup;
+        public final int active;
+        public final int recovery;
+        public final int baseCooldown;
+
+        ActionState(int windup, int active, int recovery, int baseCooldown) {
+            this.windup = windup;
+            this.active = active;
+            this.recovery = recovery;
+            this.baseCooldown = baseCooldown;
+        }
+
+        public int getDuration() { return windup + active + recovery; }
+    }
+
+    private ActionState currAction = ActionState.IDLE;
+    private int actionTimer = 0;
+    private int attackCooldown = 0;
 
     private final Rectangle attackBounds = new Rectangle();
     private static final float ATTACK_DMG = 50f;
@@ -63,80 +79,63 @@ public class Skeleton extends GroundEnemy {
     @Override
     public void Update() {
         if (isDead) {
-            if (deathTimer > 0) {
-                deathTimer--;
-                animations[AnimationState.DIE.ordinal()].Update();
-            }
-            else {
-                active = false;
-            }
+            handleDeath();
             return;
         }
 
         super.Update();
+        updateCooldowns();
 
         if (knockbackTimer > 0 || pauseTimer > 0) {
-            updateAndPlayAnimation();
+            currAction = ActionState.IDLE;
+            actionTimer = 0;
+        }
+        else {
+            updateActionState();
+        }
+
+        updateAnimationLogic();
+    }
+
+    private void handleDeath() {
+        if (deathTimer > 0) {
+            deathTimer--;
+            animations[AnimationState.DIE.ordinal()].Update();
+        } else {
+            active = false;
+        }
+    }
+
+    private void updateCooldowns() {
+        if (attackCooldown > 0) attackCooldown--;
+    }
+
+    private void updateActionState() {
+        if (currAction == ActionState.IDLE) {
             return;
         }
 
-        if (attackTimer > 0) {
-            attackTimer--;
+        actionTimer--;
 
-            if (attackTimer == ATTACK_DURATION) {
-                isWindingUp = false;
-                isAttacking = true;
-                attackActiveTimer = ATTACK_DURATION;
+        boolean isActiveFrame = actionTimer < (currAction.active + currAction.recovery)
+                && actionTimer >= currAction.recovery;
 
-                executeAttackHitbox();
-            }
+        if (isActiveFrame) {
+            executeAttackHitbox();
         }
 
-        if (isAttacking) {
-            attackActiveTimer--;
-            if (attackActiveTimer <= 0) {
-                isAttacking = false;
-                pauseTimer = PAUSE_DURATION;
-            }
-        }
-
-        updateAndPlayAnimation();
-    }
-
-    private void updateAndPlayAnimation() {
-        AnimationState prevAnim = currAnim;
-        updateAnimationState();
-
-        if (currAnim != prevAnim) {
-            animations[currAnim.ordinal()].reset();
-        }
-
-        animations[currAnim.ordinal()].Update();
-    }
-
-    private void updateAnimationState() {
-        if (knockbackTimer > 0) {
-            currAnim = AnimationState.HURT;
-        }
-        else if (isWindingUp || isAttacking) {
-            currAnim = AnimationState.ATTACK;
-        }
-        else if (Math.abs(xMove) > 0.1f) {
-            currAnim = AnimationState.WALK;
-        }
-        else {
-            currAnim = AnimationState.IDLE;
+        if (actionTimer <= 0) {
+            currAction = ActionState.IDLE;
         }
     }
 
     @Override
     protected void attack() {
-        if (attackTimer > 0) {
-            return;
-        }
+        if (attackCooldown > 0 || currAction != ActionState.IDLE) return;
 
-        attackTimer = ATTACK_COOLDOWN;
-        isWindingUp = true;
+        currAction = ActionState.ATTACKING;
+        actionTimer = currAction.getDuration();
+        attackCooldown = currAction.baseCooldown;
 
         animations[AnimationState.ATTACK.ordinal()].reset();
     }
@@ -144,13 +143,11 @@ public class Skeleton extends GroundEnemy {
     private void executeAttackHitbox() {
         int hWidth = TILE_SIZE * 4;
         int hHeight = (int) (bounds.height * 0.5f);
-
         attackBounds.setSize(hWidth, hHeight);
 
         if (direction == 1) {
             attackBounds.x = (int) (x + bounds.x + bounds.width);
-        }
-        else {
+        } else {
             attackBounds.x = (int) (x + bounds.x - hWidth);
         }
         attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
@@ -160,10 +157,30 @@ public class Skeleton extends GroundEnemy {
             if (dante.hurt(ATTACK_DMG)) {
                 float knockX = (direction == 1) ? 15.0f : -15.0f;
                 dante.applyKnockback(knockX, -5.0f);
-
-                pauseTimer = PAUSE_DURATION;
             }
         }
+    }
+
+    private void updateAnimationLogic() {
+        AnimationState prevAnim = currAnim;
+
+        if (knockbackTimer > 0) {
+            currAnim = AnimationState.HURT;
+        }
+        else if (currAction == ActionState.ATTACKING) {
+            currAnim = AnimationState.ATTACK;
+        }
+        else if (Math.abs(xMove) > 0.1f) {
+            currAnim = AnimationState.WALK;
+        }
+        else {
+            currAnim = AnimationState.IDLE;
+        }
+
+        if (currAnim != prevAnim) {
+            animations[currAnim.ordinal()].reset();
+        }
+        animations[currAnim.ordinal()].Update();
     }
 
     @Override
@@ -176,13 +193,10 @@ public class Skeleton extends GroundEnemy {
 
         if (direction != 1) {
             g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                    drawX + VISUAL_WIDTH, drawY,
-                    -VISUAL_WIDTH, VISUAL_HEIGHT, null);
-        }
-        else {
+                    drawX + VISUAL_WIDTH, drawY, -VISUAL_WIDTH, VISUAL_HEIGHT, null);
+        } else {
             g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                    drawX, drawY,
-                    VISUAL_WIDTH, VISUAL_HEIGHT, null);
+                    drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
         }
 
         if (handler.getDebugMode()) {
@@ -191,54 +205,28 @@ public class Skeleton extends GroundEnemy {
                     (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                     bounds.width, bounds.height);
 
-            if (isAttacking || isWindingUp) {
+            boolean isActiveFrame = currAction == ActionState.ATTACKING &&
+                    actionTimer < (currAction.active + currAction.recovery) &&
+                    actionTimer >= currAction.recovery;
+
+            if (isActiveFrame) {
                 g.setColor(new Color(255, 255, 255, 150));
                 g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
                         (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
                         attackBounds.width, attackBounds.height);
-
-                g.setColor(Color.BLACK);
-                g.drawRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
-                        (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
-                        attackBounds.width, attackBounds.height);
             }
         }
-    }
-
-    @Override
-    public void onInteraction(Entity e) {
-        if (isDead) {
-            return;
-        }
-
-        if (e instanceof Dante dante) {
-            if (dante.hurt(COLLISION_DMG)) {
-                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
-
-                dante.applyKnockback(knockX, -10.0f);
-                pauseTimer = PAUSE_DURATION;
-            }
-        }
-    }
-
-    @Override
-    public boolean hurt(float dmg) {
-        if (isDead) return false;
-        return super.hurt(dmg);
     }
 
     @Override
     public void die() {
         if (isDead) return;
-
         isDead = true;
         currAnim = AnimationState.DIE;
-
+        currAction = ActionState.IDLE;
         animations[AnimationState.DIE.ordinal()].reset();
-
         deathTimer = 90;
         xMove = 0;
-
         bounds.width = 0;
         bounds.height = 0;
     }
@@ -248,14 +236,32 @@ public class Skeleton extends GroundEnemy {
         try {
             animations[AnimationState.IDLE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Idle"));
             animations[AnimationState.WALK.ordinal()] = new Animation(7, VisualAssets.Skeleton.get("Walk"));
-            animations[AnimationState.ATTACK.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Attack"));
             animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Skeleton.get("Hurt"));
 
-            animations[AnimationState.DIE.ordinal()] = new Animation(9, VisualAssets.Skeleton.get("Die"));
+            animations[AnimationState.DIE.ordinal()] = new Animation(10, VisualAssets.Skeleton.get("Die"));
             animations[AnimationState.DIE.ordinal()].setFrameDuration(VisualAssets.Skeleton.get("Die").length - 1, -1);
+
+
+            animations[AnimationState.ATTACK.ordinal()] = new Animation(ActionState.ATTACKING.windup / 5, VisualAssets.Skeleton.get("Attack"));
+            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(5, ActionState.ATTACKING.active);
+            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(6, ActionState.ATTACKING.recovery / 4);
+            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(7, ActionState.ATTACKING.recovery / 4);
+            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(8, ActionState.ATTACKING.recovery / 4);
+            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(9, ActionState.ATTACKING.recovery / 4);
         }
         catch (Exception e) {
-            System.out.println("Eroare la afisare Skeleton: " + e.getMessage());
+            System.out.println("Eroare la setare animatii Skeleton: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onInteraction(Entity e) {
+        if (isDead) return;
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
+                dante.applyKnockback(knockX, -10.0f);
+            }
         }
     }
 }

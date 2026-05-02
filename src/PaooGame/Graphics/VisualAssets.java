@@ -18,6 +18,9 @@ public class VisualAssets implements Runnable {
         public AnimationData(String label, int offset, int count) {
             this(label, offset, 0, 0, count);
         }
+        public AnimationData(String label, int row, int col, int count) {
+            this(label, 0, row, col, count);
+        }
     }
 
     // Meniuri
@@ -79,7 +82,10 @@ public class VisualAssets implements Runnable {
     private static void InitEnemies() {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
                 new AnimationData("Attack", 10), new AnimationData("Die", 13), new AnimationData("Hurt", 5)};
-        Skeleton = loadAnim("L1-Skeleton", skeletonFrames, null);
+        Skeleton = loadAnim("L1-Skeleton", skeletonFrames);
+        AnimationData[] cyclopsFrames = {new AnimationData("Idle", 0, 0, 8), new AnimationData("Walk", 1, 0, 8),
+                new AnimationData("Attack", 2, 0, 8), new AnimationData("Die", 4, 0, 7), new AnimationData("Hurt", 3, 1, 3)};
+        Cyclops = loadAnim("L1-Cyclops/SpriteSheet", cyclopsFrames, 140, 93);
     }
 
     private static void InitDante() {
@@ -87,21 +93,35 @@ public class VisualAssets implements Runnable {
             new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
             new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
             new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 3)};
-        Dante = loadAnim("Dante", frames, null);
+        Dante = loadAnim("Dante", frames);
     }
 
-    private static HashMap<String, BufferedImage[]> loadAnim(String folder, AnimationData[] frames, String singlePath) {
+    private static HashMap<String, BufferedImage[]> loadAnim(String folder, AnimationData[] frames) {
         HashMap<String, BufferedImage[]> animations = new HashMap<>();
         for(AnimationData anim : frames) {
             try {
-                BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" +
-                        ((singlePath == null) ? folder + "/" + anim.label : singlePath) + ".png");
+                BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" + folder + "/" + anim.label + ".png");
 
                 animations.put(anim.label, new SpriteSheet(img, img.getWidth() / anim.count, img.getHeight() - anim.offset)
                         .makeSelection(anim.row, anim.col, anim.count));
             }
             catch (Exception e) {
                 System.out.println("Eroare la incarcarea " + folder + ": " + e.getMessage());
+            }
+        }
+
+        return animations;
+    }
+    private static HashMap<String, BufferedImage[]> loadAnim(String fileName, AnimationData[] frames, int width, int height) {
+        HashMap<String, BufferedImage[]> animations = new HashMap<>();
+        for(AnimationData anim : frames) {
+            try {
+                BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" + fileName + ".png");
+
+                animations.put(anim.label, new SpriteSheet(img, width, height).makeSelection(anim.row, anim.col, anim.count));
+            }
+            catch (Exception e) {
+                System.out.println("Eroare la incarcarea " + fileName + ": " + e.getMessage());
             }
         }
 
