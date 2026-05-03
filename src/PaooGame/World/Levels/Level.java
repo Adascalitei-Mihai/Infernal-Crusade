@@ -5,7 +5,9 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
+import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
 import PaooGame.World.Entities.EntityManager;
 import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Tile;
@@ -39,6 +41,8 @@ public abstract class Level {
 
     protected Animation fireAnim;
     protected Animation iceAnim;
+    protected Arena arena;
+    protected Boss boss;
 
     public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong) {
         this.handler = handler;
@@ -294,4 +298,17 @@ public abstract class Level {
         return entityManager;
     }
     public void drawBackground(Graphics g) {}
+    public boolean inArena() {
+        if (arena == null) {
+            return false;
+        }
+        return arena.isRunning();
+    }
+    public int getCurrWave() {
+        if (arena == null) {
+            return 0;
+        }
+        return arena.getCurrWave();
+    }
+    public Boss getBoss() { return boss; }
 }

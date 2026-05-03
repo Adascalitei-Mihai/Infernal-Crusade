@@ -108,7 +108,7 @@ public class Level1 extends Level {
         }
 
         Gate gate = factory.createGate(GATE_COORDS[0], GATE_COORDS[1]);
-        Arena arena = new Arena(handler, ARENA_WAVES,
+        arena = new Arena(handler, ARENA_WAVES,
                 ARENA_COORDS[0], ARENA_COORDS[1],
                 ARENA_COORDS[2] - ARENA_COORDS[0],
                 ARENA_COORDS[3] - ARENA_COORDS[1]);
@@ -132,7 +132,8 @@ public class Level1 extends Level {
         //entityManager.addEntity(new Hunter(handler, 3000, 800));
         //entityManager.addEntity(new Necromancer(handler, 4000, 800));
         //entityManager.addEntity(new Ghoul(handler, 800, 200));
-        entityManager.addEntity(new Boss(handler, 5100, 640));
+        boss = new Boss(handler, 18800, 680);
+        entityManager.addEntity(boss);
     }
 
     @Override

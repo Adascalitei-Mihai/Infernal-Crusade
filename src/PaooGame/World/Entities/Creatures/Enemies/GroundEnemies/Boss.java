@@ -19,7 +19,7 @@ public class Boss extends GroundEnemy {
     public static final int LOGIC_HEIGHT = 7 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(-5, -5, LOGIC_WIDTH + 10, LOGIC_HEIGHT + 10);
 
-    public static final int VISUAL_WIDTH = 16 * TILE_SIZE;
+    public static final int VISUAL_WIDTH = 20 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 16 * TILE_SIZE;
     public static final int VISUAL_OFFSET_Y = 24;
 
@@ -63,9 +63,9 @@ public class Boss extends GroundEnemy {
 
     // --- Logica originală a Boss-ului ---
     private static final int[] PROJECTILE_SPELL_PERC = {60, 100};
-    private static final int[] PROJECTILE_SPELL_MELEE_PERC = {40, 60, 100};
+    private static final int[] PROJECTILE_SPELL_MELEE_PERC = {35, 50, 100};
     private static final int[] PROJECTILE_SPELL_SUMMON_PERC = {60, 90, 100};
-    private static final int[] PROJECTILE_SPELL_SUMMON_MELEE_PERC = {30, 60, 70, 100};
+    private static final int[] PROJECTILE_SPELL_SUMMON_MELEE_PERC = {25, 50, 60, 100};
 
     private static final int SPELL_COUNT = 5;
     private int currSpellCount;
@@ -78,7 +78,7 @@ public class Boss extends GroundEnemy {
 
     public static final float BASE_SPEED = 2f;
     public static final float AGGRO_SPEED = 3f;
-    public static final float MELEE_RANGE = TILE_SIZE * 7;
+    public static final float MELEE_RANGE = TILE_SIZE * 9;
     public static final float ATTACK_RANGE = TILE_SIZE * 30;
     public static final float AGGRO_RANGE = TILE_SIZE * 36;
     public static final float X_RANGE = TILE_SIZE * 30;
@@ -94,6 +94,9 @@ public class Boss extends GroundEnemy {
     private int lifestealTimer;
     private float phase2TargetX;
 
+    // Variabile folosite pentru umplerea progresiva a vietii in Phase 2
+    private float hpRegenPerTick = 0f;
+
     public Boss(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT);
         this.bounds = new Rectangle(BOUNDS);
@@ -106,7 +109,6 @@ public class Boss extends GroundEnemy {
         this.rand = new Random();
         this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getCreatureCount();
 
-        // Punctul specificat pentru Phase 2 (centrul rutei sale de patrulare)
         this.phase2TargetX = (patrolRange[0] + patrolRange[1]) / 2f;
 
         setAnimations();
@@ -119,10 +121,9 @@ public class Boss extends GroundEnemy {
             return;
         }
 
-        // --- Verificare Tranziție Fază (INTANGIBILITATE) ---
         if (transitionState != TransitionState.NONE) {
             handlePhaseTransition();
-            return; // Blocăm restul update-ului normal pentru a fi intangibil / a nu ataca
+            return;
         }
 
         super.Update();
@@ -138,9 +139,6 @@ public class Boss extends GroundEnemy {
         updateAnimationLogic();
     }
 
-    // ==========================================
-    // --- TRANZIȚIA SPRE PHASE 2 ---
-    // ==========================================
     private void handlePhaseTransition() {
         switch (transitionState) {
             case DEATH1:
@@ -154,38 +152,50 @@ public class Boss extends GroundEnemy {
             case MOVING:
                 changeAnimation(AnimationState.MOVE_TO_PHASE2);
 
-                // Merge plutind/invincibil spre punctul specificat
                 if (Math.abs(this.x - phase2TargetX) > baseSpeed) {
                     this.direction = (this.x < phase2TargetX) ? 1 : -1;
-                    this.x += direction * baseSpeed * 1.5f; // Mișcare un pic mai rapida spre centru
+                    this.x += direction * baseSpeed * 1.5f;
                     animations[currAnim.ordinal()].Update();
                 } else {
-                    this.x = phase2TargetX; // L-am fixat pe punct
+                    this.x = phase2TargetX;
                     transitionState = TransitionState.STARTING_PHASE_2;
+
+                    // Calculăm cât HP trebuie să regenerăm per tick
+                    // Știm din setAnimations că PHASE2_START are viteza 10
+                    // Și are 14 cadre (conform bossFrames trimis anterior)
+                    // Timp total: 10 * 14 = 140 ticks
+                    hpRegenPerTick = MAX_HP / 320f;
                 }
                 break;
 
             case STARTING_PHASE_2:
                 changeAnimation(AnimationState.PHASE2_START);
                 animations[currAnim.ordinal()].Update();
+
+                // Creștem treptat viața
+                if (this.hp < MAX_HP) {
+                    this.hp += hpRegenPerTick;
+                    if (this.hp > MAX_HP) {
+                        this.hp = MAX_HP;
+                    }
+                }
+
                 if (animations[currAnim.ordinal()].isFinished()) {
                     // Terminăm tranziția, începe efectiv Faza 2
                     transitionState = TransitionState.NONE;
                     isPhaseTwo = true;
-                    awaitingSummon = true; // Forțează primul atac să fie Summon
+                    awaitingSummon = true;
 
-                    // Restaurăm coliziunile și viața complet
                     this.bounds.width = BOUNDS.width;
                     this.bounds.height = BOUNDS.height;
+
+                    // Garanție finală că HP-ul este perfect plin
                     this.hp = MAX_HP;
                 }
                 break;
         }
     }
 
-    // ==========================================
-    // --- STATE MACHINE & ACTION UPDATE ---
-    // ==========================================
     private void updateCooldowns() {
         if (attackCooldown > 0) attackCooldown--;
         if (lifestealTimer > 0) lifestealTimer--;
@@ -196,7 +206,6 @@ public class Boss extends GroundEnemy {
 
         actionTimer--;
 
-        // Trigger la final de Windup, exact la început de Active
         if (actionTimer == (currAction.active + currAction.recovery)) {
             executeAttackHitbox();
         }
@@ -233,9 +242,6 @@ public class Boss extends GroundEnemy {
         }
     }
 
-    // ==========================================
-    // --- EXECUTIE ATACURI ---
-    // ==========================================
     private void melee() {
         int hWidth = TILE_SIZE * 6;
         int hHeight = (int) (bounds.height * 0.6f);
@@ -264,7 +270,7 @@ public class Boss extends GroundEnemy {
     private void spell() {
         float[] danteCenter = handler.getDante().getCenter();
         float spellX = danteCenter[0] - SoulPillar.LOGIC_WIDTH / 2f;
-        float spellY = danteCenter[1] - SoulPillar.LOGIC_HEIGHT / 2f; // Corectat la HEIGHT
+        float spellY = danteCenter[1] - SoulPillar.LOGIC_HEIGHT / 2f;
         handler.getLevel().getEntityManager().addEntity(new SoulPillar(handler, spellX, spellY, this));
     }
 
@@ -314,9 +320,6 @@ public class Boss extends GroundEnemy {
         return Attacks.SPELL;
     }
 
-    // ==========================================
-    // --- ANIMATII & DRAW ---
-    // ==========================================
     private void updateAnimationLogic() {
         AnimationState nextAnim = AnimationState.IDLE;
 
@@ -353,7 +356,6 @@ public class Boss extends GroundEnemy {
         int screenY = (int) (y - handler.getGameCamera().getyOffset());
 
         int drawX = screenX + (LOGIC_WIDTH - VISUAL_WIDTH) / 2;
-        // Am adăugat VISUAL_OFFSET_Y aici pentru a coborî desenul
         int drawY = screenY + (LOGIC_HEIGHT - VISUAL_HEIGHT) + VISUAL_OFFSET_Y;
 
         if (animations[currAnim.ordinal()] != null && animations[currAnim.ordinal()].getCurrentFrame() != null) {
@@ -382,19 +384,15 @@ public class Boss extends GroundEnemy {
         }
     }
 
-    // ==========================================
-    // --- INTERACTIUNI (HURT, DIE, LIFESTEAL) ---
-    // ==========================================
     @Override
     public boolean hurt(float dmg) {
-        // Intangibil in tranzitie sau cand e mort definitiv
         if (isDead || transitionState != TransitionState.NONE) return false;
         return super.hurt(dmg);
     }
 
     @Override
     public void onInteraction(Entity e) {
-        if (isDead || transitionState != TransitionState.NONE) return; // Fara damage la coliziune in tranzitie
+        if (isDead || transitionState != TransitionState.NONE) return;
 
         if (e instanceof Dante dante) {
             if (dante.hurt(COLLISION_DMG)) {
@@ -407,7 +405,7 @@ public class Boss extends GroundEnemy {
 
     @Override
     public void die() {
-        if (transitionState != TransitionState.NONE) return; // Prevenim double-trigger
+        if (transitionState != TransitionState.NONE) return;
 
         if (isPhaseTwo) {
             if (isDead) return;
@@ -417,15 +415,13 @@ public class Boss extends GroundEnemy {
             if(animations[AnimationState.DEATH2.ordinal()] != null) {
                 animations[AnimationState.DEATH2.ordinal()].reset();
             }
-            deathTimer = 180; // Timp sa redea DEATH2
+            deathTimer = 180;
             xMove = 0; bounds.width = 0; bounds.height = 0;
         } else {
-            // Declanșăm Phase 1 Death
             transitionState = TransitionState.DEATH1;
             currAction = ActionState.IDLE;
             xMove = 0;
 
-            // Facem boss-ul intangibil scoțând hitbox-ul pe durata fazelor
             bounds.width = 0;
             bounds.height = 0;
         }
@@ -463,7 +459,9 @@ public class Boss extends GroundEnemy {
 
             animations[AnimationState.DEATH1.ordinal()] = new Animation(10, VisualAssets.Boss.get("Death1"));
             animations[AnimationState.MOVE_TO_PHASE2.ordinal()] = new Animation(8, VisualAssets.Boss.get("MoveToPhase2"));
+
             animations[AnimationState.PHASE2_START.ordinal()] = new Animation(10, VisualAssets.Boss.get("Phase2Start"));
+
             animations[AnimationState.DEATH2.ordinal()] = new Animation(10, VisualAssets.Boss.get("Death2"));
             animations[AnimationState.DEATH2.ordinal()].setFrameDuration(VisualAssets.Boss.get("Death2").length - 1, -1);
 

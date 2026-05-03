@@ -84,4 +84,6 @@ public class Arena {
     public boolean isFinished() {
         return !isRunning && currWave >= waves.length;
     }
+    public boolean isRunning() { return isRunning; }
+    public int getCurrWave() { return currWave; }
 }
