@@ -121,12 +121,12 @@ public class VisualAssets implements Runnable {
         ++loadPercent;
 
         AnimationData[] bossFrames = {new AnimationData("Idle", 4, 0, 6), new AnimationData("Walk", 5, 0, 12),
-                new AnimationData("Hitbox", 6, 0, 15), new AnimationData("Projectile", 8, 0, 20),
+                new AnimationData("Melee", 6, 0, 15), new AnimationData("Projectile", 8, 0, 20),
                 new AnimationData("Spell", 7, 0, 16), new AnimationData("Summon", 9, 0, 6),
                 new AnimationData("Hurt", 10, 0, 5), new AnimationData("Lifesteal", 11, 0, 10),
                 new AnimationData("Death1", 0, 0, 6), new AnimationData("MoveToPhase2", 1, 0, 8),
                 new AnimationData("Phase2Start", 3, 0, 32), new AnimationData("Death2", 11, 0, 16)};
-        Boss = loadAnim("L3-Boss/SpriteSheet", bossFrames, 288, 60);
+        Boss = loadAnim("L3-Boss/SpriteSheet", bossFrames, 288, 160);
         ++loadPercent;
         BufferedImage bossProjectilesImg = ImageLoader.LoadImage("/textures/Entities/L3-Boss/Projectiles.png");
         SoulSpear = new SpriteSheet(bossProjectilesImg, 32, 32).makeSelection(0, 0, 3);
