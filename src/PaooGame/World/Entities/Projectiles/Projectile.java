@@ -126,6 +126,10 @@ public abstract class Projectile extends Entity {
         }
     }
 
+    public float getAngle() {
+        return (float) Math.atan2(speedY, speedX);
+    }
+
     public float getDamage() { return damage; }
     public float getSpeedX() { return speedX; }
     public float getKnockPercent() { return knockPercent; }

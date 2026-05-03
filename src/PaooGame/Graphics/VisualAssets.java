@@ -3,6 +3,7 @@ package PaooGame.Graphics;
 import PaooGame.World.Entities.Creatures.Dante;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferDouble;
 import java.util.HashMap;
 
 import static PaooGame.World.Tile.NO_TILES;
@@ -41,6 +42,8 @@ public class VisualAssets implements Runnable {
     public static HashMap<String, BufferedImage[]> Hunter;
     public static HashMap<String, BufferedImage[]> Necromancer;
     public static HashMap<String, BufferedImage[]> Boss;
+
+    public static BufferedImage[] Arrow;
 
     // Elemente de hartă
     public static BufferedImage[] bg1, bg2, bg3;
@@ -83,9 +86,16 @@ public class VisualAssets implements Runnable {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
                 new AnimationData("Attack", 10), new AnimationData("Die", 13), new AnimationData("Hurt", 5)};
         Skeleton = loadAnim("L1-Skeleton", skeletonFrames);
+
         AnimationData[] cyclopsFrames = {new AnimationData("Idle", 0, 0, 8), new AnimationData("Walk", 1, 0, 8),
                 new AnimationData("Attack", 2, 0, 8), new AnimationData("Die", 4, 0, 7), new AnimationData("Hurt", 3, 1, 3)};
         Cyclops = loadAnim("L1-Cyclops/SpriteSheet", cyclopsFrames, 140, 93);
+
+        AnimationData[] hunterFrames = {new AnimationData("Idle", 34, 10), new AnimationData("Walk", 34, 8),
+                new AnimationData("Attack", 34, 6), new AnimationData("Die", 34, 10), new AnimationData("Hurt", 34, 3)};
+        Hunter = loadAnim("L2-Hunter", hunterFrames);
+        BufferedImage arrowImg = ImageLoader.LoadImage("/textures/Entities/L2-Hunter/Arrow.png");
+        Arrow = new SpriteSheet(arrowImg, arrowImg.getWidth() / 2, arrowImg.getHeight()).makeSelection(0, 0, 2);
     }
 
     private static void InitDante() {
@@ -127,7 +137,7 @@ public class VisualAssets implements Runnable {
 
         return animations;
     }
-    public static void InitL1() {
+    private static void InitL1() {
         try {
             bg1 = new BufferedImage[]{
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer5.png"),
