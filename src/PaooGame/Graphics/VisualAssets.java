@@ -47,6 +47,7 @@ public class VisualAssets implements Runnable {
 
     public static BufferedImage[] Arrow;
     public static BufferedImage[] Screech;
+    public static BufferedImage[] SummonCircle;
 
     // Elemente de hartă
     public static BufferedImage[] bg1, bg2, bg3;
@@ -105,6 +106,13 @@ public class VisualAssets implements Runnable {
         Ghoul = loadAnim("L2-Ghoul", ghoulFrames);
         BufferedImage screechImg = ImageLoader.LoadImage("/textures/Entities/L2-Ghoul/Screech.png");
         Screech = new SpriteSheet(screechImg, screechImg.getWidth() / 8, screechImg.getHeight()).makeSelection(0, 0, 3);
+
+        AnimationData[] necromancerFrames = {new AnimationData("Idle", 0, 0, 8), new AnimationData("Walk", 1, 0, 8),
+                new AnimationData("Attack", 2, 0, 12), new AnimationData("Die", 6, 0, 8),
+                new AnimationData("Hurt", 5, 0, 5), new AnimationData("Lifesteal", 4, 0, 12)};
+        Necromancer = loadAnim("L3-Necromancer/SpriteSheet", necromancerFrames, 160, 128);
+        BufferedImage summonCircleImg = ImageLoader.LoadImage("/textures/Entities/L3-Necromancer/SummonCircle.png");
+        SummonCircle = new SpriteSheet(summonCircleImg, summonCircleImg.getWidth() / 5, summonCircleImg.getHeight() - 60).makeSelection(0, 0, 5);
     }
 
     private static void InitDante() {
