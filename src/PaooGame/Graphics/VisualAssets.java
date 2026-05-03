@@ -3,6 +3,7 @@ package PaooGame.Graphics;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
 import PaooGame.World.Entities.Projectiles.Screech;
+import PaooGame.World.Entities.Projectiles.SoulSpear;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferDouble;
@@ -47,7 +48,9 @@ public class VisualAssets implements Runnable {
 
     public static BufferedImage[] Arrow;
     public static BufferedImage[] Screech;
+    public static BufferedImage[] SoulSpear;
     public static BufferedImage[] SummonCircle;
+    public static BufferedImage[] SoulPillar;
 
     // Elemente de hartă
     public static BufferedImage[] bg1, bg2, bg3;
@@ -58,7 +61,7 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 12;
+    public static int TOTAL_LOAD = 17;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
@@ -68,8 +71,7 @@ public class VisualAssets implements Runnable {
         ++loadPercent;
         InitDante();
         ++loadPercent;
-        InitEnemies();
-        loadPercent += 4;
+        InitEnemies(); // +7 loadPercent
         InitUI();
         ++loadPercent;
         InitEnvironment();
@@ -77,8 +79,7 @@ public class VisualAssets implements Runnable {
         InitEffects();
         ++loadPercent;
 
-        InitL1();
-        loadPercent += 3;
+        InitL1(); // +5 loadPercent
         InitL2();
         InitL3();
     }
@@ -90,22 +91,26 @@ public class VisualAssets implements Runnable {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
                 new AnimationData("Attack", 10), new AnimationData("Die", 13), new AnimationData("Hurt", 5)};
         Skeleton = loadAnim("L1-Skeleton", skeletonFrames);
+        ++loadPercent;
 
         AnimationData[] cyclopsFrames = {new AnimationData("Idle", 0, 0, 8), new AnimationData("Walk", 1, 0, 8),
                 new AnimationData("Attack", 2, 0, 8), new AnimationData("Die", 4, 0, 7), new AnimationData("Hurt", 3, 1, 3)};
         Cyclops = loadAnim("L1-Cyclops/SpriteSheet", cyclopsFrames, 140, 93);
+        ++loadPercent;
 
         AnimationData[] hunterFrames = {new AnimationData("Idle", 34, 10), new AnimationData("Walk", 34, 8),
                 new AnimationData("Attack", 34, 6), new AnimationData("Die", 34, 10), new AnimationData("Hurt", 34, 3)};
         Hunter = loadAnim("L2-Hunter", hunterFrames);
         BufferedImage arrowImg = ImageLoader.LoadImage("/textures/Entities/L2-Hunter/Arrow.png");
         Arrow = new SpriteSheet(arrowImg, arrowImg.getWidth() / 2, arrowImg.getHeight()).makeSelection(0, 0, 2);
+        ++loadPercent;
 
         AnimationData[] ghoulFrames = {new AnimationData("Idle", 50, 8), new AnimationData("Fly", 50, 8),
                 new AnimationData("Attack", 50, 8), new AnimationData("Die", 4), new AnimationData("Hurt", 50, 4)};
         Ghoul = loadAnim("L2-Ghoul", ghoulFrames);
         BufferedImage screechImg = ImageLoader.LoadImage("/textures/Entities/L2-Ghoul/Screech.png");
         Screech = new SpriteSheet(screechImg, screechImg.getWidth() / 8, screechImg.getHeight()).makeSelection(0, 0, 3);
+        ++loadPercent;
 
         AnimationData[] necromancerFrames = {new AnimationData("Idle", 0, 0, 8), new AnimationData("Walk", 1, 0, 8),
                 new AnimationData("Attack", 2, 0, 12), new AnimationData("Die", 6, 0, 8),
@@ -113,6 +118,20 @@ public class VisualAssets implements Runnable {
         Necromancer = loadAnim("L3-Necromancer/SpriteSheet", necromancerFrames, 160, 128);
         BufferedImage summonCircleImg = ImageLoader.LoadImage("/textures/Entities/L3-Necromancer/SummonCircle.png");
         SummonCircle = new SpriteSheet(summonCircleImg, summonCircleImg.getWidth() / 5, summonCircleImg.getHeight() - 60).makeSelection(0, 0, 5);
+        ++loadPercent;
+
+        AnimationData[] bossFrames = {new AnimationData("Idle", 4, 0, 6), new AnimationData("Walk", 5, 0, 12),
+                new AnimationData("Hitbox", 6, 0, 15), new AnimationData("Projectile", 8, 0, 20),
+                new AnimationData("Spell", 7, 0, 16), new AnimationData("Summon", 9, 0, 6),
+                new AnimationData("Hurt", 10, 0, 5), new AnimationData("Lifesteal", 11, 0, 10),
+                new AnimationData("Death1", 0, 0, 6), new AnimationData("MoveToPhase2", 1, 0, 8),
+                new AnimationData("Phase2Start", 3, 0, 32), new AnimationData("Death2", 11, 0, 16)};
+        Boss = loadAnim("L3-Boss/SpriteSheet", bossFrames, 288, 60);
+        ++loadPercent;
+        BufferedImage bossProjectilesImg = ImageLoader.LoadImage("/textures/Entities/L3-Boss/Projectiles.png");
+        SoulSpear = new SpriteSheet(bossProjectilesImg, 32, 32).makeSelection(0, 0, 3);
+        SoulPillar = new SpriteSheet(bossProjectilesImg, 32, 32).makeSelection(1, 0, 10);
+        ++loadPercent;
     }
 
     private static void InitDante() {
@@ -164,6 +183,7 @@ public class VisualAssets implements Runnable {
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_layer3.png"),
                     ImageLoader.LoadImage("/textures/Maps/L1/fundal_arena.png")
             };
+            ++loadPercent;
         }
         catch (Exception e) {
             System.out.println("Eroare la incarcarea fundalelor nivelului 1: " + e.getMessage());
@@ -172,15 +192,19 @@ public class VisualAssets implements Runnable {
         try {
             SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
             fillTiles(worldTiles1, snowSheet, 1, 11, 121);
+            ++loadPercent;
 
             SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
             fillTiles(worldTiles1, decoSheet, 122, 48, 2304);
+            ++loadPercent;
 
             SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
             fillTiles(worldTiles1, penguinSheet, 2426, 4, 32);
+            ++loadPercent;
 
             SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
             fillTiles(worldTiles1, allSheet, 2458, 64, 2176);
+            ++loadPercent;
         }
         catch (Exception e) {
             System.out.println("Eroare la incarcarea dalelor nivelului 1: " + e.getMessage());

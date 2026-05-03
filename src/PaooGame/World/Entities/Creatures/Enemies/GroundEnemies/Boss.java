@@ -235,8 +235,8 @@ public class Boss extends GroundEnemy {
     private void spell() {
         float[] danteCenter = handler.getDante().getCenter();
 
-        float spellX = danteCenter[0] - SoulPillar.DEFAULT_WIDTH / 2f;
-        float spellY = danteCenter[1] - SoulPillar.DEFAULT_HEIGHT / 2f;
+        float spellX = danteCenter[0] - SoulPillar.LOGIC_WIDTH / 2f;
+        float spellY = danteCenter[1] - SoulPillar.LOGIC_WIDTH / 2f;
 
         handler.getLevel().getEntityManager().addEntity(
                 new SoulPillar(handler, spellX, spellY, this)
