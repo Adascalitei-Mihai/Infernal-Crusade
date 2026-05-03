@@ -1,6 +1,8 @@
 package PaooGame.Graphics;
 
 import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
+import PaooGame.World.Entities.Projectiles.Screech;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferDouble;
@@ -38,12 +40,13 @@ public class VisualAssets implements Runnable {
     public static HashMap<String, BufferedImage[]> Dante;
     public static HashMap<String, BufferedImage[]> Skeleton;
     public static HashMap<String, BufferedImage[]> Cyclops;
-    public static HashMap<String, BufferedImage[]> Ghoul;
     public static HashMap<String, BufferedImage[]> Hunter;
+    public static HashMap<String, BufferedImage[]> Ghoul;
     public static HashMap<String, BufferedImage[]> Necromancer;
     public static HashMap<String, BufferedImage[]> Boss;
 
     public static BufferedImage[] Arrow;
+    public static BufferedImage[] Screech;
 
     // Elemente de hartă
     public static BufferedImage[] bg1, bg2, bg3;
@@ -54,7 +57,7 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 9;
+    public static int TOTAL_LOAD = 12;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
@@ -65,7 +68,7 @@ public class VisualAssets implements Runnable {
         InitDante();
         ++loadPercent;
         InitEnemies();
-        ++loadPercent;
+        loadPercent += 4;
         InitUI();
         ++loadPercent;
         InitEnvironment();
@@ -96,6 +99,12 @@ public class VisualAssets implements Runnable {
         Hunter = loadAnim("L2-Hunter", hunterFrames);
         BufferedImage arrowImg = ImageLoader.LoadImage("/textures/Entities/L2-Hunter/Arrow.png");
         Arrow = new SpriteSheet(arrowImg, arrowImg.getWidth() / 2, arrowImg.getHeight()).makeSelection(0, 0, 2);
+
+        AnimationData[] ghoulFrames = {new AnimationData("Idle", 50, 8), new AnimationData("Fly", 50, 8),
+                new AnimationData("Attack", 50, 8), new AnimationData("Die", 4), new AnimationData("Hurt", 50, 4)};
+        Ghoul = loadAnim("L2-Ghoul", ghoulFrames);
+        BufferedImage screechImg = ImageLoader.LoadImage("/textures/Entities/L2-Ghoul/Screech.png");
+        Screech = new SpriteSheet(screechImg, screechImg.getWidth() / 8, screechImg.getHeight()).makeSelection(0, 0, 3);
     }
 
     private static void InitDante() {

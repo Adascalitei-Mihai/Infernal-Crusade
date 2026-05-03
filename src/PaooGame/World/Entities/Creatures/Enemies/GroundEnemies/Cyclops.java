@@ -204,7 +204,7 @@ public class Cyclops extends GroundEnemy {
         }
 
         if (handler.getDebugMode()) {
-            g.setColor(new Color(255, 0, 255, 100));
+            g.setColor(new Color(255, 0, 0, 100));
             g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
                     (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
                     bounds.width, bounds.height);

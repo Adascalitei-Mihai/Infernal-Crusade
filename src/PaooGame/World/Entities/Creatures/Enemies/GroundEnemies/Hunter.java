@@ -211,7 +211,6 @@ public class Hunter extends GroundEnemy {
             animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Hunter.get("Hurt"));
             animations[AnimationState.DIE.ordinal()] = new Animation(10, VisualAssets.Hunter.get("Die"));
 
-
             animations[AnimationState.ATTACK.ordinal()] = new Animation(ActionState.SHOOTING.windup / 4, VisualAssets.Hunter.get("Attack"));
             animations[AnimationState.ATTACK.ordinal()].setFrameDuration(4, ActionState.SHOOTING.active);
             animations[AnimationState.ATTACK.ordinal()].setFrameDuration(5, ActionState.SHOOTING.recovery);

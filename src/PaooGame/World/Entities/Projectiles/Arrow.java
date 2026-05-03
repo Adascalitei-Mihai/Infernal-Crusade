@@ -66,7 +66,7 @@ public class Arrow extends Projectile {
 
         // Debug: Hitbox-ul (atenție, hitbox-ul nu se rotește în logica de coliziune AABB standard)
         if (handler.getDebugMode()) {
-            g.setColor(new Color(0, 0, 200, 100));
+            g.setColor(new Color(0, 0, 255, 100));
             g.fillRect(screenX, screenY, width, height);
         }
     }
