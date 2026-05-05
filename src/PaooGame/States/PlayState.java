@@ -8,6 +8,7 @@ import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.UI;
 import PaooGame.World.Levels.Level;
 import PaooGame.World.Levels.Level1;
+import PaooGame.World.Levels.Level2;
 
 import java.awt.*;
 

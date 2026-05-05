@@ -32,7 +32,6 @@ public abstract class Level {
     // Suport pentru multiple straturi de randare
     protected Map<String, int[][]> mapLayers;
     protected String[] layerRenderOrder;
-    protected String solidLayerName;
 
     // Matricea de bază pentru logică și coliziuni (reprezintă "solidLayerName")
     protected int[][] tiles;
@@ -53,15 +52,16 @@ public abstract class Level {
     protected Animation iceAnim;
     protected Arena arena;
     protected Boss boss;
+    protected String[] solidLayerNames;
 
-    // CONSTRUCTOR NOU: Primește și lista de straturi + stratul principal
-    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong, String[] layerRenderOrder, String solidLayerName) {
+    // Actualizează constructorul
+    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong, String[] layerRenderOrder, String[] solidLayerNames) {
         this.handler = handler;
         this.factory = factory;
         this.width = width;
         this.height = height;
         this.layerRenderOrder = layerRenderOrder;
-        this.solidLayerName = solidLayerName;
+        this.solidLayerNames = solidLayerNames; // Salvăm array-ul de layere solide
 
         handler.setLevel(this);
         loadLevel(path);
@@ -79,9 +79,6 @@ public abstract class Level {
     public void loadLevel(String path) {
         // Folosim noul TMXParser pentru a obține doar layerele vizuale și cel de coliziuni
         mapLayers = TMXParser.parseTMXLayers(path, Arrays.asList(layerRenderOrder));
-
-        // Preluăm matricea principală (coliziunile) pentru a păstra funcțiile vechi (getTile)
-        tiles = mapLayers.getOrDefault(solidLayerName, new int[width][height]);
 
         fireTimers = new int[width][height];
         iceTimers = new int[width][height];
@@ -104,6 +101,16 @@ public abstract class Level {
             spawn();
             pendingRespawn = false;
         }
+    }
+
+    protected boolean isSolidLayer(String layerName) {
+        if (solidLayerNames == null) return false;
+        for (String solid : solidLayerNames) {
+            if (solid.equals(layerName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void Draw(Graphics g) {
@@ -137,10 +144,10 @@ public abstract class Level {
 
                     t.Draw(g, screenX, screenY);
 
-                    // Debug Mode (Randează contururi DOAR pentru layer-ul cu coliziuni)
-                    if (handler.getDebugMode() && layerName.equals(solidLayerName)) {
-                        if (t.isSolid()) g.setColor(new Color(0, 255, 0, 100));
-                        else g.setColor(new Color(255, 255, 0, 100));
+                    // Debug Mode (Randează contururi DOAR pentru layerele care sunt in array-ul de coliziuni)
+                    if (handler.getDebugMode() && isSolidLayer(layerName)) {
+                        if (t.isSolid()) g.setColor(new Color(0, 255, 0, 100)); // Verde pentru solid
+                        else g.setColor(new Color(255, 255, 0, 100));          // Galben pentru pasabil
 
                         g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
                         g.setColor(Color.BLACK);
@@ -225,13 +232,29 @@ public abstract class Level {
 
     // Rămâne neschimbat: folosit de entități pentru a verifica logic coliziunile
     public Tile getTile(int x, int y) {
-        if(x < 0 || x >= width || y >= height) return Tile.tiles[1]; // Solid perete ecran
-        if(y < 0) return Tile.tiles[0]; // Cer
+        // Dacă e în afara hărții, returnăm perete (ca să nu iasă din hartă)
+        if(x < 0 || x >= width || y >= height) return Tile.tiles[1];
+        // Dacă sare prea sus, returnăm cer (liber)
+        if(y < 0) return Tile.tiles[0];
 
-        int id = tiles[x][y];
-        if(id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) return Tile.tiles[0];
+        // Verificăm fiecare layer setat ca fiind solid
+        for (String layerName : solidLayerNames) {
+            int[][] currentLayer = mapLayers.get(layerName);
+            if (currentLayer != null) {
+                int id = currentLayer[x][y];
 
-        return Tile.tiles[id];
+                // Dacă tile-ul există pe acest layer
+                if (id > 0 && id < Tile.tiles.length && Tile.tiles[id] != null) {
+                    // Dacă tile-ul este declarat SOLID în Factory, îl returnăm imediat (coliziune!)
+                    if (Tile.tiles[id].isSolid()) {
+                        return Tile.tiles[id];
+                    }
+                }
+            }
+        }
+
+        // Dacă a verificat toate layerele și nu a lovit nimic solid, returnăm spațiu gol (0)
+        return Tile.tiles[0];
     }
 
     public boolean isFire(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0; }

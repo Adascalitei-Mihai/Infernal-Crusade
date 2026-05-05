@@ -40,7 +40,11 @@ public class Level2 extends Level {
             "platforme iarba"
     };
     // Stratul folosit pentru calculul coliziunilor fizice
-    private static final String SOLID_LAYER = "platforme pamant";
+    private static final String[] SOLID_LAYERS = {
+            "decor",
+            "platforme pamant",
+            "platforme iarba"
+    };
 
     // --- CHKP & ARENA (Placeholder temporar, conform cerinței) ---
     private static final int[][] CHKP_POS = { {1, 20} };
@@ -49,11 +53,10 @@ public class Level2 extends Level {
     private static final int[] GATE_COORDS = { 0, 0 };
 
     public Level2(Handler handler) {
-        // Apelăm constructorul de bază
-        // ATENȚIE: Înlocuiește "/textures/Maps/L2/L2.tmx", SongAssets.level2 și Level2Factory cu numele tale reale
+        // Trimitem SOLID_LAYERS în loc de SOLID_LAYER
         super(handler, new Level2Factory(handler),
-                L2_WIDTH, L2_HEIGHT, "/textures/Maps/L2/L2.tmx", SongAssets.level1, // Am pus level1 ca placeholder ptr audio
-                RENDER_ORDER, SOLID_LAYER);
+                L2_WIDTH, L2_HEIGHT, "/textures/Maps/L2/L2.tmx", SongAssets.level1,
+                RENDER_ORDER, SOLID_LAYERS);
 
         calculateExposureMasks();
         requestRespawn();
@@ -68,6 +71,12 @@ public class Level2 extends Level {
         entityManager.getDante().setY(CHKP_POS[handler.getCurrChkp()][1] * TILE_SIZE);
 
         entityManager.resetEntities();
+
+        // Checkpoints placeholder
+        for(int i = 0; i < CHKP_POS.length; ++i) {
+            entityManager.addEntity(factory.createCheckpoint(
+                    CHKP_POS[i][0] * TILE_SIZE, CHKP_POS[i][1] * TILE_SIZE, i));
+        }
 
         setEnemies();
         handler.getDante().resetDeath();

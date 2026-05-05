@@ -31,7 +31,7 @@ public class Level1 extends Level {
             "Tile Layer 1"
     };
     // Stratul folosit pentru calculul coliziunilor fizice
-    private static final String SOLID_LAYER = "Tile Layer 1";
+    private static final String[] SOLID_LAYERS = {"Tile Layer 1"};
 
     private static final int[][] CHKP_POS = {
             {1, 20},
@@ -59,7 +59,7 @@ public class Level1 extends Level {
         // transmițând array-ul RENDER_ORDER și numele SOLID_LAYER.
         super(handler, new Level1Factory(handler),
                 L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1,
-                RENDER_ORDER, SOLID_LAYER);
+                RENDER_ORDER, SOLID_LAYERS);
 
         calculateExposureMasks();
         requestRespawn();
