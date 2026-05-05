@@ -11,9 +11,37 @@ public class DatabaseManager {
         try {
             connection = DriverManager.getConnection(url);
             System.out.println("Conexiune la baza de date stabilita.");
+
+            createTables();
         }
         catch (SQLException e) {
             System.out.println("Eroare la conectarea DB: " + e.getMessage());
+        }
+    }
+    private void createTables() {
+        String createPlayers = "CREATE TABLE IF NOT EXISTS Players (" +
+                "ID_P INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "Name TEXT NOT NULL UNIQUE," +
+                "CurrLevel INTEGER," +
+                "CurrChkp INTEGER" +
+                ");";
+
+        String createScores = "CREATE TABLE IF NOT EXISTS Scores (" +
+                "ID_S INTEGER," +
+                "ID_P INTEGER," +
+                "Level_ID INTEGER," +
+                "Start_Chkp INTEGER," +
+                "End_Chkp INTEGER," +
+                "Best_Score INTEGER," +
+                "FOREIGN KEY(ID_P) REFERENCES Players(ID_P) ON DELETE CASCADE," +
+                "PRIMARY KEY(ID_S AUTOINCREMENT)" +
+                ");";
+
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(createPlayers);
+            stmt.execute(createScores);
+        } catch (SQLException e) {
+            System.err.println("Eroare la crearea tabelelor: " + e.getMessage());
         }
     }
 

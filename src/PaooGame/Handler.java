@@ -8,6 +8,7 @@ import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
+import PaooGame.States.VisualElements.TransitionManager;
 import PaooGame.Score.ScoreManager;
 import PaooGame.States.StartMenu;
 import PaooGame.States.State;
@@ -27,6 +28,7 @@ public class Handler {
     private Level level;
     private DatabaseManager dbMan;
     private ScoreManager scoreMan;
+    private TransitionManager transMan;
 
     private int playerID;
     private String playerName;
@@ -41,8 +43,10 @@ public class Handler {
     public Handler(Game game) {
         this.game = game;
 
+        transMan = new TransitionManager();
+
         dbMan = new DatabaseManager();
-        dbMan.connect("jdbc:sqlite:res/database/game.db");
+        dbMan.connect("jdbc:sqlite:game.db");
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
 
         scoreMan = new ScoreManager(this);
@@ -74,12 +78,20 @@ public class Handler {
         if(state != null) {
             state.Update();
         }
+
+        transMan.Update();
     }
 
     public void Draw(Graphics g) {
         if(state != null) {
             state.Draw(g);
         }
+
+        transMan.Draw(g, game.getWidth(), game.getHeight());
+    }
+
+    public TransitionManager getTransitionManager() {
+        return transMan;
     }
 
     public void setCursor(Cursor c) {

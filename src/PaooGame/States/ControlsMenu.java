@@ -1,7 +1,9 @@
 package PaooGame.States;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Audio.SongAssets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.Button;
 
 import java.awt.*;
@@ -23,6 +25,8 @@ public class ControlsMenu extends State {
 
         returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGTH,
                 new String[]{"Return (ESC)"});
+
+        AudioManager.playBGM(SongAssets.menu);
     }
 
     @Override
@@ -41,8 +45,11 @@ public class ControlsMenu extends State {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             if(handler.getMouseManager().isLeftPressed()) {
-                handler.setState(new MainMenu(handler,
-                        (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+
+                handler.getTransitionManager().start(() -> {
+                    handler.setState(new MainMenu(handler,
+                            (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
+                });
             }
         }
         else {
@@ -50,14 +57,17 @@ public class ControlsMenu extends State {
         }
 
         if(handler.getKeyManager().escape) {
-            handler.getKeyManager().reset();
-            handler.setState(new MainMenu(handler, "New Game"));
+            handler.getKeyManager().escape = false;
+
+            handler.getTransitionManager().start(() -> {
+                handler.setState(new MainMenu(handler, "New Game"));
+            });
         }
     }
 
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.controlsMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
+        g.drawImage(VisualAssets.controlsMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
 
         returnBtn.Draw(g, TEXT_COLOR, TEXT_SIZE);
     }

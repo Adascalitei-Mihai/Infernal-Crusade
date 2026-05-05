@@ -13,7 +13,6 @@ public abstract class Creature extends Entity {
     protected int knockbackTimer = 0;
 
     protected float hp;
-
     protected float xMove, yMove;
 
     public Creature(Handler handler, float x, float y, int width, int height, float hp) {
@@ -30,12 +29,43 @@ public abstract class Creature extends Entity {
             --knockbackTimer;
         }
     }
+
     public void move() {
-        if(!checkEntityCollisions(xMove, 0f))
+        if (!checkEntityCollisions(xMove, 0f)) {
             moveX();
-        if(!checkEntityCollisions(0f, yMove))
+        }
+        else {
+            xMove = 0;
+        }
+
+        if (!checkEntityCollisions(0f, yMove)) {
             moveY();
+        }
+        else {
+            if (yMove > 0) {
+                if (this instanceof Dante dante) {
+                    dante.setOnGround(true);
+                }
+            }
+            yMove = 0;
+        }
     }
+
+    public boolean checkEntityCollisions(float xOffset, float yOffset) {
+        for (Entity e : handler.getEntities()) {
+            if (e.equals(this)) continue;
+
+            if (e.getCollisionBounds(0f, 0f).intersects(getCollisionBounds(xOffset, yOffset))) {
+                e.onInteraction(this);
+
+                if (e.isSolid()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void moveX() {
         if (xMove > 0) {
             int tx = (int) (x + xMove + bounds.x + bounds.width) / TILE_SIZE;
@@ -85,11 +115,9 @@ public abstract class Creature extends Entity {
 
     protected boolean collisionWithTile(int x, int y) {
         Tile t = handler.getLevel().getTile(x, y);
-
         if (t == null) {
             return true;
         }
-
         return t.isSolid();
     }
 
@@ -115,6 +143,8 @@ public abstract class Creature extends Entity {
 
     public abstract boolean hurt(float dmg);
     public abstract void die();
+    public abstract void setAnimations();
+
     public void applyKnockback(float forceX, float forceY) {
         xMove = forceX;
         yMove = forceY;

@@ -39,7 +39,7 @@ public class EntityManager {
             e.Update();
 
             if (!e.isActive()) {
-                if(it instanceof Creature) {
+                if(e instanceof Creature) {
                     --creatureCount;
                 }
                 it.remove();

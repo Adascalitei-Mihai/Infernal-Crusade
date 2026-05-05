@@ -1,25 +1,33 @@
 package PaooGame.Graphics;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class TMXParser {
     public static String loadFileAsString(String path) {
         StringBuilder builder = new StringBuilder();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(path));
+            InputStream is = TMXParser.class.getResourceAsStream(path);
+
+            if (is == null) {
+                throw new IllegalArgumentException("Fișierul TMX nu a putut fi găsit: " + path);
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String line;
             while ((line = br.readLine()) != null) {
                 builder.append(line).append("\n");
             }
             br.close();
         }
-        catch (IOException e) {
+        catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
         return builder.toString();
     }
+
     public static int[][] decodeCSV(String csvData, int width, int height) {
         String cleaned = csvData.trim().replace("\n", "").replace("\r", "");
         String[] values = cleaned.split(",");

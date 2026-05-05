@@ -10,22 +10,16 @@ public class SpriteSheet {
     private final int tileWidth;
     private final int tileHeight;
 
-    /**
-     * Constructor.
-     * @param spriteSheet Un obiect BufferedImage valid.
-     * @param tileWidth Latimea dalei.
-     * @param tileHeight Inaltimea dalei.
-     */
     public SpriteSheet(BufferedImage spriteSheet, int tileWidth, int tileHeight) {
         this.spriteSheet = spriteSheet;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
     }
 
-    public BufferedImage[] sliceRow(int row, int count) {
+    public BufferedImage[] makeSelection(int row, int col, int count) {
         BufferedImage[] frames = new BufferedImage[count];
         for (int i = 0; i < count; i++) {
-            frames[i] = crop(i, row);
+            frames[i] = crop(i + col, row);
         }
         return frames;
     }
@@ -39,24 +33,22 @@ public class SpriteSheet {
      */
     public BufferedImage crop(int x, int y) {
         try {
-            // Calculam pozitiile
             int startX = x * tileWidth;
             int startY = y * tileHeight;
 
-            // Verificam manual limitele inainte de a taia
             if (startX + tileWidth > spriteSheet.getWidth()) {
                 System.err.println("EROARE: Taiere pe X in afara limitelor la indicele " + x);
-                return spriteSheet.getSubimage(0, 0, tileWidth, tileHeight); // fallback la primul tile
+                return spriteSheet.getSubimage(0, 0, tileWidth, tileHeight);
             }
             if (startY + tileHeight > spriteSheet.getHeight()) {
                 System.err.println("EROARE: Taiere pe Y in afara limitelor la inaltimea " + tileHeight);
-                // Daca inaltimea e prea mare, taiem cat putem din ea
-                return spriteSheet.getSubimage(startX, startY, tileWidth, spriteSheet.getHeight() - startY);
+                return spriteSheet.getSubimage(0, 0, tileWidth, tileHeight);
             }
 
             return spriteSheet.getSubimage(startX, startY, tileWidth, tileHeight);
-        } catch (Exception e) {
-            System.err.println("Raster Error la x=" + x + " y=" + y);
+        }
+        catch (Exception e) {
+            System.err.println("Eroare la crop: " + e.getMessage());
             return null;
         }
     }

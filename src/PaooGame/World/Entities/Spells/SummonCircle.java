@@ -1,37 +1,130 @@
 package PaooGame.World.Entities.Spells;
 
 import PaooGame.Handler;
+import PaooGame.Graphics.Animation;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.World.Entities.Creatures.Creature;
+import PaooGame.World.Entities.Creatures.Dante;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
 
 import java.awt.*;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public class SummonCircle extends Spell {
-    public final static int DEFAULT_WIDTH = TILE_SIZE * 10;
-    public final static int DEFAULT_HEIGHT = TILE_SIZE * 10;
-    private final static int SUMMON_TIME = 90;
-    private final static int ACTIVE_TIME = 30;
+    // Dimensiuni uriașe, 10x10 dale
+    public final static int LOGIC_WIDTH = TILE_SIZE * 8;
+    public final static int LOGIC_HEIGHT = TILE_SIZE * 8;
+
+    public final static int VISUAL_WIDTH = TILE_SIZE * 7;
+    public final static int VISUAL_HEIGHT = TILE_SIZE * 11;
+
+    // Timpii stărilor
+    private final static int WINDUP_TIME = 60;   // Timp în care se desenează pe jos
+    private final static int ACTIVE_TIME = 15;   // Explozia
+    private final static int RECOVERY_TIME = 30; // Se disipează
 
     private final static float DMG = 100f;
     private final static float KNOCK_PERCENT = 1f;
 
+    // --- State Machine ---
+    public enum SpellState {
+        WINDUP, ACTIVE, RECOVERY, DEAD
+    }
+    private SpellState currState = SpellState.WINDUP;
+    private int stateTimer = WINDUP_TIME;
+    private boolean hasDealtDamage = false;
+
+    // --- Animatii ---
+    private Animation animation;
+
     public SummonCircle(Handler handler, float x, float y, Creature owner) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT,
-                owner, DMG, KNOCK_PERCENT, SUMMON_TIME, ACTIVE_TIME);
+        super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, owner, DMG, KNOCK_PERCENT, WINDUP_TIME, ACTIVE_TIME);
+
+        this.bounds = new Rectangle(0, 0, LOGIC_WIDTH, LOGIC_HEIGHT);
+
+        setAnimations();
+    }
+
+    @Override
+    public void Update() {
+        if (currState == SpellState.DEAD) {
+            active = false;
+            return;
+        }
+
+        updateStateTimer();
+        animation.Update(); // Update constant la animație
+    }
+
+    private void updateStateTimer() {
+        stateTimer--;
+
+        if (stateTimer <= 0) {
+            switch (currState) {
+                case WINDUP:
+                    currState = SpellState.ACTIVE;
+                    stateTimer = ACTIVE_TIME;
+                    break;
+                case ACTIVE:
+                    currState = SpellState.RECOVERY;
+                    stateTimer = RECOVERY_TIME;
+                    break;
+                case RECOVERY:
+                    currState = SpellState.DEAD;
+                    break;
+            }
+        }
+
+        // Damage pe primul frame din ACTIVE
+        if (currState == SpellState.ACTIVE && !hasDealtDamage) {
+            executeHitbox();
+            hasDealtDamage = true;
+        }
+    }
+
+    private void executeHitbox() {
+        Rectangle hitArea = getCollisionBounds(0, 0);
+        Dante dante = handler.getDante();
+
+        if (hitArea.intersects(dante.getCollisionBounds(0, 0))) {
+            if (dante.hurt(DMG)) {
+                float centerX = x + (float) LOGIC_WIDTH / 2;
+                float knockX = (dante.getX() > centerX) ? 15.0f : -15.0f;
+                dante.applyKnockback(knockX, -15.0f);
+
+                if (owner instanceof Necromancer necro) {
+                    necro.heal(DMG * 0.5f);
+                }
+            }
+        }
     }
 
     @Override
     public void Draw(Graphics g) {
-        if(isSummoning) {
-            g.setColor(Color.GRAY);
-        }
-        else {
-            g.setColor(Color.BLACK);
-        }
+        int screenX = (int) (x - handler.getGameCamera().getxOffset());
+        int screenY = (int) (y - handler.getGameCamera().getyOffset());
 
-        g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
-                (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
-                bounds.width, bounds.height);
+        int drawX = screenX + (LOGIC_WIDTH - VISUAL_WIDTH) / 2;
+        int drawY = screenY + (LOGIC_HEIGHT - VISUAL_HEIGHT);
+
+        if (animation != null && animation.getCurrentFrame() != null) {
+            g.drawImage(animation.getCurrentFrame(), drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
+        }
+        if (handler.getDebugMode()) {
+            g.setColor(new Color(255, 0, 255, 100));
+            g.fillRect(screenX + bounds.x, screenY + bounds.y, bounds.width, bounds.height);
+        }
+    }
+
+    public void setAnimations() {
+        try {
+            animation = new Animation(WINDUP_TIME / 3, VisualAssets.SummonCircle);
+            animation.setFrameDuration(3, ACTIVE_TIME);
+            animation.setFrameDuration(4, RECOVERY_TIME);
+
+        } catch (Exception e) {
+            System.err.println("Eroare la setare animații SummonCircle: " + e.getMessage());
+        }
     }
 }

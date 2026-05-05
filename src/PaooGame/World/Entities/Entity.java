@@ -57,6 +57,9 @@ public abstract class Entity {
                 y + bounds.y + (float) bounds.height / 2
         };
     }
+    public boolean isSolid() {
+        return false;
+    }
 
     public float getX() { return x; }
     public void setX(float x) { this.x = x; }

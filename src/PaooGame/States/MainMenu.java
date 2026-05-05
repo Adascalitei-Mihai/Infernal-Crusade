@@ -1,7 +1,9 @@
 package PaooGame.States;
 
-import PaooGame.Graphics.Assets;
+import PaooGame.Audio.SongAssets;
+import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
+import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.Button;
 
 import java.awt.*;
@@ -51,6 +53,8 @@ public class MainMenu extends State {
                 new Button(btnsX, btnsY + 4 * (BOX_HEIGTH + 10), BOX_WIDTH, BOX_HEIGTH,
                     new String[]{"Quit (ESC)"})
         };
+
+        AudioManager.playBGM(SongAssets.menu);
     }
 
     @Override
@@ -89,8 +93,11 @@ public class MainMenu extends State {
 
         if (handler.getPadManager().enter) {
             setDifficulty(btns[2].getState());
-            handler.setState(new PlayState(handler));
             handler.getPadManager().reset();
+
+            handler.getTransitionManager().start(() -> {
+                handler.setState(new PlayState(handler));
+            });
         }
 
         if (handler.getKeyManager().escape) {
@@ -102,7 +109,9 @@ public class MainMenu extends State {
         switch (index) {
             case 0:
                 setDifficulty(btns[2].getState());
-                handler.setState(new PlayState(handler));
+                handler.getTransitionManager().start(() -> { // 2. Tranziția
+                    handler.setState(new PlayState(handler));
+                });
                 break;
             case 1:
                 if(handler.getBestScore() != 0) {
@@ -113,7 +122,9 @@ public class MainMenu extends State {
                 btns[2].changeState();
                 break;
             case 3:
-                handler.setState(new ControlsMenu(handler));
+                handler.getTransitionManager().start(() -> { // 2. Tranziția
+                    handler.setState(new ControlsMenu(handler));
+                });
                 break;
             case 4:
                 handler.StopGame();
@@ -122,7 +133,7 @@ public class MainMenu extends State {
 
     @Override
     public void Draw(Graphics g) {
-        g.drawImage(Assets.mainMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
+        g.drawImage(VisualAssets.mainMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
 
         g.setColor(TEXT_COLOR);
         g.setFont(new Font("Monospaced", Font.BOLD, TEXT_SIZE));

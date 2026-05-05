@@ -1,10 +1,11 @@
 package PaooGame.Game;
 
+import PaooGame.Audio.SongAssets;
 import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
-import PaooGame.Graphics.Assets;
+import PaooGame.Graphics.VisualAssets;
 
 import PaooGame.Handler;
 
@@ -31,19 +32,8 @@ public class Game implements Runnable
 
     private Handler handler;
     private GameCamera gameCamera;
-    /**
-     * Constructor cu parametrii, acesta: <br>
-     * 1. Indica thread-ului ca inca nu ruleaza. <br>
-     * 2. Instantiaza managerii pentru taste si mouse.
-     * @param title Titlul jocului.
-     * @param width Latimea ferestrei.
-     * @param height Inaltimea ferestrei.
-     */
-    public Game(String title, int width, int height)
-    {
-        wnd = new GameWindow(title, width, height); // 1
-        runState = false;
-    }
+
+    private volatile boolean assetsLoaded = false;
 
     /**
      * Functie care initializeaza jocul, aceasta: <br>
@@ -52,24 +42,38 @@ public class Game implements Runnable
      * 3. Initializeaza componentele vizuale. <br>
      * 4. Seteaza starea la meniul de start.
      */
-    private void InitGame()
-    {
-        wnd = new GameWindow("Infernal Crusaders", 1000, 800); // 1
+    private void InitGame() {
+        wnd = new GameWindow("Infernal Crusaders", 1000, 800);
         wnd.BuildGameWindow();
 
-        Assets.Init(); // 3
-        handler = new Handler(this);
+        Thread vThread = new Thread(new VisualAssets(), "Visual-Loader");
+        Thread aThread = new Thread(new SongAssets(), "Audio-Loader");
 
-        gameCamera = new GameCamera(handler, 0, 0);
-        keyMan = new KeyManager(handler);
-        padMan = new GamepadManager(handler);
-        mouseMan = new MouseManager(handler);
+        vThread.start();
+        aThread.start();
 
-        inputMan = keyMan;
+        new Thread(() -> {
+            try {
+                vThread.join();
+                aThread.join();
 
-        wnd.getCanvas().addKeyListener(keyMan); // 2
-        wnd.getCanvas().addMouseListener(mouseMan);
-        wnd.getCanvas().addMouseMotionListener(mouseMan);
+                handler = new Handler(this);
+                gameCamera = new GameCamera(handler, 0, 0);
+                keyMan = new KeyManager(handler);
+                padMan = new GamepadManager(handler);
+                mouseMan = new MouseManager(handler);
+                inputMan = keyMan;
+
+                wnd.getCanvas().addKeyListener(keyMan);
+                wnd.getCanvas().addMouseListener(mouseMan);
+                wnd.getCanvas().addMouseMotionListener(mouseMan);
+
+                assetsLoaded = true;
+                System.out.println("Resurse incarcate asincron!");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "Sync-Thread").start();
     }
 
     /**
@@ -79,11 +83,10 @@ public class Game implements Runnable
      * 3. Calculeaza durata unui frame in functie de fps-ul ales. <br>
      * 4. Cat timp jocul ruleaza, cand timpul trecut este suficient pentru a mentine 60 fps, apeleaza Update() si Draw()
      */
-    public void run()
-    {
+    public void run() {
         InitGame();
 
-        long lastTime = System.nanoTime(); // Folosim lastTime pentru delta/logică
+        long lastTime = System.nanoTime();
         long timer = 0;
         int ticks = 0;
 
@@ -91,19 +94,21 @@ public class Game implements Runnable
         final double timeFrame = (double) 1000000000 / framesPerSecond;
         double delta = 0;
 
-        while (runState)
-        {
+        while (runState) {
             long now = System.nanoTime();
             long elapsed = now - lastTime;
-
             delta += elapsed / timeFrame;
-            timer += elapsed; // Timer-ul primește timpul real scurs între iterații
+            timer += elapsed;
             lastTime = now;
 
-            if(delta >= 1)
-            {
-                Update();
-                Draw();
+            if (delta >= 1) {
+                if (assetsLoaded) {
+                    Update();
+                    Draw();
+                }
+                else {
+                    renderSimpleLoadingScreen();
+                }
                 ticks++;
                 delta--;
             }
@@ -114,6 +119,44 @@ public class Game implements Runnable
                 timer = 0;
             }
         }
+    }
+
+    private void renderSimpleLoadingScreen() {
+        bs = wnd.getCanvas().getBufferStrategy();
+        if (bs == null) {
+            wnd.getCanvas().createBufferStrategy(3);
+            return;
+        }
+        g = bs.getDrawGraphics();
+
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
+
+        int barWidth = 400;
+        int barHeight = 30;
+        int x = (wnd.getWndWidth() - barWidth) / 2;
+        int y = (wnd.getWndHeight() - barHeight) / 2;
+
+        float progress = (float) VisualAssets.loadPercent / VisualAssets.TOTAL_LOAD;
+        progress = Math.min(1.0f, Math.max(0.0f, progress));
+
+        g.setColor(new Color(50, 50, 50));
+        g.fillRect(x, y, barWidth, barHeight);
+
+        g.setColor(new Color(255, 140, 0));
+        g.fillRect(x, y, (int) (barWidth * progress), barHeight);
+
+        g.setColor(Color.WHITE);
+        g.drawRect(x, y, barWidth, barHeight);
+
+
+        g.setFont(new Font("Monospaced", Font.BOLD, 18));
+        String status = "AWAKENING DANTE: " + (int)(progress * 100) + "%";
+        int textWidth = g.getFontMetrics().stringWidth(status);
+        g.drawString(status, (wnd.getWndWidth() - textWidth) / 2, y + barHeight + 25);
+
+        bs.show();
+        g.dispose();
     }
 
     /**
