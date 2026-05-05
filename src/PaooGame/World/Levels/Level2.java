@@ -35,9 +35,13 @@ public class Level2 extends Level {
     private static final String[] RENDER_ORDER = {
             "nori",
             "munte",
-            "decor",
+            "fundal frunze",
+            "copaci",
+            "pamant si frunze",
+            "frunze",
+            "platforme iarba",
             "platforme pamant",
-            "platforme iarba"
+            "decor"
     };
     // Stratul folosit pentru calculul coliziunilor fizice
     private static final String[] SOLID_LAYERS = {

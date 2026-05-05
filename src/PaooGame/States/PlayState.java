@@ -23,7 +23,7 @@ public class PlayState extends State {
     public PlayState(Handler handler) {
         super(handler);
 
-        level = new Level1(handler);
+        level = new Level2(handler);
         overlay = new UI(handler);
     }
 

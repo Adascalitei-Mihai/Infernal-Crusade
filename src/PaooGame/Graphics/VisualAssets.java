@@ -55,7 +55,7 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 17;
+    public static int TOTAL_LOAD = 27;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
