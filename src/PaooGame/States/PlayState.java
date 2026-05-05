@@ -117,4 +117,6 @@ public class PlayState extends State {
         }
         overlay.Draw(g);
     }
+
+    public boolean isTransitioning() { return isTransitioning; }
 }

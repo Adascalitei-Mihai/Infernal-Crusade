@@ -109,6 +109,9 @@ public class UI {
 
     private void drawWaveText(Graphics g) {
         String waveText = "Wave: " + (handler.getLevel().getCurrWave() + 1);
+        if(handler.isArenaFinished()) {
+            waveText = "BRAVOO!!";
+        }
 
         g.setFont(new Font("Monospaced", Font.BOLD, 48));
         FontMetrics fm = g.getFontMetrics();

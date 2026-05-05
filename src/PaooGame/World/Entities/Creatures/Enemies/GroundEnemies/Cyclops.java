@@ -79,26 +79,6 @@ public class Cyclops extends GroundEnemy {
         setAnimations();
     }
 
-    @Override
-    public void Update() {
-        if (isDead) {
-            handleDeath();
-            return;
-        }
-
-        super.Update();
-        updateCooldowns();
-
-        if (knockbackTimer > 0 || pauseTimer > 0) {
-            currAction = ActionState.IDLE;
-            actionTimer = 0;
-        } else {
-            updateActionState();
-        }
-
-        updateAnimationLogic();
-    }
-
     private void handleDeath() {
         if (deathTimer > 0) {
             deathTimer--;
@@ -166,13 +146,35 @@ public class Cyclops extends GroundEnemy {
         }
     }
 
+    @Override
+    public void Update() {
+        if (isDead) {
+            handleDeath();
+            return;
+        }
+
+        super.Update();
+        updateCooldowns();
+
+        // MODIFICAT: Dacă e în windup, ignorăm starea de stun (knockback/pause)
+        if ((knockbackTimer > 0 || pauseTimer > 0) && !isWindingUp()) {
+            currAction = ActionState.IDLE;
+            actionTimer = 0;
+        } else {
+            updateActionState();
+        }
+
+        updateAnimationLogic();
+    }
+
     private void updateAnimationLogic() {
         AnimationState prevAnim = currAnim;
 
-        if (knockbackTimer > 0) {
-            currAnim = AnimationState.HURT;
-        } else if (currAction == ActionState.ATTACKING) {
+        // MODIFICAT: Atacul primește prioritate maximă peste starea de HURT
+        if (currAction == ActionState.ATTACKING) {
             currAnim = AnimationState.ATTACK;
+        } else if (knockbackTimer > 0) {
+            currAnim = AnimationState.HURT;
         } else if (Math.abs(xMove) > 0.1f) {
             currAnim = AnimationState.WALK;
         } else {
@@ -220,6 +222,18 @@ public class Cyclops extends GroundEnemy {
                         attackBounds.width, attackBounds.height);
             }
         }
+    }
+    private boolean isWindingUp() {
+        return currAction == ActionState.ATTACKING &&
+                actionTimer >= (currAction.active + currAction.recovery);
+    }
+    @Override
+    public void applyKnockback(float forceX, float forceY) {
+        if (isWindingUp()) {
+            // Super Armor activ: Ignorăm forța de împingere și stun-ul
+            return;
+        }
+        super.applyKnockback(forceX, forceY);
     }
 
     @Override

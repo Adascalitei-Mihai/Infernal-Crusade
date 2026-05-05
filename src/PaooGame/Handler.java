@@ -36,7 +36,7 @@ public class Handler {
     private int currLevel, currChkp;
 
     public enum Difficulty { EASY, NORMAL, HARD }
-    // Este perfect că i-ai dat o valoare default aici!
+
     private Difficulty currDifficulty = Difficulty.NORMAL;
 
     private int bestScore;
@@ -49,7 +49,6 @@ public class Handler {
 
         dbMan = new DatabaseManager();
         dbMan.connect("jdbc:sqlite:game.db");
-        globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
 
         scoreMan = new ScoreManager(this);
 
@@ -70,6 +69,7 @@ public class Handler {
     public void playerLogin(String playerName) {
         dbMan.loadOrCreatePlayer(playerName, this);
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
+        globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
     }
 
     public void updateCurrChkp(int newChkp) {
@@ -152,4 +152,5 @@ public class Handler {
     public Dante getDante() { return level.getEntityManager().getDante(); }
     public boolean getDebugMode() { return debugMode; }
     public void setDebugMode(boolean debugMode) { this.debugMode = debugMode; }
+    public boolean isArenaFinished() { return level.isArenaFinished(); }
 }

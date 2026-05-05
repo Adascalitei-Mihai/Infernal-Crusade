@@ -285,6 +285,7 @@ public abstract class Level {
     public EntityManager getEntityManager() { return entityManager; }
     public void drawBackground(Graphics g) {}
     public boolean inArena() { return arena != null && arena.isRunning(); }
+    public boolean isArenaFinished() { return arena != null && arena.isFinished(); }
     public int getCurrWave() { return (arena == null) ? 0 : arena.getCurrWave(); }
     public Boss getBoss() { return boss; }
 }

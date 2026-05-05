@@ -15,7 +15,7 @@ import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Boss extends GroundEnemy {
     // --- Dimensiuni ---
-    public static final int LOGIC_WIDTH = 7 * TILE_SIZE;
+    public static final int LOGIC_WIDTH = 6 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 7 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(-5, -5, LOGIC_WIDTH + 10, LOGIC_HEIGHT + 10);
 
@@ -28,8 +28,8 @@ public class Boss extends GroundEnemy {
     public enum ActionState {
         IDLE(0, 0, 0, 0),
         MELEE(50, 20, 30, 150),
-        PROJECTILE(40, 10, 30, 100),
-        SPELL(30, 10, 20, 40),
+        PROJECTILE(80, 10, 30, 100),
+        SPELL(50, 10, 20, 40),
         SUMMON(60, 20, 40, 300),
         LIFESTEAL(0, 120, 0, 0);
 
@@ -129,7 +129,8 @@ public class Boss extends GroundEnemy {
         super.Update();
         updateCooldowns();
 
-        if (knockbackTimer > 0 || pauseTimer > 0) {
+        // Dacă e în windup, ignorăm starea de stun și continuăm atacul
+        if ((knockbackTimer > 0 || pauseTimer > 0) && !isWindingUp()) {
             currAction = ActionState.IDLE;
             actionTimer = 0;
         } else {
@@ -323,9 +324,8 @@ public class Boss extends GroundEnemy {
     private void updateAnimationLogic() {
         AnimationState nextAnim = AnimationState.IDLE;
 
-        if (knockbackTimer > 0) {
-            nextAnim = AnimationState.HURT;
-        } else if (currAction != ActionState.IDLE) {
+        // MODIFICAT: Orice atac (inclusiv windup) are prioritate maximă peste HURT
+        if (currAction != ActionState.IDLE) {
             switch(currAction) {
                 case MELEE -> nextAnim = AnimationState.MELEE;
                 case PROJECTILE -> nextAnim = AnimationState.PROJECTILE;
@@ -333,6 +333,8 @@ public class Boss extends GroundEnemy {
                 case SUMMON -> nextAnim = AnimationState.SUMMON;
                 case LIFESTEAL -> nextAnim = AnimationState.LIFESTEAL;
             }
+        } else if (knockbackTimer > 0) {
+            nextAnim = AnimationState.HURT;
         } else if (Math.abs(xMove) > 0.1f) {
             nextAnim = AnimationState.WALK;
         }
@@ -490,5 +492,20 @@ public class Boss extends GroundEnemy {
         } catch (Exception e) {
             System.out.println("Eroare la setare animatii Boss: " + e.getMessage());
         }
+    }
+    private boolean isWindingUp() {
+        // Returnează true dacă execută o acțiune ȘI este încă în faza de windup
+        // (Dacă vrei să nu ia stunlock NICIODATĂ în timpul unui atac, șterge a doua condiție)
+        return currAction != ActionState.IDLE &&
+                actionTimer >= (currAction.active + currAction.recovery);
+    }
+
+    @Override
+    public void applyKnockback(float forceX, float forceY) {
+        if (isWindingUp() || transitionState != TransitionState.NONE) {
+            // Ignorăm forța de împingere dacă se pregătește să atace sau e în tranziție de fază
+            return;
+        }
+        super.applyKnockback(forceX, forceY);
     }
 }
