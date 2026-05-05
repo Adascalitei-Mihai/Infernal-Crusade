@@ -46,7 +46,7 @@ public class Handler {
         transMan = new TransitionManager();
 
         dbMan = new DatabaseManager();
-        dbMan.connect("jdbc:sqlite:res/database/game.db");
+        dbMan.connect("jdbc:sqlite:game.db");
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
 
         scoreMan = new ScoreManager(this);

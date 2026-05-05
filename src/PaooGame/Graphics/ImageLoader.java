@@ -3,6 +3,7 @@ package PaooGame.Graphics;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -16,16 +17,16 @@ public class ImageLoader {
      * @return Imaginea incarcata in memorie.
      */
     public static BufferedImage LoadImage(String path) throws IllegalArgumentException {
-        URL resourceUrl = ImageLoader.class.getResource(path);
+        InputStream resourceStream = ImageLoader.class.getResourceAsStream(path);
 
-        if (resourceUrl == null) {
+        if (resourceStream == null) {
             throw new IllegalArgumentException("Eroare: path imagine invalid: " + path);
         }
         try {
-            return ImageIO.read(resourceUrl);
+            return ImageIO.read(resourceStream);
         }
         catch(IOException e) {
-            throw new RuntimeException("Eroare la citirea imaginii");
+            throw new RuntimeException("Eroare la citirea imaginii: " + path);
         }
     }
 }

@@ -86,7 +86,7 @@ public class Level1 extends Level {
 
     public Level1(Handler handler) {
         super(handler, new Level1Factory(handler),
-                L1_WIDTH, L1_HEIGHT, "res/textures/Maps/L1/L1.tmx", SongAssets.level1);
+                L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1);
 
         calculateExposureMasks();
         requestRespawn();
@@ -127,12 +127,12 @@ public class Level1 extends Level {
 
     @Override
     public void setEnemies() {
-        //entityManager.addEntity(new Skeleton(handler, 1000, 800));
-        //entityManager.addEntity(new Cyclops(handler, 2000, 400));
-        //entityManager.addEntity(new Hunter(handler, 3000, 800));
-        //entityManager.addEntity(new Necromancer(handler, 4000, 800));
-        //entityManager.addEntity(new Ghoul(handler, 800, 200));
-        boss = new Boss(handler, 18800, 680);
+        entityManager.addEntity(new Skeleton(handler, 1000, 800));
+        entityManager.addEntity(new Cyclops(handler, 2000, 400));
+        entityManager.addEntity(new Hunter(handler, 3000, 800));
+        entityManager.addEntity(new Necromancer(handler, 4000, 800));
+        entityManager.addEntity(new Ghoul(handler, 800, 200));
+        boss = new Boss(handler, 5100, 640);
         entityManager.addEntity(boss);
     }
 

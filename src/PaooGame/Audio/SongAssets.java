@@ -1,7 +1,5 @@
 package PaooGame.Audio;
 
-import PaooGame.States.AudioElements.AudioManager;
-
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -27,7 +25,7 @@ public class SongAssets implements Runnable {
 
     private static Clip loadClip(String path) {
         try {
-            InputStream is = AudioManager.class.getResourceAsStream(path);
+            InputStream is = SongAssets.class.getResourceAsStream(path);
             if (is == null) {
                 System.err.println("EROARE: Fișierul audio nu a fost găsit: " + path);
                 return null;

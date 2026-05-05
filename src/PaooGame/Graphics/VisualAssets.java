@@ -1,12 +1,6 @@
 package PaooGame.Graphics;
 
-import PaooGame.World.Entities.Creatures.Dante;
-import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
-import PaooGame.World.Entities.Projectiles.Screech;
-import PaooGame.World.Entities.Projectiles.SoulSpear;
-
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferDouble;
 import java.util.HashMap;
 
 import static PaooGame.World.Tile.NO_TILES;
@@ -136,9 +130,9 @@ public class VisualAssets implements Runnable {
 
     private static void InitDante() {
         AnimationData[] frames = {new AnimationData("Idle", 16, 6), new AnimationData("Run", 16, 8),
-            new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
-            new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
-            new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 3)};
+                new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
+                new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
+                new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 3)};
         Dante = loadAnim("Dante", frames);
     }
 
