@@ -15,6 +15,8 @@ import PaooGame.World.Tile;
 import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Map;
 
 import static PaooGame.World.Entities.Creatures.Dante.FIRE_TIMER;
 import static PaooGame.World.Entities.Creatures.Dante.ICE_TIMER;
@@ -26,7 +28,15 @@ public abstract class Level {
     protected final Clip bgSong;
 
     protected int width, height;
+
+    // Suport pentru multiple straturi de randare
+    protected Map<String, int[][]> mapLayers;
+    protected String[] layerRenderOrder;
+    protected String solidLayerName;
+
+    // Matricea de bază pentru logică și coliziuni (reprezintă "solidLayerName")
     protected int[][] tiles;
+
     protected int[][] fireTimers;
     protected int[][] iceTimers;
     protected EntityManager entityManager;
@@ -44,12 +54,14 @@ public abstract class Level {
     protected Arena arena;
     protected Boss boss;
 
-    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong) {
+    // CONSTRUCTOR NOU: Primește și lista de straturi + stratul principal
+    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong, String[] layerRenderOrder, String solidLayerName) {
         this.handler = handler;
         this.factory = factory;
-
         this.width = width;
         this.height = height;
+        this.layerRenderOrder = layerRenderOrder;
+        this.solidLayerName = solidLayerName;
 
         handler.setLevel(this);
         loadLevel(path);
@@ -65,14 +77,14 @@ public abstract class Level {
     public abstract void setEnemies();
 
     public void loadLevel(String path) {
-        String content = TMXParser.loadFileAsString(path);
+        // Folosim noul TMXParser pentru a obține doar layerele vizuale și cel de coliziuni
+        mapLayers = TMXParser.parseTMXLayers(path, Arrays.asList(layerRenderOrder));
 
-        String csvData = content.substring(content.indexOf("<data encoding=\"csv\">") + 21,
-                content.indexOf("</data>"));
+        // Preluăm matricea principală (coliziunile) pentru a păstra funcțiile vechi (getTile)
+        tiles = mapLayers.getOrDefault(solidLayerName, new int[width][height]);
 
-        this.tiles = TMXParser.decodeCSV(csvData, width, height);
-        fireTimers = new int[tiles.length][tiles[0].length];
-        iceTimers = new int[tiles.length][tiles[0].length];
+        fireTimers = new int[width][height];
+        iceTimers = new int[width][height];
     }
 
     public void Update() {
@@ -83,13 +95,8 @@ public abstract class Level {
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if (fireTimers[x][y] > 0) {
-                    fireTimers[x][y]--;
-                }
-
-                if (iceTimers[x][y] > 0) {
-                    iceTimers[x][y]--;
-                }
+                if (fireTimers[x][y] > 0) fireTimers[x][y]--;
+                if (iceTimers[x][y] > 0) iceTimers[x][y]--;
             }
         }
 
@@ -100,32 +107,42 @@ public abstract class Level {
     }
 
     public void Draw(Graphics g) {
-        drawBackground(g);
+        drawBackground(g); // Desenează cerul / ceața
 
+        // Calculăm limitele ecranului pentru Culling (Optimizare)
         int xStart = (int) Math.max(0, handler.getxOffset() / TILE_SIZE);
         int xEnd = (int) Math.min(width, (handler.getxOffset() + handler.getWidth()) / TILE_SIZE + 1);
         int yStart = (int) Math.max(0, handler.getyOffset() / TILE_SIZE);
         int yEnd = (int) Math.min(height, (handler.getyOffset() + handler.getHeight()) / TILE_SIZE + 1);
 
-        for(int y = yStart; y < yEnd; y++) {
-            for(int x = xStart; x < xEnd; x++) {
-                Tile t = getTile(x, y);
-                if(t != null) {
+        // Randăm Layerele TMX în ordinea corectă (ex: Nori -> Munte -> Platforme)
+        for (String layerName : layerRenderOrder) {
+            int[][] currentLayer = mapLayers.get(layerName);
+            if (currentLayer == null) continue;
 
-                    int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
-                    int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
+            for (int y = yStart; y < yEnd; y++) {
+                for (int x = xStart; x < xEnd; x++) {
+
+                    // Siguranță pentru array bounds
+                    if (x < 0 || y < 0 || x >= width || y >= height) continue;
+
+                    int id = currentLayer[x][y];
+
+                    // Sărim peste tile-urile goale
+                    if (id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) continue;
+
+                    Tile t = Tile.tiles[id];
+                    int screenX = (int) (x * TILE_SIZE - handler.getxOffset());
+                    int screenY = (int) (y * TILE_SIZE - handler.getyOffset());
+
                     t.Draw(g, screenX, screenY);
 
-                    if(handler.getDebugMode()) {
-                        if(t.isSolid()) {
-                            g.setColor(new Color(0, 255, 0, 100));
-                        }
-                        else {
-                            g.setColor(new Color(255, 255, 0, 100));
-                        }
+                    // Debug Mode (Randează contururi DOAR pentru layer-ul cu coliziuni)
+                    if (handler.getDebugMode() && layerName.equals(solidLayerName)) {
+                        if (t.isSolid()) g.setColor(new Color(0, 255, 0, 100));
+                        else g.setColor(new Color(255, 255, 0, 100));
 
                         g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
-
                         g.setColor(Color.BLACK);
                         g.drawRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
                     }
@@ -133,6 +150,7 @@ public abstract class Level {
             }
         }
 
+        // --- Logica pentru a randa Foc/Gheată ---
         int xStartFx = Math.max(0, xStart - 1);
         int xEndFx = Math.min(width, xEnd + 1);
         int yStartFx = Math.max(0, yStart - 1);
@@ -145,32 +163,18 @@ public abstract class Level {
                     int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
                     int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
 
-                    BufferedImage fxImg;
-                    if (isFire(x, y)) {
-                        fxImg = fireAnim.getCurrentFrame();
-                    }
-                    else {
-                        fxImg = iceAnim.getCurrentFrame();
-                    }
-
+                    BufferedImage fxImg = isFire(x, y) ? fireAnim.getCurrentFrame() : iceAnim.getCurrentFrame();
                     int offset = TILE_SIZE / 2;
 
-                    if ((mask & EXPOSED_NORTH) != 0) {
-                        drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
-                    }
-                    if ((mask & EXPOSED_EAST) != 0) {
-                        drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI / 2, offset);
-                    }
-                    if ((mask & EXPOSED_SOUTH) != 0) {
-                        drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI, offset);
-                    }
-                    if ((mask & EXPOSED_WEST) != 0) {
-                        drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI * 1.5, offset);
-                    }
+                    if ((mask & EXPOSED_NORTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
+                    if ((mask & EXPOSED_EAST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI / 2, offset);
+                    if ((mask & EXPOSED_SOUTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI, offset);
+                    if ((mask & EXPOSED_WEST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI * 1.5, offset);
                 }
             }
         }
 
+        // UI & Debug
         if (handler.getDebugMode()) {
             g.setColor(Color.RED);
             g.setFont(new Font("MONOSPACED", Font.BOLD, 36));
@@ -181,20 +185,14 @@ public abstract class Level {
         entityManager.Draw(g);
     }
 
-    /**
-     * Rotește și desenează un efect dublu pe lățime și înălțime lipit de o margine a tile-ului curent.
-     */
     private void drawRotatedEffect(Graphics g, BufferedImage img, int tileX, int tileY, double angleInRadians, int offset) {
         if (img == null) return;
-
         Graphics2D g2d = (Graphics2D) g.create();
-
         g2d.translate(tileX + TILE_SIZE / 2.0, tileY + TILE_SIZE / 2.0);
         g2d.rotate(angleInRadians);
 
         int drawW = TILE_SIZE * 2;
         int drawH = TILE_SIZE * 2;
-
         int drawX = -TILE_SIZE;
         int drawY = (-TILE_SIZE / 2) + offset - drawH;
 
@@ -204,18 +202,15 @@ public abstract class Level {
 
     protected void calculateExposureMasks() {
         exposureMask = new int[width][height];
-
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Tile currentTile = getTile(x, y);
-
                 if (!currentTile.isSolid()) {
                     exposureMask[x][y] = EXPOSED_NONE;
                     continue;
                 }
 
                 int mask = EXPOSED_NONE;
-
                 if (!getTile(x, y - 1).isSolid()) mask |= EXPOSED_NORTH;
                 if (!getTile(x + 1, y).isSolid()) mask |= EXPOSED_EAST;
                 if (!getTile(x, y + 1).isSolid()) mask |= EXPOSED_SOUTH;
@@ -226,57 +221,31 @@ public abstract class Level {
         }
     }
 
-    public void requestRespawn() {
-        pendingRespawn = true;
-    }
+    public void requestRespawn() { pendingRespawn = true; }
 
+    // Rămâne neschimbat: folosit de entități pentru a verifica logic coliziunile
     public Tile getTile(int x, int y) {
-        if(x < 0 || x >= width || y >= height)
-            return Tile.tiles[1];
-
-        if(y < 0)
-            return Tile.tiles[0];
+        if(x < 0 || x >= width || y >= height) return Tile.tiles[1]; // Solid perete ecran
+        if(y < 0) return Tile.tiles[0]; // Cer
 
         int id = tiles[x][y];
-
-        if(id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) {
-            return Tile.tiles[0];
-        }
+        if(id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) return Tile.tiles[0];
 
         return Tile.tiles[id];
     }
 
-    public boolean isFire(int x, int y) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            return false;
-        }
-        return fireTimers[x][y] > 0;
-    }
-
-    public boolean isIce(int x, int y) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            return false;
-        }
-        return iceTimers[x][y] > 0;
-    }
+    public boolean isFire(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0; }
+    public boolean isIce(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && iceTimers[x][y] > 0; }
 
     public void setFire(int x, int y, int time) {
-        if (x < 0 || x >= width || y < 0 || y >= height) {
-            return ;
-        }
-
-        if (exposureMask[x][y] != EXPOSED_NONE && !isIce(x, y)) {
-            fireTimers[x][y] = time;
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            if (exposureMask[x][y] != EXPOSED_NONE && !isIce(x, y)) fireTimers[x][y] = time;
         }
     }
 
     public void setIce(int x, int y, int time) {
-        if (x < 0 || x >= width || y < 0 || y >= height) {
-            return ;
-        }
-
-        if (exposureMask[x][y] > EXPOSED_NONE && !isFire(x, y)) {
-            iceTimers[x][y] = time;
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            if (exposureMask[x][y] > EXPOSED_NONE && !isFire(x, y)) iceTimers[x][y] = time;
         }
     }
 
@@ -289,26 +258,10 @@ public abstract class Level {
     public void setWidth(int width) { this.width = width; }
     public int getHeight() { return height;}
     public void setHeight(int height) { this.height = height; }
-
-    public EntityFactory getFactory() {
-        return factory;
-    }
-
-    public EntityManager getEntityManager() {
-        return entityManager;
-    }
+    public EntityFactory getFactory() { return factory; }
+    public EntityManager getEntityManager() { return entityManager; }
     public void drawBackground(Graphics g) {}
-    public boolean inArena() {
-        if (arena == null) {
-            return false;
-        }
-        return arena.isRunning();
-    }
-    public int getCurrWave() {
-        if (arena == null) {
-            return 0;
-        }
-        return arena.getCurrWave();
-    }
+    public boolean inArena() { return arena != null && arena.isRunning(); }
+    public int getCurrWave() { return (arena == null) ? 0 : arena.getCurrWave(); }
     public Boss getBoss() { return boss; }
 }

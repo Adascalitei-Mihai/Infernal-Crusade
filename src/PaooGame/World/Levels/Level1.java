@@ -18,10 +18,20 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public class Level1 extends Level {
     private static final int L1_WIDTH = 500;
     private static final int L1_HEIGHT = 29;
+
+    // Setări Parallax pentru Backgrounds (simulate în Java pe baza image layers din TMX)
     private static final float[] PX = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f};
     private static final float[] PY = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f};
     private static final int[] OX = {0, 0, 0, 2, -34, 7200};
     private static final int[] OY = {0, 0, -100, -70, 62, -1};
+
+    // --- CONFIGURARE TMX PARSER ---
+    // Numele layerelor exact așa cum apar în fișierul L1.tmx furnizat
+    private static final String[] RENDER_ORDER = {
+            "Tile Layer 1"
+    };
+    // Stratul folosit pentru calculul coliziunilor fizice
+    private static final String SOLID_LAYER = "Tile Layer 1";
 
     private static final int[][] CHKP_POS = {
             {1, 20},
@@ -32,61 +42,24 @@ public class Level1 extends Level {
     private static final int[] ARENA_COORDS = {
             450 * TILE_SIZE, 0, 500 * TILE_SIZE, 29 * TILE_SIZE
     };
+
     private static final int[][][][] ARENA_WAVES = {
-            {
-                    // 0: Minori
-                    {
-                            {18800, 680},
-                            {19200, 680},
-                            {19500, 680}
-                    },
-                    // 1: Majori
-                    {}
-            },
-            {
-                    // 0: Minori
-                    {
-                            {18400, 680},
-                            {18800, 680},
-                            {19400, 680}
-                    },
-                    {
-                            {19000, 680}
-                    }
-            },
-            {
-                    // 0: Minori
-                    {
-                            {18350, 680},
-                            {19550, 680}
-                    },
-                    // 1: Majori
-                    {
-                            {18700, 680},
-                            {19300, 680}
-                    }
-            },
-            {
-                    // 0: Minori
-                    {
-                            {18500, 680},
-                            {18800, 680},
-                            {19300, 680},
-                            {19600, 680}
-                    },
-                    // 1: Majori
-                    {
-                            {19000, 680}
-                    }
-            }
+            {{{18800, 680}, {19200, 680}, {19500, 680}}, {}},
+            {{{18400, 680}, {18800, 680}, {19400, 680}}, {{19000, 680}}},
+            {{{18350, 680}, {19550, 680}}, {{18700, 680}, {19300, 680}}},
+            {{{18500, 680}, {18800, 680}, {19300, 680}, {19600, 680}}, {{19000, 680}}}
     };
+
     private static final int[] GATE_COORDS = {
             449 * TILE_SIZE, 20 * TILE_SIZE
     };
 
     public Level1(Handler handler) {
+        // Aici apelăm constructorul actualizat din clasa de bază Level,
+        // transmițând array-ul RENDER_ORDER și numele SOLID_LAYER.
         super(handler, new Level1Factory(handler),
-                L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1);
+                L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1,
+                RENDER_ORDER, SOLID_LAYER);
 
         calculateExposureMasks();
         requestRespawn();
