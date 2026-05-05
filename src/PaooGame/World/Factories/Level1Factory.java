@@ -15,7 +15,7 @@ import static PaooGame.World.Tile.NO_TILES;
 
 public class Level1Factory extends EntityFactory {
     private static final Set<Integer> SOLID_TILES = Set.of(
-            1, 2, 9, 20, 38, 22, 12, 43, 42, 32, 45, 46, 56, 67, 57, 58, 68, 47, 13, 24, 21, 10, 31, 4, 15, 848, 849, 850, 656, 657, 658, 720, 721, 722
+            1, 2, 9, 20, 38, 22, 12, 43, 42, 32, 45, 46, 56, 67, 57, 58, 68, 47, 13, 24, 21, 10, 31, 4, 15, 848, 849, 850, 656, 657, 658, 720, 721, 722, 69, 3305, 3306, 3307, 3113, 3114, 3115, 3177, 3178, 3179, 3839, 3840, 3841, 3647, 3648, 3649
     );
 
     public Level1Factory(Handler handler) {

@@ -4,6 +4,7 @@ import PaooGame.Audio.SongAssets;
 import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
+import PaooGame.States.MainMenu;
 import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
@@ -40,7 +41,7 @@ public class Level1 extends Level {
     };
 
     private static final int[] ARENA_COORDS = {
-            450 * TILE_SIZE, 0, 500 * TILE_SIZE, 29 * TILE_SIZE
+            450 * TILE_SIZE, 1, 500 * TILE_SIZE, 28 * TILE_SIZE
     };
 
     private static final int[][][][] ARENA_WAVES = {
@@ -53,6 +54,7 @@ public class Level1 extends Level {
     private static final int[] GATE_COORDS = {
             449 * TILE_SIZE, 20 * TILE_SIZE
     };
+    private boolean isTransitioning = false;
 
     public Level1(Handler handler) {
         // Aici apelăm constructorul actualizat din clasa de bază Level,
@@ -63,6 +65,25 @@ public class Level1 extends Level {
 
         calculateExposureMasks();
         requestRespawn();
+    }
+
+    @Override
+    public void Update() {
+        if(!isTransitioning) {
+            super.Update();
+            if (arena.isFinished()) {
+
+                isTransitioning = true;
+
+                handler.updateCurrChkp(3);
+                handler.updateCurrLevel(2);
+
+                handler.getTransitionManager().start(() -> {
+                    Level2 nextLevel = new Level2(handler);
+                    handler.setLevel(nextLevel);
+                });
+            }
+        }
     }
 
     @Override

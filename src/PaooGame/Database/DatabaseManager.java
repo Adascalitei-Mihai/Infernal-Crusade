@@ -152,6 +152,22 @@ public class DatabaseManager {
             System.err.println("Eroare la updatePlayerCheckpoint: " + e.getMessage());
         }
     }
+    public void updatePlayerProgress(int playerID, int newLevel, int newChkp) {
+        String sql = "UPDATE Players SET CurrLevel = ?, CurrChkp = ? WHERE ID_P = ?";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, newLevel);
+            pstmt.setInt(2, newChkp);
+            pstmt.setInt(3, playerID);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                System.out.println("Progres salvat în DB: Nivel " + newLevel + ", Checkpoint " + newChkp);
+            }
+        } catch (SQLException e) {
+            System.err.println("Eroare la updatePlayerProgress: " + e.getMessage());
+        }
+    }
 
     public int getTotalBestScore(int playerID, int totalRequiredSegments) {
         String sql = "SELECT SUM(Best_Score) AS Total " +

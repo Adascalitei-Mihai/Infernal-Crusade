@@ -51,7 +51,7 @@ public class Level2 extends Level {
     };
 
     // --- CHKP & ARENA (Placeholder temporar, conform cerinței) ---
-    private static final int[][] CHKP_POS = { {1, 20} };
+    private static final int[][] CHKP_POS = { {1, 292} };
     private static final int[] ARENA_COORDS = { 0, 0, 0, 0 };
     private static final int[][][][] ARENA_WAVES = { { { {0, 0} }, {} } };
     private static final int[] GATE_COORDS = { 0, 0 };
