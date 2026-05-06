@@ -39,6 +39,7 @@ public class KeyManager extends InputManager implements KeyListener {
 
         enter = keys[KeyEvent.VK_ENTER];
         escape = keys[KeyEvent.VK_ESCAPE];
+        pause = keys[KeyEvent.VK_P];
         debug = keys[KeyEvent.VK_BACK_SLASH];
     }
 

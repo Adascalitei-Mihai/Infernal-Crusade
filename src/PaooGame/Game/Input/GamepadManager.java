@@ -33,6 +33,7 @@ public class GamepadManager extends InputManager {
             l = currState.rightTrigger > ACC_POINT;
 
             enter = currState.a;
+            pause = currState.y;
             escape = currState.start;
             debug = currState.back;
         }

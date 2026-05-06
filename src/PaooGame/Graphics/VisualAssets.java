@@ -55,7 +55,7 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 27;
+    public static int TOTAL_LOAD = 34;
 
     /**
      * Functia care initializaza toate elementele grafice globale utilizate.
@@ -74,7 +74,7 @@ public class VisualAssets implements Runnable {
         ++loadPercent;
 
         InitL1(); // +5 loadPercent
-        InitL2();
+        InitL2(); // +17 loadPercent
         InitL3();
     }
 
@@ -184,31 +184,23 @@ public class VisualAssets implements Runnable {
         }
 
         try {
-            SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
-            fillTiles(worldTiles1, snowSheet, 1, 11, 121);
-            ++loadPercent;
+            java.util.List<TMXParser.TilesetData> tilesets = TMXParser.parseTilesets("/textures/Maps/L1/L1.tmx");
 
-            SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
-            fillTiles(worldTiles1, decoSheet, 122, 48, 2304);
-            ++loadPercent;
+            for (TMXParser.TilesetData ts : tilesets) {
+                SpriteSheet sheet = new SpriteSheet(ImageLoader.LoadImage(ts.imagePath), ts.tileWidth, ts.tileHeight);
+                fillTiles(worldTiles1, sheet, ts.firstGid, ts.columns, ts.tileCount);
+                ++loadPercent;
+            }
 
-            SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
-            fillTiles(worldTiles1, penguinSheet, 2426, 4, 32);
-            ++loadPercent;
-
-            SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
-            fillTiles(worldTiles1, allSheet, 2458, 64, 2176);
-            ++loadPercent;
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea dalelor nivelului 1: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Eroare la incarcarea automata a dalelor din TMX: " + e.getMessage());
         }
     }
     public static void InitL2() {
         try {
             bg2 = new BufferedImage[]{
-                    ImageLoader.LoadImage("/textures/Maps/L2/cer.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/ceata.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L2/cer.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena1.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena2.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena3.png")
@@ -220,17 +212,12 @@ public class VisualAssets implements Runnable {
         }
 
         try {
-            // Citim datele din TMX (firstGid, lățime, înălțime, coloane, număr total, imagine)
             java.util.List<TMXParser.TilesetData> tilesets = TMXParser.parseTilesets("/textures/Maps/L2/L2.tmx");
 
-            // Parcurgem lista și încărcăm automat fiecare sprite sheet
             for (TMXParser.TilesetData ts : tilesets) {
                 SpriteSheet sheet = new SpriteSheet(ImageLoader.LoadImage(ts.imagePath), ts.tileWidth, ts.tileHeight);
-
-                // worldTiles1 este vectorul tău global de tile-uri
                 fillTiles(worldTiles2, sheet, ts.firstGid, ts.columns, ts.tileCount);
-
-                ++loadPercent; // Poți păstra procentul de load per tileset
+                ++loadPercent;
             }
 
         } catch (Exception e) {

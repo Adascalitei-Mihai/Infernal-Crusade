@@ -6,7 +6,7 @@ public abstract class InputManager {
     protected final Handler handler;
     public boolean up, down, left, right, space,
             shift, j, k, l,
-            enter, escape, debug;
+            enter, escape, pause, debug;
 
     public InputManager(Handler handler) {
         this.handler = handler;
@@ -14,6 +14,6 @@ public abstract class InputManager {
 
     public abstract void Update();
     public void reset() {
-        up = down = left = right = space = shift = j = k = l = enter = escape = debug = false;
+        up = down = left = right = space = shift = j = k = l = enter = escape = pause = debug = false;
     }
 }
