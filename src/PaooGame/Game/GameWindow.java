@@ -1,7 +1,13 @@
 package PaooGame.Game;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import java.awt.Canvas;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 
 /**

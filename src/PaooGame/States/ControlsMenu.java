@@ -5,35 +5,44 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.Button;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics;
 
-import java.awt.*;
-
+/**
+ * Clasa care reprezinta meniul de Controls
+ */
 public class ControlsMenu extends State {
     private final Button returnBtn;
-    private int btnX, btnY;
+    private int btnX;
+    private final int btnY;
 
     private final static int BOX_WIDTH = 300;
-    private final static int BOX_HEIGTH = 40;
+    private final static int BOX_HEIGHT = 40;
     private final static Color TEXT_COLOR = new Color(228, 214, 167);
     private final static int TEXT_SIZE = 40;
 
+    /**
+     * Constructorul care creeaza {@link #returnBtn} si porneste melodia {@link SongAssets#menu}
+     * @param handler Handler-ul
+     */
     public ControlsMenu(Handler handler) {
         super(handler);
 
-        btnX = handler.getWidth() - BOX_WIDTH;
+        btnX = handler.getWidth() - BOX_WIDTH - 10;
         btnY = 10;
 
-        returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGTH,
-                new String[]{"Return (ESC)"});
+        returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGHT, new String[]{"Return (ESC)"});
 
         AudioManager.playBGM(SongAssets.menu);
     }
 
+    /**
+     * Metoda de actualizare care verifica interactiunea cu butonul sau tasta ESC pentru a realiza tranzitia spre {@link MainMenu}
+     */
     @Override
     public void Update() {
-        btnX = handler.getWidth() - BOX_WIDTH;
-        btnY = 5;
-
+        btnX = handler.getWidth() - BOX_WIDTH - 10;
         returnBtn.setPosition(btnX, btnY);
 
         returnBtn.checkHover(
@@ -41,34 +50,41 @@ public class ControlsMenu extends State {
                 handler.getMouseManager().getMouseY()
         );
 
-        if(returnBtn.getHovered()) {
+        if (returnBtn.getHovered()) {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            if(handler.getMouseManager().isLeftPressed()) {
-
-                handler.getTransitionManager().start(() -> {
-                    handler.setState(new MainMenu(handler,
-                            (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue"));
-                });
+            if (handler.getMouseManager().isLeftReleased()) {
+                returnToMainMenu();
             }
-        }
-        else {
+        } else {
             handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if(handler.getKeyManager().escape) {
+        if (handler.getKeyManager().escape) {
             handler.getKeyManager().escape = false;
-
-            handler.getTransitionManager().start(() -> {
-                handler.setState(new MainMenu(handler, "New Game"));
-            });
+            returnToMainMenu();
         }
     }
 
+    /**
+     * Metoda utilitara pentru a evita duplicarea codului de tranzitie si a reseta cursorul
+     */
+    private void returnToMainMenu() {
+        handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
+        handler.getTransitionManager().start(() -> {
+            String menuText = (handler.getCurrLevel() == 1 && handler.getCurrChkp() == 0) ? "New Game" : "Continue";
+            handler.setState(new MainMenu(handler, menuText));
+        });
+    }
+
+    /**
+     * Metoda de desenare, afiseaza fundalul din {@link VisualAssets#controlsMenuBg} si butonul
+     * @param g Grafica de desenare
+     */
     @Override
     public void Draw(Graphics g) {
         g.drawImage(VisualAssets.controlsMenuBg, 0, 0, handler.getWidth(), handler.getHeight(), null);
-
         returnBtn.Draw(g, TEXT_COLOR, TEXT_SIZE);
     }
 }

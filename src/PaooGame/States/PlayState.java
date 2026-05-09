@@ -1,53 +1,62 @@
 package PaooGame.States;
 
-import PaooGame.Audio.SongAssets;
 import PaooGame.Game.Input.GamepadManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Handler;
-import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.States.VisualElements.UI;
-import PaooGame.World.Levels.Level;
-import PaooGame.World.Levels.Level1;
-import PaooGame.World.Levels.Level2;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 
-import java.awt.*;
-
+/**
+ * Clasa care reprezinta starea principala de joc (PlayState) <br>
+ * Gestioneaza logica nivelului, input-ul, ecranul de pauza si tranzitiile intre niveluri
+ */
 public class PlayState extends State {
-    private UI overlay;
+    private final UI overlay;
+
     private boolean initializedFullscreen = false;
     private boolean debugKeyPressed = false;
 
-    // FLAG VITAL PENTRU TRANZIȚIE!
     private boolean isTransitioning = false;
-
-    // FLAG-URI PENTRU PAUZĂ
     private boolean isPaused = false;
     private boolean pausePressedPrev = false;
 
+    private static final Color PAUSE_COLOR = new Color(0, 0, 0, 150);
+    private static final Font PAUSE_FONT = new Font("Monospaced", Font.BOLD, 50);
+    private static final String PAUSE_TEXT = "PAUSED";
+
+    /**
+     * Constructorul starii de joc <br>
+     * Initializeaza interfata utilizatorului si verifica existenta unui nivel
+     * Daca nivelul nu exista (ex: la inceperea unui joc nou), il creeaza
+     *
+     * @param handler Handler-ul
+     */
     public PlayState(Handler handler) {
         super(handler);
         overlay = new UI(handler);
 
-        // Dacă nu avem un nivel creat încă (ex: abia am dat Play din Meniu)
         if (handler.getLevel() == null) {
             handler.initLevel();
         }
     }
 
+    /**
+     * Metoda de actualizare a starii de joc <br>
+     * Gestioneaza comutarea tipului de input, pauza, progresul nivelului, tranzitiile in caz de victorie si revenirea la meniul principal
+     */
     @Override
     public void Update() {
         detectInputMode();
 
-        // --- LOGICA DE TOGGLE PAUZĂ PE TASTA 'P' ---
-        // Presupunem că în InputManager ai adăugat o variabilă booleană 'pause' mapată pe tasta P
         boolean pausePressedCurr = handler.getInputManager().pause;
-
         if (pausePressedCurr && !pausePressedPrev) {
-            isPaused = !isPaused; // Inversăm starea de pauză
+            isPaused = !isPaused;
         }
         pausePressedPrev = pausePressedCurr;
 
-        // --- UPDATE-UL EFECTIV (doar dacă NU e pauză) ---
         if (!isPaused) {
             if (!initializedFullscreen) {
                 handler.getGame().getWnd().setFullScreen(true);
@@ -57,29 +66,22 @@ public class PlayState extends State {
 
             handler.getScoreMan().Update();
 
-            // Protecție suplimentară: Update doar dacă nivelul s-a încărcat corect
             if (handler.getLevel() != null) {
                 handler.getLevel().Update();
                 handler.getGameCamera().center(handler.getLevel().getEntityManager().getDante());
 
-                // --- LOGICA DE TRANZIȚIE ---
                 if (handler.getLevel().inArena() && handler.getLevel().getBoss() != null && !handler.getLevel().getBoss().isActive()) {
-
-                    // Dacă șeful e mort și NU suntem deja în tranziție
                     if (!isTransitioning) {
-                        isTransitioning = true; // Setăm flag-ul pe true ca să nu mai intre a 2-a oară!
+                        isTransitioning = true;
 
-                        // Salvăm scorul și ultimul checkpoint
                         if (handler.getCurrLevel() != 3) {
-                            // Suntem la nivelul 1 -> Trecem la nivelul 2
                             handler.updateCurrLevel(handler.getCurrLevel() + 1);
 
                             handler.getTransitionManager().start(() -> {
                                 handler.initLevel();
                                 isTransitioning = false;
                             });
-                        }
-                        else {
+                        } else {
                             handler.getTransitionManager().start(() -> {
                                 handler.setState(new GameDoneState(handler));
                                 isTransitioning = false;
@@ -88,10 +90,9 @@ public class PlayState extends State {
                     }
                 }
             }
-        } // Aici se termină blocul if (!isPaused)
+        }
 
-        // Ieșirea în meniul principal (ESC) funcționează și dacă jocul e în pauză
-        if(handler.getInputManager().escape) {
+        if (handler.getInputManager().escape) {
             handler.getGame().getGameCamera().resetToLevelBounds();
             handler.getGame().getWnd().setWindowed();
             handler.getInputManager().reset();
@@ -99,28 +100,32 @@ public class PlayState extends State {
             handler.setState(new MainMenu(handler, "Continue"));
         }
 
-        // Debug mode funcționează și în pauză
-        if(handler.getInputManager().debug) {
-            if(!debugKeyPressed) {
+        if (handler.getInputManager().debug) {
+            if (!debugKeyPressed) {
                 handler.setDebugMode(!handler.getDebugMode());
                 debugKeyPressed = true;
             }
-        }
-        else {
+        } else {
             debugKeyPressed = false;
         }
     }
 
+    /**
+     * Metoda care detecteaza automat dispozitivul de input activ (Tastatura sau Gamepad)
+     * si schimba instanta managerului de input in Handler pentru a permite
+     * comutarea in timp real
+     */
     private void detectInputMode() {
         if (handler.getKeyManager().up || handler.getKeyManager().down ||
                 handler.getKeyManager().left || handler.getKeyManager().right ||
                 handler.getKeyManager().space || handler.getKeyManager().escape ||
-                handler.getKeyManager().pause) { // Poți adăuga și verificarea pentru 'pause' aici
+                handler.getKeyManager().pause) {
             if (handler.getInputManager() instanceof GamepadManager) {
                 handler.getPadManager().reset();
                 handler.setInput(handler.getKeyManager());
             }
         }
+
         if (handler.getPadManager().up || handler.getPadManager().down ||
                 handler.getPadManager().left || handler.getPadManager().right ||
                 handler.getPadManager().space || handler.getPadManager().pause) {
@@ -131,34 +136,31 @@ public class PlayState extends State {
         }
     }
 
+    /**
+     * Metoda care deseneaza elementele grafice ale starii curente: nivelul, interfata (UI)
+     * si filtrul ecranului de pauza (daca jocul este oprit).
+     *
+     * @param g Grafica de desenare
+     */
     @Override
     public void Draw(Graphics g) {
-        // 1. Desenăm jocul propriu-zis
         if (handler.getLevel() != null) {
             handler.getLevel().Draw(g);
         }
 
-        // 2. Desenăm interfața (bare de viață, scor etc.)
         overlay.Draw(g);
 
-        // 3. Dacă e pauză, aplicăm filtrul vizual peste tot ecranul
         if (isPaused) {
-            // Desenăm un dreptunghi negru, transparent (150 = nivelul de opacitate din 255)
-            g.setColor(new Color(0, 0, 0, 150));
+            g.setColor(PAUSE_COLOR);
             g.fillRect(0, 0, handler.getWidth(), handler.getHeight());
 
-            // Desenăm textul centrat
             g.setColor(Color.WHITE);
-            g.setFont(new Font("Monospaced", Font.BOLD, 50));
+            g.setFont(PAUSE_FONT);
 
-            String pauseText = "PAUSED";
             FontMetrics fm = g.getFontMetrics();
-            int textWidth = fm.stringWidth(pauseText);
+            int textWidth = fm.stringWidth(PAUSE_TEXT);
 
-            // Centrarea precisă a textului
-            g.drawString(pauseText, (handler.getWidth() - textWidth) / 2, handler.getHeight() / 2);
+            g.drawString(PAUSE_TEXT, (handler.getWidth() - textWidth) / 2, handler.getHeight() / 2);
         }
     }
-
-    public boolean isTransitioning() { return isTransitioning; }
 }

@@ -2,45 +2,57 @@ package PaooGame.States;
 
 import PaooGame.Handler;
 import PaooGame.States.VisualElements.Button;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 
-import java.awt.*;
-
+/**
+ * Clasa care reprezinta ecranul de finalizare a jocului (Victorie).
+ */
 public class GameDoneState extends State {
     private final Button returnBtn;
     private final int finalScore;
 
+    private final static int BOX_WIDTH = 350;
+    private final static int BOX_HEIGHT = 40;
+    private final static Color TEXT_COLOR = new Color(228, 214, 167);
+
+    private final static int TITLE_SIZE = 60;
+    private final static int SCORE_SIZE = 40;
+    private final static int BTN_TEXT_SIZE = 30;
+
+    /**
+     * Constructorul care preia scorul final si initializeaza butonul
+     * @param handler Handler-ul
+     */
     public GameDoneState(Handler handler) {
         super(handler);
 
-        // Preia scorul total actualizat din baza de date
         this.finalScore = handler.getDbMan().getTotalBestScore(handler.getPlayerID(), Handler.NR_CHKPTS);
 
-        // Setăm dimensiunile butonului
-        int btnWidth = 350;
-        int btnHeight = 40;
-        int btnX = (handler.getWidth() - btnWidth) / 2;
+        int btnX = (handler.getWidth() - BOX_WIDTH) / 2;
         int btnY = handler.getHeight() / 2 + 100;
 
-        returnBtn = new Button(btnX, btnY, btnWidth, btnHeight, new String[]{"Return to Menu"});
+        returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGHT, new String[]{"Return to Menu"});
     }
 
+    /**
+     * Metoda de actualizare care verifica interactiunea cu butonul sau tasta ESC
+     */
     @Override
     public void Update() {
         int mx = handler.getMouseManager().getMouseX();
         int my = handler.getMouseManager().getMouseY();
 
-        // Verificăm dacă mouse-ul este pe buton
         returnBtn.checkHover(mx, my);
 
         if (returnBtn.getHovered()) {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            // Dacă dăm click, mergem în MainMenu
             if (handler.getMouseManager().isLeftReleased()) {
-                handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                handler.getTransitionManager().start(() -> {
-                    handler.setState(new MainMenu(handler, "Start Game"));
-                });
+                returnToMainMenu();
             }
         } else {
             handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -51,33 +63,42 @@ public class GameDoneState extends State {
             handler.getGame().getWnd().setWindowed();
             handler.getInputManager().reset();
 
-            handler.setState(new MainMenu(handler, "Continue"));
+            returnToMainMenu();
         }
     }
 
+    /**
+     * Metoda care realizeaza tranzitia spre {@link MainMenu}
+     */
+    private void returnToMainMenu() {
+        handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
+        handler.getTransitionManager().start(() -> handler.setState(new MainMenu(handler, "Start Game")));
+    }
+
+    /**
+     * Metoda de desenare a ecranului de final
+     * @param g Grafica de desenare
+     */
     @Override
     public void Draw(Graphics g) {
-        // Fundal întunecat
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, handler.getWidth(), handler.getHeight());
 
-        // Desenăm "CONGRATULATIONS!"
-        g.setColor(new Color(228, 214, 167)); // Culoarea pe care o folosești și în meniu
-        g.setFont(new Font("Monospaced", Font.BOLD, 60));
+        g.setColor(TEXT_COLOR);
+        g.setFont(new Font("Monospaced", Font.BOLD, TITLE_SIZE));
 
         String congratsText = "CONGRATULATIONS!";
         FontMetrics fm = g.getFontMetrics();
         int cX = (handler.getWidth() - fm.stringWidth(congratsText)) / 2;
         g.drawString(congratsText, cX, handler.getHeight() / 2 - 50);
 
-        // Desenăm Scorul Total
-        g.setFont(new Font("Monospaced", Font.PLAIN, 40));
+        g.setFont(new Font("Monospaced", Font.PLAIN, SCORE_SIZE));
         String scoreText = "Total Score: " + finalScore;
         fm = g.getFontMetrics();
         int sX = (handler.getWidth() - fm.stringWidth(scoreText)) / 2;
         g.drawString(scoreText, sX, handler.getHeight() / 2 + 20);
 
-        // Desenăm butonul
-        returnBtn.Draw(g, new Color(228, 214, 167), 30);
+        returnBtn.Draw(g, TEXT_COLOR, BTN_TEXT_SIZE);
     }
 }

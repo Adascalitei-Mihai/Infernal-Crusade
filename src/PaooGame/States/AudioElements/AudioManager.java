@@ -1,16 +1,20 @@
 package PaooGame.States.AudioElements;
 
-import javax.sound.sampled.*;
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.util.HashMap;
+import javax.sound.sampled.Clip;
 
+/**
+ * Clasa care manipuleaza melodia de fundal
+ */
 public class AudioManager {
     private static Clip currentBGM;
 
+    /**
+     * Metoda care porneste melodia si o tine in bucla
+     * @param s Melodia aleasa
+     */
     public static void playBGM(Clip s) {
         if (s == null) {
-            System.err.println("EROARE: Melodia nu există în memorie!");
+            System.err.println("[EROARE]: Melodia nu exista în memorie");
             return;
         }
 
@@ -25,20 +29,13 @@ public class AudioManager {
         currentBGM.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
+    /**
+     * Metoda care opreste melodia curenta
+     */
     public static void stopBGM() {
         if (currentBGM != null) {
             currentBGM.stop();
             currentBGM = null;
-        }
-    }
-
-    public static void playSound(Clip s) {
-        if (s != null) {
-            if (s.isRunning()) {
-                s.stop();
-            }
-            s.setFramePosition(0);
-            s.start();
         }
     }
 }

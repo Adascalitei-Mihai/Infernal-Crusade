@@ -8,8 +8,8 @@ import java.io.InputStream;
 
 /**
  * Clasa care incarca elementele audio <br>
- * @see javax.sound.sampled
  * Implementeaza Runnable pentru folosirea thread-urilor
+ * @see javax.sound.sampled
  */
 public class SongAssets implements Runnable {
     public static Clip menu;

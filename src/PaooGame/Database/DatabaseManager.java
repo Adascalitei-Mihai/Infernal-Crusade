@@ -1,7 +1,12 @@
 package PaooGame.Database;
 
 import PaooGame.Handler;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Clasa care comunica cu baza de date

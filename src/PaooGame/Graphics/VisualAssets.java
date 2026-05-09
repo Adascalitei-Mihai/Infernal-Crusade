@@ -8,8 +8,8 @@ import static PaooGame.World.Tile.NO_TILES;
 
 /**
  * Clasa care incarca elementele vizuale
- * @see java.awt.image.BufferedImage
  * Implementeaza Runnable pentru folosirea thread-urilor
+ * @see java.awt.image.BufferedImage
  */
 public class VisualAssets implements Runnable {
     /**

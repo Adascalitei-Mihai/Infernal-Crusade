@@ -7,7 +7,9 @@ import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 
 /**
