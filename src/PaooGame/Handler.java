@@ -21,7 +21,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Handler {
-    public static final int NR_CHKPTS = 3;
+    public static final int NR_CHKPTS = 9;
     private boolean debugMode = false;
 
     private State state;

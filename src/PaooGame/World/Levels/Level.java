@@ -175,7 +175,6 @@ public abstract class Level {
 
                     if ((mask & EXPOSED_NORTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
                     if ((mask & EXPOSED_EAST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI / 2, offset);
-                    if ((mask & EXPOSED_SOUTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI, offset);
                     if ((mask & EXPOSED_WEST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI * 1.5, offset);
                 }
             }

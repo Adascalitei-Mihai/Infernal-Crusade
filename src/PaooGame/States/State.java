@@ -22,18 +22,18 @@ public abstract class State {
      * Metoda care proceseaza caracterele tastate de utilizator <br>
      * Are o implementare goala in mod implicit, dar poate fi suprascrisa de starile
      * care necesita introducere de text (ex: StartMenu pentru logare)
-     * @param c Caracterul tastat.
+     * @param c Caracterul tastat
      */
     public void onKeyTyped(char c) {
     }
 
     /**
-     * Metoda abstracta care actualizeaza logica interna si evenimentele starii curente.
+     * Metoda abstracta care actualizeaza logica interna si evenimentele starii curente
      */
     public abstract void Update();
 
     /**
-     * Metoda abstracta care deseneaza elementele vizuale ale starii curente.
+     * Metoda abstracta care deseneaza elementele vizuale ale starii curente
      * @param g Grafica de desenare
      */
     public abstract void Draw(Graphics g);

@@ -124,7 +124,7 @@ public class Cyclops extends GroundEnemy {
     }
 
     private void executeAttackHitbox() {
-        int hWidth = TILE_SIZE * 10;
+        int hWidth = TILE_SIZE * 8;
         int hHeight = (int) (bounds.height * 0.8f);
 
         attackBounds.setSize(hWidth, hHeight);

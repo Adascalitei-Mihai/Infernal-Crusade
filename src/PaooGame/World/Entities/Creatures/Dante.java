@@ -194,6 +194,7 @@ public class Dante extends Creature {
     public void Update() {
         super.Update();
 
+        System.out.println("x: " + x + ", y: " + y);
         updateHealth();
         updateRank();
         applyGravity();
@@ -208,9 +209,7 @@ public class Dante extends Creature {
                 animations[AnimationState.DEATH.ordinal()].Update();
             }
             else {
-                handler.getTransitionManager().start(() -> {
-                    handler.getLevel().requestRespawn();
-                });
+                handler.getTransitionManager().start(() -> handler.getLevel().requestRespawn());
 
                 hp = MAX_HP;
                 currMove = MovementState.IDLE;
@@ -543,9 +542,25 @@ public class Dante extends Creature {
     }
 
     private boolean isOnIce() {
-        int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
+        // Coordonata Y de sub hitbox-ul personajului (am pastrat offset-ul tau de 8 pixeli)
         int ty = (int) (y + bounds.y + bounds.height + 8) / TILE_SIZE;
-        return handler.getLevel().isIce(tx, ty);
+
+        // Extremitatile stanga si dreapta ale hitbox-ului, in pixeli
+        int leftX = (int) (x + bounds.x);
+        int rightX = (int) (x + bounds.x + bounds.width - 1); // -1 previne depasirea in tile-ul urmator la fix
+
+        // Transformam coordonatele in indexi pentru matricea de tile-uri
+        int txStart = leftX / TILE_SIZE;
+        int txEnd = rightX / TILE_SIZE;
+
+        // Parcurgem toate tile-urile de sub Dante
+        for (int tx = txStart; tx <= txEnd; tx++) {
+            if (handler.getLevel().isIce(tx, ty)) {
+                return true; // Daca atinge macar o bucata de gheata, devine alunecos
+            }
+        }
+
+        return false;
     }
 
     private void spreadFire(int tx, int ty, int remainingSteps) {

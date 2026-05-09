@@ -225,8 +225,8 @@ public class VisualAssets implements Runnable {
     public static void InitL2() {
         try {
             bg2 = new BufferedImage[]{
-                    ImageLoader.LoadImage("/textures/Maps/L2/ceata.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/cer.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L2/ceata.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena1.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena2.png"),
                     ImageLoader.LoadImage("/textures/Maps/L2/arena3.png")
