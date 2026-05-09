@@ -30,7 +30,6 @@ public class Arena {
         if (!waveDone) {
             if (handler.getCreatureCount() <= noCreaturesStart) {
                 waveDone = true;
-                System.out.println("Wave gata!");
                 waveTimer = WAVE_CD;
             }
         }

@@ -12,14 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TMXParser {
-
-    /**
-     * Parsează fișierul TMX și returnează un Map care asociază numele fiecărui layer dorit cu matricea sa 2D.
-     *
-     * @param path Calea către fișierul .tmx în resurse.
-     * @param targetLayers Lista cu numele layerelor pe care dorim să le extragem.
-     * @return Map<String, int[][]> conținând doar matricele layerelor specificate.
-     */
     public static Map<String, int[][]> parseTMXLayers(String path, List<String> targetLayers) {
         Map<String, int[][]> layersData = new HashMap<>();
 

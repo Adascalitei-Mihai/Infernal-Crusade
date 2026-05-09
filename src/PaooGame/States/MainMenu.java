@@ -32,16 +32,26 @@ public class MainMenu extends State {
         scoreX = 10;
         scoreY = handler.getHeight() - TEXT_SIZE * 2 + 10;
 
+        // Determinăm ce texte va avea butonul de Level Select
+        String[] levelSelectStrings;
+        if (handler.getBestScore() != 0) {
+            levelSelectStrings = new String[]{
+                    "Level select: Continue Saved", // Index 0 (Nu modifică progresul salvat)
+                    "Level select: Cogito (L1)",    // Index 1
+                    "Level select: Selva Antica (L2)", // Index 2
+                    "Level select: Flegitonta (L3)" // Index 3
+            };
+        } else {
+            levelSelectStrings = new String[]{"Level select: Locked"};
+        }
+
         btns = new Button[] {
                 new Button(btnsX, btnsY, BOX_WIDTH, BOX_HEIGTH,
                         new String[]{startText}),
-                new Button(btnsX, btnsY + BOX_HEIGTH + 10, BOX_WIDTH, BOX_HEIGTH,
-                        new String[]{
-                                "Level select: Locked",
-                                "Level select: Cogito",
-                                "Level select: Selva Antica",
-                                "Level select: Flegitonta"
-                        }),
+
+                // Folosim array-ul generat mai sus
+                new Button(btnsX, btnsY + BOX_HEIGTH + 10, BOX_WIDTH, BOX_HEIGTH, levelSelectStrings),
+
                 new Button(btnsX, btnsY + 2 * (BOX_HEIGTH + 10), BOX_WIDTH, BOX_HEIGTH,
                         new String[]{
                                 "Difficulty: Easy",
@@ -49,9 +59,9 @@ public class MainMenu extends State {
                                 "Difficulty: Hard"
                         }),
                 new Button(btnsX, btnsY + 3 * (BOX_HEIGTH + 10), BOX_WIDTH, BOX_HEIGTH,
-                    new String[]{"Controls"}),
+                        new String[]{"Controls"}),
                 new Button(btnsX, btnsY + 4 * (BOX_HEIGTH + 10), BOX_WIDTH, BOX_HEIGTH,
-                    new String[]{"Quit (ESC)"})
+                        new String[]{"Quit (ESC)"})
         };
 
         AudioManager.playBGM(SongAssets.menu);
@@ -80,7 +90,6 @@ public class MainMenu extends State {
             }
         }
 
-
         if (hoveredIndex != -1) {
             handler.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -92,12 +101,8 @@ public class MainMenu extends State {
         }
 
         if (handler.getPadManager().enter) {
-            setDifficulty(btns[2].getState());
             handler.getPadManager().reset();
-
-            handler.getTransitionManager().start(() -> {
-                handler.setState(new PlayState(handler));
-            });
+            handleStartGame(); // Am scos logica într-o funcție comună pentru a nu o repeta
         }
 
         if (handler.getKeyManager().escape) {
@@ -108,13 +113,10 @@ public class MainMenu extends State {
     private void handleButtonClick(int index) {
         switch (index) {
             case 0:
-                setDifficulty(btns[2].getState());
-                handler.getTransitionManager().start(() -> { // 2. Tranziția
-                    handler.setState(new PlayState(handler));
-                });
+                handleStartGame();
                 break;
             case 1:
-                if(handler.getBestScore() != 0) {
+                if (handler.getBestScore() != 0) {
                     btns[1].changeState();
                 }
                 break;
@@ -122,13 +124,37 @@ public class MainMenu extends State {
                 btns[2].changeState();
                 break;
             case 3:
-                handler.getTransitionManager().start(() -> { // 2. Tranziția
+                handler.getTransitionManager().start(() -> {
                     handler.setState(new ControlsMenu(handler));
                 });
                 break;
             case 4:
                 handler.StopGame();
         }
+    }
+
+    // Funcția care se ocupă de procesarea alegerilor și pornirea jocului
+    private void handleStartGame() {
+        setDifficulty(btns[2].getState());
+
+        // Verificăm dacă jucătorul are opțiunea de level select deblocată
+        if (handler.getBestScore() != 0) {
+            int selectedLevel = btns[1].getState();
+
+            // Dacă este > 0, înseamnă că nu a lăsat pe "Continue Saved", ci a ales un nivel anume (1, 2 sau 3)
+            if (selectedLevel > 0) {
+                handler.setCurrLevel(selectedLevel);
+                handler.setCurrChkp(0); // Începe de la începutul nivelului ales
+
+                // VITAL: Trebuie să curățăm nivelul vechi din memorie (în caz că dăduse resume).
+                // Astfel PlayState va fi forțat să apeleze handler.initLevel() cu noul nivel ales.
+                handler.setLevel(null);
+            }
+        }
+
+        handler.getTransitionManager().start(() -> {
+            handler.setState(new PlayState(handler));
+        });
     }
 
     @Override

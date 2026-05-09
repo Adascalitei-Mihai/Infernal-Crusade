@@ -6,6 +6,11 @@ import javax.sound.sampled.Clip;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
+
+/**
+ * Clasa care incarca in memorie audio <br>
+ * Implementeaza Runnable pentru folosirea thread-urilor
+ */
 public class SongAssets implements Runnable {
     public static Clip menu;
     public static Clip level1;
@@ -14,6 +19,9 @@ public class SongAssets implements Runnable {
     public static Clip arena;
     public static Clip boss;
 
+    /**
+     * Functia de incarcare a tuturor melodiilor
+     */
     public void run() {
         menu = loadClip("/audio/menu.wav");
         level1 = loadClip("/audio/level1.wav");
@@ -23,11 +31,16 @@ public class SongAssets implements Runnable {
         boss = loadClip("/audio/boss.wav");
     }
 
+    /**
+     * Functia care incarca o singura melodie
+     * @param path Locatia melodiei
+     * @return Obiectul specific melodiei
+     */
     private static Clip loadClip(String path) {
         try {
             InputStream is = SongAssets.class.getResourceAsStream(path);
             if (is == null) {
-                System.err.println("EROARE: Fișierul audio nu a fost găsit: " + path);
+                System.err.println("[EROARE]: Fisierul audio nu a fost gasit: " + path);
                 return null;
             }
 
@@ -39,8 +52,7 @@ public class SongAssets implements Runnable {
 
             return clip;
         } catch (Exception e) {
-            System.err.println("EROARE la încărcarea fișierului audio: " + path);
-            e.printStackTrace();
+            System.err.println("[EROARE]: Incarcarea fisierului audio: " + e.getMessage());
         }
 
         return null;

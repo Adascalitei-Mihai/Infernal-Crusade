@@ -109,9 +109,6 @@ public class UI {
 
     private void drawWaveText(Graphics g) {
         String waveText = "Wave: " + (handler.getLevel().getCurrWave() + 1);
-        if(handler.isArenaFinished()) {
-            waveText = "BRAVOO!!";
-        }
 
         g.setFont(new Font("Monospaced", Font.BOLD, 48));
         FontMetrics fm = g.getFontMetrics();
@@ -133,8 +130,6 @@ public class UI {
     private void drawHealthBar(Graphics g) {
         float hp = handler.getDante().getHp();
         float maxHp = Dante.MAX_HP;
-
-        if (maxHp <= 0) return;
 
         int barIndex = getBarIndex(hp, maxHp);
 
@@ -191,24 +186,22 @@ public class UI {
 
             g.drawImage(VisualAssets.uiRanks[rankOrdinal], drawX, drawY, rankWidth, rankHeight, null);
 
-            if (rankOrdinal >= 0 && rankOrdinal <= 4) {
-                String letter = rankLetters[rankOrdinal];
-                g.setFont(new Font("Monospaced", Font.BOLD, 40));
+            String letter = rankLetters[rankOrdinal];
+            g.setFont(new Font("Monospaced", Font.BOLD, 40));
 
-                FontMetrics fm = g.getFontMetrics();
-                int textWidth = fm.stringWidth(letter);
-                int textAscent = fm.getAscent();
-                int textDescent = fm.getDescent();
+            FontMetrics fm = g.getFontMetrics();
+            int textWidth = fm.stringWidth(letter);
+            int textAscent = fm.getAscent();
+            int textDescent = fm.getDescent();
 
-                int textX = xRankCenter - (textWidth / 2);
-                int textY = yRankCenter + (textAscent / 2) - (textDescent / 2);
+            int textX = xRankCenter - (textWidth / 2);
+            int textY = yRankCenter + (textAscent / 2) - (textDescent / 2);
 
-                g.setColor(Color.BLACK);
-                g.drawString(letter, textX + 2, textY + 2);
+            g.setColor(Color.BLACK);
+            g.drawString(letter, textX + 2, textY + 2);
 
-                g.setColor(Color.WHITE);
-                g.drawString(letter, textX, textY);
-            }
+            g.setColor(Color.WHITE);
+            g.drawString(letter, textX, textY);
         }
     }
 }

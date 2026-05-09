@@ -6,9 +6,10 @@ import PaooGame.World.Entities.Creatures.Dante;
 public class ScoreManager {
     private Handler handler;
 
-    private int totalScore = 0;
-    private int timeSinceCheckpoint = 0;
+    private int totalScore;
+    private int timeSinceCheckpoint;
 
+    private static final int STARTING_SCORE = 100;
     private static final int SCORE_PER_HIT = 10;
     private static final int SCORE_PER_REFLECT = 50;
     private static final float TIME_PENALTY_PER_SEC = 0.5f;
@@ -18,6 +19,7 @@ public class ScoreManager {
     }
 
     public void Update() {
+        totalScore = STARTING_SCORE;
         timeSinceCheckpoint++;
     }
 
@@ -35,6 +37,7 @@ public class ScoreManager {
 
     public void resetCheckpointTimer() {
         timeSinceCheckpoint = 0;
+        totalScore = STARTING_SCORE;
     }
 
     private float getDifficultyMultiplier() {

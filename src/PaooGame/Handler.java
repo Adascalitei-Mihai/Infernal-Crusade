@@ -52,7 +52,6 @@ public class Handler {
 
         scoreMan = new ScoreManager(this);
 
-        // Porniți jocul în meniu, dar NU mai instanțiem Nivelul aici!
         setState(new StartMenu(this));
     }
 

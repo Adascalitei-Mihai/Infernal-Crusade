@@ -70,16 +70,21 @@ public class PlayState extends State {
                         isTransitioning = true; // Setăm flag-ul pe true ca să nu mai intre a 2-a oară!
 
                         // Salvăm scorul și ultimul checkpoint
-                        handler.updateCurrChkp(3);
+                        if (handler.getCurrLevel() != 3) {
+                            // Suntem la nivelul 1 -> Trecem la nivelul 2
+                            handler.updateCurrLevel(handler.getCurrLevel() + 1);
 
-                        // Salvăm trecerea la nivelul 2
-                        handler.updateCurrLevel(2);
-
-                        // Începem tranziția
-                        handler.getTransitionManager().start(() -> {
-                            handler.initLevel(); // Creează automat Level2 pentru că tocmai am făcut currLevel = 2
-                            isTransitioning = false; // Resetăm flag-ul odată ce suntem în Nivelul 2
-                        });
+                            handler.getTransitionManager().start(() -> {
+                                handler.initLevel();
+                                isTransitioning = false;
+                            });
+                        }
+                        else {
+                            handler.getTransitionManager().start(() -> {
+                                handler.setState(new GameDoneState(handler));
+                                isTransitioning = false;
+                            });
+                        }
                     }
                 }
             }

@@ -365,7 +365,7 @@ public class Dante extends Creature {
     }
 
     private void checkInputsForNewAction() {
-        if (handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
+        if (handler.getCurrLevel() != 1 && handler.getInputManager().k && cooldowns[ActionState.EDEN_SHIELD.ordinal()] <= 0 && onGround) {
             currAction = ActionState.EDEN_SHIELD;
             actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = currAction.baseCooldown;
@@ -380,7 +380,7 @@ public class Dante extends Creature {
             return;
         }
 
-        if (handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
+        if (handler.getCurrLevel() == 3 && handler.getInputManager().l && cooldowns[ActionState.FIERY_JUDGEMENT.ordinal()] <= 0 && onGround) {
             currAction = ActionState.FIERY_JUDGEMENT;
             actionTimer = currAction.getDuration();
             cooldowns[currAction.ordinal()] = cd;
