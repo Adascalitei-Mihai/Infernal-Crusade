@@ -12,6 +12,7 @@ import java.awt.image.BufferStrategy;
 
 /**
  * Clasa principala a intregului proiect
+ * Implementeaza Runnable pentru folosirea thread-urilor
  */
 public class Game implements Runnable
 {

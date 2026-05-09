@@ -95,18 +95,18 @@ public class GameWindow {
     }
 
     /**
-     * Functie care construieste fereastra <br>
-     * 1. Verifica sa nu creeze un duplicat. <br>
-     * 2. Creeaza JFrame-ul aferent. <br>
-     * 3. Il instantiaza cu o anumita dimensiune. <br>
-     * 4. Opreste afisarea prin apasarea X. <br>
-     * 5. Isi poate schimba dimensiunea. <br>
-     * 6. Se deschide in mijlocul ecranului. <br>
-     * 7. O face vizibila. <br>
-     * 8. Creeaza panza de desen. <br>
-     * 9. Il instantiaza cu dimensiuni preferate, maxime si minime. <br>
-     * 10. Adauga panza la fereastra actuala. <br>
-     * 11. Redimensioneaza fereastra astfel incat tot continutul sa incapa perfect. <br>
+     * Metoda care construieste fereastra <br>
+     * 1. Verifica sa nu creeze un duplicat <br>
+     * 2. Creeaza JFrame-ul aferent <br>
+     * 3. Il instantiaza cu o anumita dimensiune <br>
+     * 4. Opreste afisarea prin apasarea X <br>
+     * 5. Isi poate schimba dimensiunea <br>
+     * 6. Se deschide in mijlocul ecranului <br>
+     * 7. O face vizibila <br>
+     * 8. Creeaza panza de desen <br>
+     * 9. Il instantiaza cu dimensiuni preferate, maxime si minime <br>
+     * 10. Adauga panza la fereastra actuala <br>
+     * 11. Redimensioneaza fereastra astfel incat tot continutul sa incapa perfect
      */
     public void BuildGameWindow()
     {

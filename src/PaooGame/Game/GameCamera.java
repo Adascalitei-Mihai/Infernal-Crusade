@@ -2,7 +2,6 @@ package PaooGame.Game;
 
 import PaooGame.World.Entities.Entity;
 import PaooGame.Handler;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**

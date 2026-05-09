@@ -7,7 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 
 /**
- * Clasa care incarca in memorie audio <br>
+ * Clasa care incarca elementele audio <br>
  * @see javax.sound.sampled
  * Implementeaza Runnable pentru folosirea thread-urilor
  */
@@ -23,7 +23,8 @@ public class SongAssets implements Runnable {
     public static int TOTAL_LOAD = 6;
 
     /**
-     * Metoda de incarcare a tuturor melodiilor
+     * Metoda de incarcare a tuturor melodiilor, actualizeaza procentul de elemente incarcat <br>
+     * Apeleaza {@link #loadClip(String)}
      */
     public void run() {
         menu = loadClip("/audio/menu.wav");

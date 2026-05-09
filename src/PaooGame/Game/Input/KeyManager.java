@@ -1,7 +1,6 @@
 package PaooGame.Game.Input;
 
 import PaooGame.Handler;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
