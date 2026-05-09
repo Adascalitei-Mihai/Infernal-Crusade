@@ -15,7 +15,7 @@ public class GamepadManager extends InputManager {
     private static final float ACC_POINT = 0.5f;
 
     /**
-     * Initializeaza {@link #controllers}
+     * Constructor care initializeaza {@link #controllers}
      * @param handler Handler-ul
      */
     public GamepadManager(Handler handler) {
@@ -25,7 +25,7 @@ public class GamepadManager extends InputManager {
     }
 
     /**
-     * Functia care retine activarea butoanelor <br>
+     * Metoda care retine activarea butoanelor <br>
      * Pentru miscare, se asculta dpad-ul si daca suntem in afara {@link #DEADZONE} <br>
      * Pentru abilitatile care folosesc trigger-e, verificam daca suntem in afara {@link #ACC_POINT}
      */
@@ -53,7 +53,7 @@ public class GamepadManager extends InputManager {
     }
 
     /**
-     * Functia care aplica vibratii controller-ului
+     * Metoda care aplica vibratii controller-ului
      * @param leftMotor Motorul din stanga
      * @param rightMotor Motorul din dreapta
      * @param durationMs Durata (in ms)
@@ -65,7 +65,7 @@ public class GamepadManager extends InputManager {
     }
 
     /**
-     * Functia care inchide conexiunea
+     * Metoda care inchide conexiunea
      */
     public void terminate() {
         controllers.quitSDLGamepad();

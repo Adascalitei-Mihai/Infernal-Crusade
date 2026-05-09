@@ -11,12 +11,12 @@ import java.util.Arrays;
  */
 public class KeyManager extends InputManager implements KeyListener {
     /**
-     * Vector de caracteristica pentru valorile ASCII ale tastaturii
+     * Campul care este un vector de caracteristica pentru valorile ASCII ale tastaturii
      */
     private final boolean[] keys;
 
     /**
-     * Initializeaza {@link #keys} cu valori de {@code false}
+     * Constructor care initializeaza {@link #keys} cu valori de {@code false}
      * @param handler Handler-ul
      */
     public KeyManager(Handler handler) {
@@ -25,7 +25,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functia care retine activarea butoanelor
+     * Metoda care retine activarea butoanelor
      */
     @Override
     public void Update() {
@@ -48,7 +48,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functia care retine apasarea unei taste
+     * Metoda care retine apasarea unei taste
      * @param e Evenimentul procesat
      */
     @Override
@@ -59,7 +59,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functia care retine eliberarea unei taste
+     * Metoda care retine eliberarea unei taste
      * @param e Evenimentul procesat
      */
     @Override
@@ -70,7 +70,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functia care trimite scrierea unei taste starii actuale
+     * Metoda care trimite scrierea unei taste starii actuale
      * @param e Evenimentul procesat
      */
     @Override
@@ -80,9 +80,7 @@ public class KeyManager extends InputManager implements KeyListener {
         }
     }
 
-    /**
-     * Functia care reseteaza toate tastele
-     */
+
     @Override
     public void reset() {
         Arrays.fill(keys, false);

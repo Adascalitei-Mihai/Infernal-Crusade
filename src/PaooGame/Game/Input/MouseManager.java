@@ -13,7 +13,7 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     private int mouseX, mouseY;
 
     /**
-     * Functia care retine daca este apasat MouseBtn1
+     * Metoda care retine daca este apasat MouseBtn1
      * @param e Evenimentul procesat
      */
     @Override
@@ -24,7 +24,7 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     }
 
     /**
-     * Functia care retine daca este ridicat MouseBtn1
+     * Metoda care retine daca este ridicat MouseBtn1
      * @param e Evenimentul procesat
      */
     @Override
@@ -36,7 +36,7 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     }
 
     /**
-     * Functia care retine miscarea mouse-ului
+     * Metoda care retine miscarea mouse-ului
      * @param e Evenimentul procesat
      */
     @Override
@@ -46,7 +46,7 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     }
 
     /**
-     * Functia care retine tinerea apasata a mouse-ului
+     * Metoda care retine tinerea apasata a mouse-ului
      * @param e Evenimentul procesat
      */
     @Override
@@ -68,17 +68,17 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     public int getMouseY() { return mouseY; }
 
     /**
-     * Functie necesara, neimplementata
+     * Metoda necesara, neimplementata
      * @param e Evenimentul procesat
      */
     @Override public void mouseClicked(MouseEvent e) {}
     /**
-     * Functie necesara, neimplementata
+     * Metoda necesara, neimplementata
      * @param e Evenimentul procesat
      */
     @Override public void mouseEntered(MouseEvent e) {}
     /**
-     * Functie necesara, neimplementata
+     * Metoda necesara, neimplementata
      * @param e Evenimentul procesat
      */
     @Override public void mouseExited(MouseEvent e) {}

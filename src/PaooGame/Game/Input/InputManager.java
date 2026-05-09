@@ -16,6 +16,10 @@ public abstract class InputManager {
     }
 
     public abstract void Update();
+
+    /**
+     * Metoda care reseteaza toate tastele
+     */
     public void reset() {
         up = down = left = right = space = shift = j = k = l = enter = escape = pause = debug = false;
     }

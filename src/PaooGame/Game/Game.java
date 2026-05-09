@@ -6,51 +6,54 @@ import PaooGame.Game.Input.InputManager;
 import PaooGame.Game.Input.KeyManager;
 import PaooGame.Game.Input.MouseManager;
 import PaooGame.Graphics.VisualAssets;
-
 import PaooGame.Handler;
-
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 
 /**
- * Clasa principala a intregului proiect.
+ * Clasa principala a intregului proiect
  */
 public class Game implements Runnable
 {
+    private Handler handler;
     private GameWindow wnd;
-    private boolean runState;
-    private Thread gameThread;
-    private int currentFPS = 0;
-
-    private BufferStrategy bs;
+    private GameCamera gameCamera;
     private Graphics g;
+    /**
+     * Campul care este un triple buffer strategy, folosit si initializat de {@link #renderSimpleLoadingScreen()} si {@link #Draw()}
+     */
+    private BufferStrategy bs;
 
     private InputManager inputMan;
     private KeyManager keyMan;
     private GamepadManager padMan;
     private MouseManager mouseMan;
 
-    private Handler handler;
-    private GameCamera gameCamera;
-
-    private volatile boolean assetsLoaded = false;
+    private final static int MAX_FPS = 60;
+    private int currentFPS;
+    private boolean runState;
 
     /**
-     * Functie care initializeaza jocul, aceasta: <br>
-     * 1. Creeaza fereastra jocului. <br>
-     * 2. Adauga asteptari de evenimente pentru panza ferestrei. <br>
-     * 3. Initializeaza componentele vizuale. <br>
-     * 4. Seteaza starea la meniul de start.
+     * Campul care retine daca thread-urile de incarcare si-au finalizat executia
      */
-    private void InitGame() {
+    private volatile boolean assetsLoaded;
+
+    /**
+     * Metoda care initializeaza jocul <br>
+     * 1. Creeaza fereastra jocului <br>
+     * 2. Lanseaza thread-urile pentru incarcarea video si audio <br>
+     * 3. Lanseaza un thread care asigura legaturile corecte:
+     * initializeaza field-urile si creeaza conexiunile intre fereastra si input
+     */
+    private void initGame() {
         wnd = new GameWindow("Infernal Crusaders", 1000, 800);
-        wnd.BuildGameWindow();
+        wnd.BuildGameWindow(); // 1
 
         Thread vThread = new Thread(new VisualAssets(), "Visual-Loader");
         Thread aThread = new Thread(new SongAssets(), "Audio-Loader");
 
         vThread.start();
-        aThread.start();
+        aThread.start(); // 2
 
         new Thread(() -> {
             try {
@@ -69,29 +72,27 @@ public class Game implements Runnable
                 wnd.getCanvas().addMouseMotionListener(mouseMan);
 
                 assetsLoaded = true;
-                System.out.println("Resurse incarcate asincron!");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("[SYNC_THREAD]: Resurse incarcate asincron!");
+            } catch (Exception e) {
+                System.err.println("[EROARE]: Incarcare asincrona: " + e.getMessage());
             }
-        }, "Sync-Thread").start();
+        }, "Sync-Thread").start(); // 3
     }
 
     /**
-     * Functie ce va rula in thread-ul creat, aceasta: <br>
+     * Metoda care ruleaza jocul <br>
      * 1. Initializeaza jocul <br>
-     * 2. Retine timpul de la ultimul si la actualul frame. <br>
-     * 3. Calculeaza durata unui frame in functie de fps-ul ales. <br>
-     * 4. Cat timp jocul ruleaza, cand timpul trecut este suficient pentru a mentine 60 fps, apeleaza Update() si Draw()
+     * 2. Mentine jocul la {@link #MAX_FPS} <br>
+     * 3. Aplica {@link #Update()} si {@link #Draw()} daca incarcarea a fost realizata, altfel {@link #renderSimpleLoadingScreen()}
      */
     public void run() {
-        InitGame();
+        initGame(); // 1
 
         long lastTime = System.nanoTime();
         long timer = 0;
         int ticks = 0;
 
-        final int framesPerSecond = 60;
-        final double timeFrame = (double) 1000000000 / framesPerSecond;
+        final double timeFrame = (double) 1000000000 / MAX_FPS;
         double delta = 0;
 
         while (runState) {
@@ -102,11 +103,10 @@ public class Game implements Runnable
             lastTime = now;
 
             if (delta >= 1) {
-                if (assetsLoaded) {
+                if (assetsLoaded) { // 3
                     Update();
                     Draw();
-                }
-                else {
+                } else {
                     renderSimpleLoadingScreen();
                 }
                 ticks++;
@@ -118,13 +118,33 @@ public class Game implements Runnable
                 ticks = 0;
                 timer = 0;
             }
+        } // 2
+    }
+
+    /**
+     * Metoda care initializeaza {@link #bs}
+     */
+    private void initBs() {
+        if (bs == null) {
+            bs = wnd.getCanvas().getBufferStrategy();
+            if (bs == null) {
+                try {
+                    wnd.getCanvas().createBufferStrategy(3);
+                } catch (Exception e) {
+                    System.err.println("[EROARE]: Afisarea ecranului de incarcare: " + e.getMessage());
+                }
+            }
         }
     }
 
+    /**
+     * Metoda care afiseaza ecranul de incarcare
+     * Foloseste {@link VisualAssets#loadPercent}, {@link SongAssets#loadPercent} pentru a obtine raportul de completare din
+     * {@link VisualAssets#TOTAL_LOAD} si {@link SongAssets#TOTAL_LOAD}
+     */
     private void renderSimpleLoadingScreen() {
-        bs = wnd.getCanvas().getBufferStrategy();
+        initBs();
         if (bs == null) {
-            wnd.getCanvas().createBufferStrategy(3);
             return;
         }
         g = bs.getDrawGraphics();
@@ -137,7 +157,7 @@ public class Game implements Runnable
         int x = (wnd.getWndWidth() - barWidth) / 2;
         int y = (wnd.getWndHeight() - barHeight) / 2;
 
-        float progress = (float) VisualAssets.loadPercent / VisualAssets.TOTAL_LOAD;
+        float progress = (float) (VisualAssets.loadPercent + SongAssets.loadPercent) / (VisualAssets.TOTAL_LOAD + SongAssets.TOTAL_LOAD);
         progress = Math.min(1.0f, Math.max(0.0f, progress));
 
         g.setColor(new Color(50, 50, 50));
@@ -160,23 +180,21 @@ public class Game implements Runnable
     }
 
     /**
-     * Functie care creaza si porneste thread-ul separat. <br>
-     * Metoda trebuie sa fie declarata synchronized pentru ca apelul acesteia sa fie semaforizat. <br>
-     * Verifica daca jocul nu este inceput, creaza si lanseaza in executie thread-ul care va apela run()
+     * Metoda care lanseaza thread-ul jocului
      */
     public synchronized void StartGame()
     {
         if(!runState)
         {
             runState = true;
-            gameThread = new Thread(this);
-            gameThread.start();
+            new Thread(this).start();
         }
     }
 
     /**
-     * Functie care opreste thread-ul si inchide fereastra. <br>
-        Metoda trebuie sa fie declarata synchronized pentru ca apelul acesteia sa fie semaforizat.
+     * Metoda care opreste thread-ul <br>
+     * 1. Inchide {@link #wnd} si {@link #padMan} <br>
+     * 2. Notifica {@link #handler}
      */
     public synchronized void StopGame() {
         if(!runState) {
@@ -196,7 +214,7 @@ public class Game implements Runnable
     }
 
     /**
-     * Functie care actualizeaza jocul, prin ascultari noi de tastatura si cere actualizari de la starea curenta.
+     * Metoda care actualizeaza {@link #keyMan}, {@link #padMan} si {@link #handler}
      */
     private void Update() {
         keyMan.Update();
@@ -205,75 +223,27 @@ public class Game implements Runnable
     }
 
     /**
-     * Functie care deseneaza jocul, aceasta: <br>
-     * 1. Creaza strategia in prima iteratie. <br>
-     * 2. Creaza grafica jocului pentru cel mai din spate buffer. <br>
-     * 3. Stergem tot ce a fost anterior. <br>
-     * 4. Cere un desen de la starea curenta. <br>
-     * 5. Bufferul din spate este trimis spre monitor. <br>
-     * 6. Eliberam grafica folosita pentru a desena.
+     * Metoda care creeaza {@link #g}, o trimite catre {@link #handler}, o afiseaza si apoi o distruge pentru urmatoarea iteratie
      */
     private void Draw() {
-        bs = wnd.getCanvas().getBufferStrategy();
-        if(bs == null) { // 1
-            try {
-                wnd.getCanvas().createBufferStrategy(3);
-                return;
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        g = bs.getDrawGraphics(); // 2
-        g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight()); // 3
+        initBs();
+        g = bs.getDrawGraphics();
+        g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
 
         handler.Draw(g);
 
-        bs.show(); // 5
-        g.dispose(); // 6
+        bs.show();
+        g.dispose();
     }
 
-    /**
-     * Getter pentru managerul de taste.
-     * @return Managerul de taste actual.
-     */
     public KeyManager getKeyMan() { return keyMan; }
-
     public GamepadManager getPadMan() { return padMan; }
     public InputManager getInputMan() { return inputMan; }
     public void setInput(InputManager inputMan) { this.inputMan = inputMan; }
-    /**
-     * Getter pentru managerul de mouse.
-     * @return Managerul de mouse actual.
-     */
     public MouseManager getMouseMan() { return mouseMan; }
-
-    /**
-     * Getter pentru latimea ferestrei.
-     * @return Latimea ferestrei actuale.
-     */
     public int getWidth() { return wnd.getWndWidth(); }
-
-    /**
-     * Getter pentru inaltimea ferestrei.
-     * @return Inaltimea ferestrei actuale.
-     */
-    public int getHeight() {
-        return wnd.getWndHeight();
-    }
-
+    public int getHeight() { return wnd.getWndHeight(); }
     public GameWindow getWnd() { return wnd; }
-
-    public GameCamera getGameCamera() {
-        return gameCamera;
-    }
-
-    public void setGameCamera(GameCamera gameCamera) {
-        this.gameCamera = gameCamera;
-    }
-
-    public int getCurrentFPS() {
-        return currentFPS;
-    }
+    public GameCamera getGameCamera() { return gameCamera; }
+    public int getCurrentFPS() { return currentFPS; }
 }

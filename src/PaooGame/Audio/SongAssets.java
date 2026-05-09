@@ -19,20 +19,29 @@ public class SongAssets implements Runnable {
     public static Clip arena;
     public static Clip boss;
 
+    public static int loadPercent;
+    public static int TOTAL_LOAD = 6;
+
     /**
-     * Functia de incarcare a tuturor melodiilor
+     * Metoda de incarcare a tuturor melodiilor
      */
     public void run() {
         menu = loadClip("/audio/menu.wav");
+        ++loadPercent;
         level1 = loadClip("/audio/level1.wav");
+        ++loadPercent;
         level2 = loadClip("/audio/level2.wav");
+        ++loadPercent;
         level3 = loadClip("/audio/level3.wav");
+        ++loadPercent;
         arena = loadClip("/audio/arena.wav");
+        ++loadPercent;
         boss = loadClip("/audio/boss.wav");
+        ++loadPercent;
     }
 
     /**
-     * Functia care incarca o singura melodie
+     * Metoda care incarca o singura melodie
      * @param path Locatia melodiei
      * @return Obiectul specific melodiei
      */

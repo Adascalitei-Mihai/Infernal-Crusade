@@ -5,18 +5,41 @@ import PaooGame.Handler;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care implementeaza camera dinamica, de tip Look-Ahead
+ */
 public class GameCamera {
-
+    private final Handler handler;
     private float xOffset, yOffset;
-    private Handler handler;
 
+    /**
+     * Campul care indica daca camera este blocata
+     */
     private boolean useLevelBounds = true;
-
+    /**
+     * Campul care indica marginile camerei (daca este blocata)
+     */
     private float minX, maxX, minY, maxY;
 
+    /**
+     * Campul care este pozitia antecedenta a entitatii urmarite
+     */
     private float previousEntityX;
-    private float currentScreenTargetX = 0.3f;
 
+    /**
+     * Campul care este pozitia relativa a entitatii pe orizontala fata de ecran, {@code 0.35f} pentru deplasare la dreapta si {@code 0.65f} pentru deplasare la stanga
+     */
+    private final float SCREEN_TARGET_X = 0.35f;
+    private float currScreenTargetX = SCREEN_TARGET_X;
+
+    private final float SPEED = 0.08f;
+
+    /**
+     * Constructor care initializeaza pozitia relativa a entitatii urmarite
+     * @param handler Handler-ul
+     * @param xOffset Decalajul pe Ox
+     * @param yOffset Decalajul pe Oy
+     */
     public GameCamera(Handler handler, float xOffset, float yOffset) {
         this.handler = handler;
         this.xOffset = xOffset;
@@ -24,22 +47,24 @@ public class GameCamera {
         this.previousEntityX = 0;
     }
 
+    /**
+     * Metoda care foloseste LERP (utilizand {@link #previousEntityX}, {@link #currScreenTargetX} si {@link #SPEED}) pentru a ajunge la entitatea dorita
+     * @param e Enitatea urmarita
+     */
     public void center(Entity e) {
+        float entityCenterX = e.getX() + (float) e.getWidth() / 2;
         float targetY = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
 
         if (e.getX() > previousEntityX) {
-            currentScreenTargetX = 0.3f;
+            currScreenTargetX = SCREEN_TARGET_X;
         } else if (e.getX() < previousEntityX) {
-
-            currentScreenTargetX = 0.5f;
+            currScreenTargetX= 1 - SCREEN_TARGET_X;
         }
 
         previousEntityX = e.getX();
+        float idealXOffset = entityCenterX - ((float) handler.getWidth() * currScreenTargetX);
 
-        float idealXOffset = e.getX() - ((float) handler.getWidth() * currentScreenTargetX);
-
-        xOffset += (idealXOffset - xOffset) * 0.05f;
-
+        xOffset += (idealXOffset - xOffset) * SPEED;
         yOffset = targetY;
 
         checkBlankSpace();
@@ -47,15 +72,16 @@ public class GameCamera {
         xOffset = Math.round(xOffset);
         yOffset = Math.round(yOffset);
     }
+
+    /**
+     * Metoda care teleporteaza camera pe entitatea dorita
+     * @param e Entitatea urmarita
+     */
     public void snapTo(Entity e) {
         previousEntityX = e.getX();
 
-        float targetY = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
-        float idealXOffset = e.getX() - ((float) handler.getWidth() * currentScreenTargetX);
-
-        // Aici aplicăm direct offset-ul ideal, fără netezire (lerp)
-        xOffset = idealXOffset;
-        yOffset = targetY;
+        xOffset = e.getX() - ((float) handler.getWidth() * SCREEN_TARGET_X);
+        yOffset = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
 
         checkBlankSpace();
 
@@ -63,13 +89,10 @@ public class GameCamera {
         yOffset = Math.round(yOffset);
     }
 
-    public void centerOnPosition(float x, float y) {
-        xOffset = x - (float) handler.getWidth() / 2;
-        yOffset = y - (float) handler.getHeight() / 2;
-        checkBlankSpace();
-    }
-
-    public void checkBlankSpace() {
+    /**
+     * Metoda care creeaza limitele camerei
+     */
+    private void checkBlankSpace() {
         float currentLimitMinX = 0;
         float currentLimitMinY = 0;
         float currentLimitMaxX = handler.getLevel().getWidth() * TILE_SIZE - handler.getWidth();
@@ -89,6 +112,13 @@ public class GameCamera {
         else if(yOffset > currentLimitMaxY) yOffset = currentLimitMaxY;
     }
 
+    /**
+     * Metoda care blocheaza camera
+     * @param x Coordonata x a dreptunghiului
+     * @param y Coordonata y a dreptunghiului
+     * @param width Latimea dreptunghiului
+     * @param height Inaltimea dreptunghiului
+     */
     public void setCustomBounds(float x, float y, float width, float height) {
         this.minX = x;
         this.minY = y;
@@ -96,6 +126,10 @@ public class GameCamera {
         this.maxY = y + height;
         this.useLevelBounds = false;
     }
+
+    /**
+     * Metoda care deblocheaza camera
+     */
     public void resetToLevelBounds() {
         this.useLevelBounds = true;
     }
