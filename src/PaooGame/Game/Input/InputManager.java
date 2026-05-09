@@ -2,6 +2,9 @@ package PaooGame.Game.Input;
 
 import PaooGame.Handler;
 
+/**
+ * Clasa care asculta input-uri
+ */
 public abstract class InputManager {
     protected final Handler handler;
     public boolean up, down, left, right, space,

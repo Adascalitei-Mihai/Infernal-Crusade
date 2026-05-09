@@ -1,75 +1,31 @@
 package PaooGame.Game.Input;
 
-import PaooGame.Handler;
-
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 /**
- * Clasa care traduce actiunile mouse-ului.
+ * Clasa care asculta input-urile mouse-ului
  */
 public class MouseManager implements MouseListener, MouseMotionListener {
-    private final Handler handler;
-    private boolean leftPressed, rightPressed;
+    private boolean leftPressed;
     private boolean leftReleased;
     private int mouseX, mouseY;
 
     /**
-     * Constructor vid.
-     */
-    public MouseManager(Handler handler) {
-        this.handler = handler;
-    }
-
-    /**
-     * Getter pentru verificarea apasarii butonului din stanga.
-     * @return Adevarat / Fals.
-     */
-    public boolean isLeftPressed() { return leftPressed; }
-
-    public boolean isLeftReleased() {
-        if (leftReleased) {
-            leftReleased = false;
-            return true;
-        }
-        return false;
-    }
-    /**
-     * Getter pentru verificarea apasarii butonului din dreapta.
-     * @return Adevarat / Fals.
-     */
-    public boolean isRightPressed() { return rightPressed; }
-
-    /**
-     * Getter pentru pozitia pe Ox a cursorului.
-     * @return Pozitia actuala.
-     */
-    public int getMouseX() { return mouseX; }
-
-    /**
-     * Getter pentru pozitia pe Oy a cursorului.
-     * @return Pozitia actuala.
-     */
-    public int getMouseY() { return mouseY; }
-
-    /**
-     * Funtie care determina apasarea unui buton.
-     * @param e Evenimentul procesat.
+     * Functia care retine daca este apasat MouseBtn1
+     * @param e Evenimentul procesat
      */
     @Override
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             leftPressed = true;
         }
-        else if (e.getButton() == MouseEvent.BUTTON3) {
-            rightPressed = true;
-        }
     }
 
     /**
-     * Functie care determina ridicarea unui buton.
-     * @param e Evenimentul procesat.
+     * Functia care retine daca este ridicat MouseBtn1
+     * @param e Evenimentul procesat
      */
     @Override
     public void mouseReleased(MouseEvent e) {
@@ -77,14 +33,11 @@ public class MouseManager implements MouseListener, MouseMotionListener {
             leftPressed = false;
             leftReleased = true;
         }
-        else if (e.getButton() == MouseEvent.BUTTON3) {
-            rightPressed = false;
-        }
     }
 
     /**
-     * Functie care determina miscarea mouse-ului.
-     * @param e Evenimentul procesat.
+     * Functia care retine miscarea mouse-ului
+     * @param e Evenimentul procesat
      */
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -93,8 +46,8 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     }
 
     /**
-     * Functie care determina tinerea apasata a mouse-ului.
-     * @param e Evenimentul procesat.
+     * Functia care retine tinerea apasata a mouse-ului
+     * @param e Evenimentul procesat
      */
     @Override
     public void mouseDragged(MouseEvent e) {
@@ -102,8 +55,31 @@ public class MouseManager implements MouseListener, MouseMotionListener {
         mouseY = e.getY();
     }
 
-    // Functii necesare, dar pe care nu le vom implementa.
+    public boolean isLeftPressed() { return leftPressed; }
+    public boolean isLeftReleased() {
+        if (leftReleased) {
+            leftReleased = false;
+            return true;
+        }
+        return false;
+    }
+
+    public int getMouseX() { return mouseX; }
+    public int getMouseY() { return mouseY; }
+
+    /**
+     * Functie necesara, neimplementata
+     * @param e Evenimentul procesat
+     */
     @Override public void mouseClicked(MouseEvent e) {}
+    /**
+     * Functie necesara, neimplementata
+     * @param e Evenimentul procesat
+     */
     @Override public void mouseEntered(MouseEvent e) {}
+    /**
+     * Functie necesara, neimplementata
+     * @param e Evenimentul procesat
+     */
     @Override public void mouseExited(MouseEvent e) {}
 }

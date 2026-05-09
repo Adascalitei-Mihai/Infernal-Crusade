@@ -7,13 +7,17 @@ import java.awt.event.KeyListener;
 import java.util.Arrays;
 
 /**
- * Clasa care traduce actiunile tastaturii.
+ * Clasa care asculta input-urile tastaturii
  */
 public class KeyManager extends InputManager implements KeyListener {
+    /**
+     * Vector de caracteristica pentru valorile ASCII ale tastaturii
+     */
     private final boolean[] keys;
 
     /**
-     * Constructor vid, initializeaza un vector in care retinem caracterele apasate.
+     * Initializeaza {@link #keys} cu valori de {@code false}
+     * @param handler Handler-ul
      */
     public KeyManager(Handler handler) {
         super(handler);
@@ -21,7 +25,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care traduce tastele uzuale.
+     * Functia care retine activarea butoanelor
      */
     @Override
     public void Update() {
@@ -44,8 +48,8 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care retine apasarea unei taste.
-     * @param e Evenimentul procesat.
+     * Functia care retine apasarea unei taste
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -55,8 +59,8 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care retine eliberarea unei taste.
-     * @param e Evenimentul procesat.
+     * Functia care retine eliberarea unei taste
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyReleased(KeyEvent e) {
@@ -66,8 +70,8 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care trimite scrierea unei taste starii actuale.
-     * @param e Evenimentul procesat.
+     * Functia care trimite scrierea unei taste starii actuale
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyTyped(KeyEvent e) {
@@ -76,6 +80,9 @@ public class KeyManager extends InputManager implements KeyListener {
         }
     }
 
+    /**
+     * Functia care reseteaza toate tastele
+     */
     @Override
     public void reset() {
         Arrays.fill(keys, false);

@@ -6,9 +6,9 @@ import javax.sound.sampled.Clip;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 
-
 /**
  * Clasa care incarca in memorie audio <br>
+ * @see javax.sound.sampled
  * Implementeaza Runnable pentru folosirea thread-urilor
  */
 public class SongAssets implements Runnable {

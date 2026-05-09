@@ -61,7 +61,7 @@ public class Game implements Runnable
                 gameCamera = new GameCamera(handler, 0, 0);
                 keyMan = new KeyManager(handler);
                 padMan = new GamepadManager(handler);
-                mouseMan = new MouseManager(handler);
+                mouseMan = new MouseManager();
                 inputMan = keyMan;
 
                 wnd.getCanvas().addKeyListener(keyMan);

@@ -1,23 +1,34 @@
 package PaooGame.Database;
 
 import PaooGame.Handler;
-
 import java.sql.*;
 
+/**
+ * Clasa care comunica cu baza de date
+ * @see java.sql
+ */
 public class DatabaseManager {
     private Connection connection;
 
+    /**
+     * Functia de conectare <br>
+     * Apeleaza {@link #createTables()}
+     * @param url Locatia bazei de date
+     */
     public void connect(String url) {
         try {
             connection = DriverManager.getConnection(url);
             System.out.println("Conexiune la baza de date stabilita.");
 
             createTables();
-        }
-        catch (SQLException e) {
-            System.out.println("Eroare la conectarea DB: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("[EROARE]: Conectarea DB: " + e.getMessage());
         }
     }
+
+    /**
+     * Functia de creare a tabelelor (daca nu exista)
+     */
     private void createTables() {
         String createPlayers = "CREATE TABLE IF NOT EXISTS Players (" +
                 "ID_P INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -41,19 +52,30 @@ public class DatabaseManager {
             stmt.execute(createPlayers);
             stmt.execute(createScores);
         } catch (SQLException e) {
-            System.err.println("Eroare la crearea tabelelor: " + e.getMessage());
+            System.err.println("[EROARE]: Crearea tabelelor: " + e.getMessage());
         }
     }
 
+    /**
+     * Functia de inchidere
+     */
     public void close() {
         try {
-            if (connection != null) connection.close();
+            if (connection != null) {
+                connection.close();
+            }
         }
         catch (SQLException e) {
-            System.out.println("Eroare la inchiderea DB: " + e.getMessage());
+            System.err.println("[EROARE]: Inchiderea DB: " + e.getMessage());
         }
     }
 
+    /**
+     * Functia care seteaza detaliile jucatorului din handler <br>
+     * Apeleaza {@link #createNewPlayer(String, Handler)} (daca nu exista)
+     * @param name Numele jucatorului
+     * @param handler Handler-ul
+     */
     public void loadOrCreatePlayer(String name, Handler handler) {
         String querySelect = "SELECT * FROM Players WHERE Name = ?";
 
@@ -66,9 +88,8 @@ public class DatabaseManager {
                 handler.setPlayerName(rs.getString("Name"));
                 handler.setCurrLevel(rs.getInt("CurrLevel"));
                 handler.setCurrChkp(rs.getInt("CurrChkp"));
-                System.out.println("Profil încărcat: " + name + " (ID: " + handler.getPlayerID() + ")");
-            }
-            else {
+                System.out.println("Profil incarcat: " + name + " (ID: " + handler.getPlayerID() + ")");
+            } else {
                 createNewPlayer(name, handler);
             }
         }
@@ -77,6 +98,12 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Functia care creeaza un nou jucator <br>
+     * Il initializeaza cu valorile specifice
+     * @param name Numele jucatorului
+     * @param handler Handler-ul
+     */
     private void createNewPlayer(String name, Handler handler) {
         String queryInsert = "INSERT INTO Players(Name, CurrLevel, CurrChkp) VALUES(?, 1, 0)";
 
@@ -96,6 +123,17 @@ public class DatabaseManager {
             System.err.println("Eroare la crearea jucătorului: " + e.getMessage());
         }
     }
+
+    /**
+     * Functia care salveaza noul scor <br>
+     * Daca scorul curent este mai bun, acesta este actualizat <br>
+     * Daca este prima oara cand acel jucatorul completeaza segmentul, creeaza o intrare noua
+     * @param playerID ID-ul jucatorului
+     * @param levelID ID-ul nivelului
+     * @param startChkp ID-ul checkpoint-ului de inceput
+     * @param endChkp ID-ul checkpoint-ului de final
+     * @param score Scorul nou
+     */
     public void saveScore(int playerID, int levelID, int startChkp, int endChkp, int score) {
         String checkSql = "SELECT Best_Score FROM Scores WHERE ID_P = ? AND Level_ID = ? AND Start_Chkp = ? AND End_Chkp = ?";
 
@@ -134,9 +172,15 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Eroare manuală la salvare scor: " + e.getMessage());
+            System.err.println("[EROARE]: Salvare scor: " + e.getMessage());
         }
     }
+
+    /**
+     * Functia care actualizeaza checkpoint-ul curent
+     * @param playerID ID-ul jucatorului
+     * @param newChkp ID-ul noului checkpoint
+     */
     public void updatePlayerCheckpoint(int playerID, int newChkp) {
         String sql = "UPDATE Players SET CurrChkp = ? WHERE ID_P = ?";
 
@@ -149,9 +193,16 @@ public class DatabaseManager {
                 System.out.println("Progres salvat în DB: Checkpoint " + newChkp);
             }
         } catch (SQLException e) {
-            System.err.println("Eroare la updatePlayerCheckpoint: " + e.getMessage());
+            System.err.println("[EROARE]: Setare checkpoint nou: " + e.getMessage());
         }
     }
+
+    /**
+     * Functia care actualizeaza nivelul si checkpoint-ul curent
+     * @param playerID ID-ul jucatorului
+     * @param newLevel ID-ul noului nivel
+     * @param newChkp ID-ul noului checkpoint
+     */
     public void updatePlayerProgress(int playerID, int newLevel, int newChkp) {
         String sql = "UPDATE Players SET CurrLevel = ?, CurrChkp = ? WHERE ID_P = ?";
 
@@ -165,10 +216,16 @@ public class DatabaseManager {
                 System.out.println("Progres salvat în DB: Nivel " + newLevel + ", Checkpoint " + newChkp);
             }
         } catch (SQLException e) {
-            System.err.println("Eroare la updatePlayerProgress: " + e.getMessage());
+            System.err.println("[EROARE]: Setare progres: " + e.getMessage());
         }
     }
 
+    /**
+     * Functia care returneaza scorul total al unui jucator
+     * @param playerID ID-ul jucatorului
+     * @param totalRequiredSegments Numarul de segmente care trebuie completate
+     * @return Scorul total
+     */
     public int getTotalBestScore(int playerID, int totalRequiredSegments) {
         String sql = "SELECT SUM(Best_Score) AS Total " +
                 "FROM Scores " +
@@ -185,10 +242,16 @@ public class DatabaseManager {
                 return rs.getInt("Total");
             }
         } catch (SQLException e) {
-            System.err.println("Eroare la calcularea scorului total: " + e.getMessage());
+            System.err.println("[EROARE]: Calcularea scorului total: " + e.getMessage());
         }
         return 0;
     }
+
+    /**
+     * Functia care returneaza scorul total global
+     * @param totalSegmentsRequired Numarul de segmente care trebuie completate
+     * @return Scorul total
+     */
     public int getGlobalBestScore(int totalSegmentsRequired) {
         String sql = "SELECT SUM(Best_Score) AS Total " +
                 "FROM Scores " +
