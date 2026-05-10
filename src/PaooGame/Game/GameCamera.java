@@ -51,8 +51,8 @@ public class GameCamera {
      * @param e Enitatea urmarita
      */
     public void center(Entity e) {
-        float entityCenterX = e.getX() + (float) e.getWidth() / 2;
-        float targetY = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
+        float entityCenterX = e.getX() + (float) e.getLogicWidth() / 2;
+        float targetY = e.getY() - (float) handler.getHeight() / 2 + (float) e.getLogicHeight() / 2;
 
         if (e.getX() > previousEntityX) {
             currScreenTargetX = SCREEN_TARGET_X;
@@ -80,7 +80,7 @@ public class GameCamera {
         previousEntityX = e.getX();
 
         xOffset = e.getX() - ((float) handler.getWidth() * SCREEN_TARGET_X);
-        yOffset = e.getY() - (float) handler.getHeight() / 2 + (float) e.getHeight() / 2;
+        yOffset = e.getY() - (float) handler.getHeight() / 2 + (float) e.getLogicHeight() / 2;
 
         checkBlankSpace();
 

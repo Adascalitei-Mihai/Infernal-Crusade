@@ -27,12 +27,11 @@ public class Handler {
     private State state;
     private Game game;
     private Level level;
-    private DatabaseManager dbMan;
-    private ScoreManager scoreMan;
-    private TransitionManager transMan;
+    private final DatabaseManager dbMan;
+    private final ScoreManager scoreMan;
+    private final TransitionManager transMan;
 
     private int playerID;
-    private String playerName;
     private int currLevel, currChkp;
 
     public enum Difficulty { EASY, NORMAL, HARD }
@@ -112,14 +111,13 @@ public class Handler {
     public TransitionManager getTransitionManager() { return transMan; }
     public void setCursor(Cursor c) { game.getWnd().getCanvas().setCursor(c); }
     public ScoreManager getScoreMan() { return scoreMan; }
-    public void setScoreMan(ScoreManager scoreMan) { this.scoreMan = scoreMan; }
     public KeyManager getKeyManager() { return game.getKeyMan(); }
     public GamepadManager getPadManager() { return game.getPadMan(); }
     public InputManager getInputManager() { return game.getInputMan(); }
     public void setInput(InputManager inputMan) { game.setInput(inputMan); }
     public MouseManager getMouseManager() { return game.getMouseMan(); }
     public GameCamera getGameCamera() { return game.getGameCamera(); }
-    public int getCreatureCount() { return level.getEntityManager().getCreatureCount(); }
+    public int getCreatureCount() { return level.getEntityManager().getEnemyCount(); }
     public void addEntity(Entity e) { level.getEntityManager().addEntity(e); }
     public int getWidth() { return game.getWidth(); }
     public int getHeight() { return game.getHeight(); }
@@ -130,11 +128,8 @@ public class Handler {
     public Level getLevel() { return level; }
     public void setLevel(Level level) { this.level = level; }
     public DatabaseManager getDbMan() { return dbMan; }
-    public void setDbMan(DatabaseManager dbMan) { this.dbMan = dbMan; }
     public int getPlayerID() { return playerID; }
     public void setPlayerID(int playerID) { this.playerID = playerID; }
-    public String getPlayerName() { return playerName; }
-    public void setPlayerName(String playerName) { this.playerName = playerName; }
     public int getCurrLevel() { return currLevel; }
     public void setCurrLevel(int currLevel) { this.currLevel = currLevel; }
     public int getCurrChkp() { return currChkp; }
@@ -142,14 +137,11 @@ public class Handler {
     public Difficulty getDifficulty() { return currDifficulty; }
     public void setDifficulty(Difficulty difficulty) { this.currDifficulty = difficulty; }
     public int getBestScore() { return bestScore; }
-    public void setBestScore(int bestScore) { this.bestScore = bestScore; }
     public int getGlobalScore() { return globalScore; }
-    public void setGlobalScore(int globalScore) { this.globalScore = globalScore; }
     public float getxOffset() { return game.getGameCamera().getxOffset(); }
     public float getyOffset() { return game.getGameCamera().getyOffset(); }
     public ArrayList<Entity> getEntities() { return level.getEntityManager().getEntities(); }
     public Dante getDante() { return level.getEntityManager().getDante(); }
     public boolean getDebugMode() { return debugMode; }
     public void setDebugMode(boolean debugMode) { this.debugMode = debugMode; }
-    public boolean isArenaFinished() { return level.isArenaFinished(); }
 }

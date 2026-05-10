@@ -90,7 +90,6 @@ public class DatabaseManager {
 
             if (rs.next()) {
                 handler.setPlayerID(rs.getInt("ID_P"));
-                handler.setPlayerName(rs.getString("Name"));
                 handler.setCurrLevel(rs.getInt("CurrLevel"));
                 handler.setCurrChkp(rs.getInt("CurrChkp"));
                 System.out.println("[DATABASE]: Profil incarcat: " + name + " (ID: " + handler.getPlayerID() + ")");
@@ -119,7 +118,6 @@ public class DatabaseManager {
             ResultSet generatedKeys = pstmt.getGeneratedKeys();
             if (generatedKeys.next()) {
                 handler.setPlayerID(generatedKeys.getInt(1));
-                handler.setPlayerName(name);
                 handler.setCurrLevel(1);
                 handler.setCurrChkp(0);
                 System.out.println("[DATABASE]: Jucător nou creat: " + name);

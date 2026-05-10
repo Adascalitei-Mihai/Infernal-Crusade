@@ -5,7 +5,8 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
 
-import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
+import PaooGame.World.Arena;
+import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level2Factory;
 
 import java.awt.*;
@@ -14,7 +15,7 @@ import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Level2 extends Level {
     private static final float SCALE = 1.25f;
-    // Dimensiunile citite direct din TMX: width="200" height="300"
+    // Dimensiunile citite direct din TMX: logicWidth="200" logicHeight="300"
     private static final int L2_WIDTH = 200;
     private static final int L2_HEIGHT = 300;
 
@@ -51,13 +52,31 @@ public class Level2 extends Level {
     };
 
     // --- CHKP & ARENA (Placeholder temporar, conform cerinței) ---
-    private static final int[][] CHKP_POS = { {TILE_SIZE, 292 * TILE_SIZE}, {32 * TILE_SIZE, 217 * TILE_SIZE}, {96 * TILE_SIZE, 147 * TILE_SIZE}, {135 * TILE_SIZE, 45 * TILE_SIZE} };
-    private static final int[] ARENA_COORDS = { 0, 0, 0, 0 };
-    private static final int[][][][] ARENA_WAVES = { { { {0, 0} }, {} } };
-    private static final int[] GATE_COORDS = { 0, 0 };
+    private static final int[][] CHKP_COORDS = {
+            {TILE_SIZE, 292 * TILE_SIZE},
+            {32 * TILE_SIZE, 217 * TILE_SIZE},
+            {96 * TILE_SIZE, 147 * TILE_SIZE},
+            {135 * TILE_SIZE, 45 * TILE_SIZE}
+    };
 
+    private static final int[] ARENA_COORDS = {
+            151 * TILE_SIZE, 18 * TILE_SIZE, 199 * TILE_SIZE, 51 * TILE_SIZE
+    };
+    private static final int[] GATE_COORDS = {
+            150 * TILE_SIZE, 45 * TILE_SIZE
+    };
+
+    private static final int[][][][] ARENA_WAVES = {
+            {{{160 * TILE_SIZE, 48 * TILE_SIZE}, {190 * TILE_SIZE, 48 * TILE_SIZE}},
+                    {{170 * TILE_SIZE, 38 * TILE_SIZE}, {180 * TILE_SIZE, 38 * TILE_SIZE}}},
+            {{{165 * TILE_SIZE, 48 * TILE_SIZE}, {175 * TILE_SIZE, 48 * TILE_SIZE}, {185 * TILE_SIZE, 48 * TILE_SIZE}},
+                    {{158 * TILE_SIZE, 35 * TILE_SIZE}, {175 * TILE_SIZE, 32 * TILE_SIZE}, {192 * TILE_SIZE, 35 * TILE_SIZE}}},
+            {{{153 * TILE_SIZE, 48 * TILE_SIZE}, {197 * TILE_SIZE, 48 * TILE_SIZE}},
+                    {{168 * TILE_SIZE, 36 * TILE_SIZE}, {175 * TILE_SIZE, 34 * TILE_SIZE}, {182 * TILE_SIZE, 36 * TILE_SIZE}}},
+            {{{156 * TILE_SIZE, 48 * TILE_SIZE}, {168 * TILE_SIZE, 48 * TILE_SIZE}, {182 * TILE_SIZE, 48 * TILE_SIZE}, {194 * TILE_SIZE, 48 * TILE_SIZE}},
+                    {{160 * TILE_SIZE, 38 * TILE_SIZE}, {170 * TILE_SIZE, 33 * TILE_SIZE}, {180 * TILE_SIZE, 33 * TILE_SIZE}, {190 * TILE_SIZE, 38 * TILE_SIZE}}}
+    };
     public Level2(Handler handler) {
-        // Trimitem SOLID_LAYERS în loc de SOLID_LAYER
         super(handler, new Level2Factory(handler),
                 L2_WIDTH, L2_HEIGHT, "/textures/Maps/L2/L2.tmx", SongAssets.level1,
                 RENDER_ORDER, SOLID_LAYERS);
@@ -71,15 +90,28 @@ public class Level2 extends Level {
         handler.getGameCamera().resetToLevelBounds();
         AudioManager.playBGM(bgSong);
 
-        entityManager.getDante().setX(CHKP_POS[handler.getCurrChkp()][0]);
-        entityManager.getDante().setY(CHKP_POS[handler.getCurrChkp()][1]);
+        entityManager.getDante().setX(CHKP_COORDS[handler.getCurrChkp()][0]);
+        entityManager.getDante().setY(CHKP_COORDS[handler.getCurrChkp()][1]);
 
         entityManager.resetEntities();
 
-        for(int i = 0; i < CHKP_POS.length; ++i) {
+        for(int i = 0; i < CHKP_COORDS.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
-                    CHKP_POS[i][0], CHKP_POS[i][1], i));
+                    CHKP_COORDS[i][0], CHKP_COORDS[i][1], i));
         }
+
+        Gate gate = factory.createGate(GATE_COORDS[0], GATE_COORDS[1]);
+        arena = new Arena(handler, ARENA_WAVES,
+                ARENA_COORDS[0], ARENA_COORDS[1],
+                ARENA_COORDS[2] - ARENA_COORDS[0],
+                ARENA_COORDS[3] - ARENA_COORDS[1]);
+
+        entityManager.addEntity(gate);
+        entityManager.addEntity(factory.createArenaTrigger(
+                GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
+                gate.getLogicWidth(), gate.getLogicHeight(),
+                arena, new Gate[]{gate}, SongAssets.arena
+        ));
 
         setEnemies();
         handler.getDante().resetDeath();

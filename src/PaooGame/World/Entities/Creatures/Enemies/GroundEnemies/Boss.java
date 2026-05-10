@@ -107,7 +107,7 @@ public class Boss extends GroundEnemy {
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
         this.rand = new Random();
-        this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getCreatureCount();
+        this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getEnemyCount();
 
         this.phase2TargetX = (patrolRange[0] + patrolRange[1]) / 2f;
 

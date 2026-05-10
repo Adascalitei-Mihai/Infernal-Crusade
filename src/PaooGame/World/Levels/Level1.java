@@ -104,7 +104,7 @@ public class Level1 extends Level {
         entityManager.addEntity(gate);
         entityManager.addEntity(factory.createArenaTrigger(
                 GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
-                gate.getWidth(), gate.getHeight(),
+                gate.getLogicWidth(), gate.getLogicHeight(),
                 arena, new Gate[]{gate}, SongAssets.arena
         ));
 
