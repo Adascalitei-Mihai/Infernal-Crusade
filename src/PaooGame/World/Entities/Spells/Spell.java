@@ -6,47 +6,40 @@ import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
 import PaooGame.World.Entities.Entity;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.HashSet;
 
 /**
- * Clasa abstracta care reprezinta o vraja
+ * Clasa abstracta care reprezinta o vraja sau un atac magic in joc.
+ * Gestioneaza stadiile atacului (WINDUP, ACTIVE, RECOVERY), coliziunile si desenarea.
  */
 public abstract class Spell extends Entity {
-    private final static float KNOCKBACK_FORCE = 10f;
-    private final static float LIFESTEAL = 100f;
+    protected final static float KNOCKBACK_FORCE = 10f;
+    protected final static float LIFESTEAL = 100f;
 
     public enum SpellState {
         WINDUP, ACTIVE, RECOVERY, DEAD
     }
 
     protected Animation animation;
-    private SpellState currState = SpellState.WINDUP;
+    protected SpellState currState = SpellState.WINDUP;
 
-    private final Creature owner;
-    private final float damage;
-    private final float knockPercent;
+    protected int visualWidth, visualHeight;
+    protected Creature owner;
+    protected float damage;
+    protected float knockPercent;
 
-    private final int activeTime, recoveryTime;
-    private int stateTimer;
-    private boolean hasDealtDamage;
+    protected int windupTime, activeTime, recoveryTime;
+    protected int stateTimer;
+
+    // Lista entitatilor deja lovite pentru a nu le rani de doua ori in acelasi "burst"
+    private final HashSet<Entity> entitiesHit = new HashSet<>();
 
     /**
-     * Constructorul care initializeaza campurile
-     * @param handler Handler-ul
-     * @param x Pozitia pe OX
-     * @param y Pozitia pe axa Oy
-     * @param logicWidth Latimea logica
-     * @param logicHeight Inaltimea logica
-     * @param visualWidth Latimea vizuala
-     * @param visualHeight Inaltimea vizuala
-     * @param owner Proprietarul
-     * @param damage DMG
-     * @param knockPercent Procentajul aplicat din {@link #KNOCKBACK_FORCE} in urma unei coliziuni
-     * @param windupTime Timpul de incarcare
-     * @param activeTime Timpul activ
-     * @param recoveryTime Timpul de disipare
+     * Metoda care initializeaza atributele de baza si stadiile unei vraji.
      */
     public Spell(Handler handler, float x, float y, int logicWidth, int logicHeight,
                  int visualWidth, int visualHeight, Creature owner, float damage, float knockPercent,
@@ -59,21 +52,15 @@ public abstract class Spell extends Entity {
         this.damage = damage;
         this.knockPercent = knockPercent;
 
+        this.windupTime = windupTime;
         this.activeTime = activeTime;
         this.recoveryTime = recoveryTime;
 
         this.stateTimer = windupTime;
     }
 
-    /**
-     * Metoda abstracta care forteaza clasele derivate sa isi seteze propriile cadre de animatie
-     */
     protected abstract void setAnimations();
 
-    /**
-     * Metoda care actualizeaza logica vrajii la fiecare cadru, gestionand
-     * tranzitiile intre stadiile masinii de stari si animatia curenta
-     */
     @Override
     public void Update() {
         if (currState == SpellState.DEAD) {
@@ -83,15 +70,16 @@ public abstract class Spell extends Entity {
 
         updateStateTimer();
 
+        // Daca am ajuns in faza activa, fortam verificarea hitbox-urilor
+        if (currState == SpellState.ACTIVE) {
+            triggerSpellInteractions();
+        }
+
         if (animation != null) {
             animation.Update();
         }
     }
 
-    /**
-     * Metoda care scade cronometrul stadiului curent si avanseaza vraja in urmatorul stadiu atunci cand timpul a expirat <br>
-     * Declanseaza efectul daunator o singura data la intrarea in stadiul {@link SpellState#ACTIVE}
-     */
     private void updateStateTimer() {
         stateTimer--;
 
@@ -100,6 +88,8 @@ public abstract class Spell extends Entity {
                 case WINDUP:
                     currState = SpellState.ACTIVE;
                     stateTimer = activeTime;
+                    // Resetam lista in caz ca vrem o vraja care pulseaza (multy-hit)
+                    entitiesHit.clear();
                     break;
                 case ACTIVE:
                     currState = SpellState.RECOVERY;
@@ -112,16 +102,10 @@ public abstract class Spell extends Entity {
                     break;
             }
         }
-
-        if (currState == SpellState.ACTIVE && !hasDealtDamage) {
-            triggerSpellInteractions();
-            hasDealtDamage = true;
-        }
     }
 
     /**
-     * Metoda care verifica coliziunile vrajii cu alte entitati din nivel
-     * si declanseaza interactiunea specifica in caz de impact
+     * Verifica activ toate entitatile din bounds in timpul fazei ACTIVE.
      */
     public void triggerSpellInteractions() {
         Rectangle spellBounds = getCollisionBounds(0f, 0f);
@@ -137,41 +121,53 @@ public abstract class Spell extends Entity {
         }
     }
 
-    /**
-     * Metoda care deseneaza vraja pe ecran, centrand imaginea pe entitatea aleasa
-     * @param g Grafica de desenare
-     */
     @Override
     public void Draw(Graphics g) {
         int screenX = (int) (x - handler.getGameCamera().getxOffset());
         int screenY = (int) (y - handler.getGameCamera().getyOffset());
 
         int drawX = screenX + (logicWidth - visualWidth) / 2;
-        int drawY = screenY + (logicHeight - visualHeight); // Centrat pe latura de jos (podea)
+        int drawY = screenY + (logicHeight - visualHeight);
 
         if (animation != null && animation.getCurrentFrame() != null) {
             g.drawImage(animation.getCurrentFrame(), drawX, drawY, visualWidth, visualHeight, null);
         }
 
         if (handler.getDebugMode()) {
-            g.setColor(new Color(255, 0, 255, 100));
+            // Desenam rosu cand e periculos, violet cand e sigur
+            if (currState == SpellState.ACTIVE) {
+                g.setColor(new Color(255, 0, 0, 150));
+            } else {
+                g.setColor(new Color(255, 0, 255, 100));
+            }
             g.fillRect(screenX + bounds.x, screenY + bounds.y, bounds.width, bounds.height);
         }
     }
 
     /**
-     * Metoda care aplica consecintele coliziunii vrajii cu o alta entitate {@link Creature#hurt(float)} si {@link Creature#applyKnockback(float, float)} <br>
-     * Ofera un efect de vindecare (lifesteal) daca loveste anumite entitati inamice specifice
-     * @param e Entitatea cu care se interactioneaza
+     * Metoda care aplica consecintele coliziunii vrajii cu o alta entitate.
+     * Acum functioneaza DOAR in faza ACTIVE si protejeaza contra "multihit-ului" accidental.
      */
     @Override
     public void onInteraction(Entity e) {
+        // Daca nu suntem in faza de damage, ignoram complet coliziunea!
+        if (currState != SpellState.ACTIVE) {
+            return;
+        }
+
+        // Daca am lovit deja entitatea asta in timpul acestui atac, nu o mai lovim iar!
+        if (entitiesHit.contains(e)) {
+            return;
+        }
+
         if (e instanceof Necromancer target) {
             target.heal(LIFESTEAL);
+            entitiesHit.add(e); // Marcam ca am interactionat
             return;
         }
         if (e instanceof Boss target) {
             target.heal(LIFESTEAL);
+            entitiesHit.add(e);
             return;
         }
 
@@ -179,6 +175,7 @@ public abstract class Spell extends Entity {
             if (target.hurt(damage)) {
                 float knockX = (target.getX() > this.x) ? KNOCKBACK_FORCE * knockPercent : -KNOCKBACK_FORCE * knockPercent;
                 target.applyKnockback(knockX, -10f);
+                entitiesHit.add(target); // Il punem pe lista victimelor
             }
         }
     }

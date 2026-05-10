@@ -151,10 +151,5 @@ public abstract class Creature extends Entity {
         knockbackTimer = KNOCK_TIME;
     }
 
-    public void setHp(float hp) { this.hp = hp; }
     public float getHp() { return hp; }
-    public float getxMove() { return xMove; }
-    public void setxMove(float xMove) { this.xMove = xMove; }
-    public float getyMove() { return yMove; }
-    public void setyMove(float yMove) { this.yMove = yMove; }
 }

@@ -21,8 +21,8 @@
             "scale": 0.33,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 4821.212121212122,
-                "y": 1153.0303030303032
+                "x": 5254.545454545454,
+                "y": 5283.333333333333
             }
         },
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Mossy - FloatingPlatforms.tsx": {
@@ -120,14 +120,15 @@
     "last.externalTilesetPath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2",
     "last.imagePath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2",
     "openFiles": [
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/L2.tmx"
     ],
     "project": "L1.tiled-project",
     "recentFiles": [
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/L2.tmx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Tilemap_AutoTile_128 1 (1).tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Mossy - FloatingPlatforms.tsx",
-        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/barrel.tsx",
         "L1.tmx",
         "L1.tsx",

@@ -5,6 +5,7 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Arena;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level1Factory;
 

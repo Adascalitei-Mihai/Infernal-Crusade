@@ -6,15 +6,19 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Projectiles.Screech;
-
-import java.awt.*;
+import PaooGame.World.Entities.Creatures.Enemies.EnemyAction;
+import java.awt.Rectangle;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta inamicul zburator de tip Ghoul.
+ * Trage cu un proiectil ultrasonic ("Screech") si cade pe pamant la zero HP.
+ */
 public class Ghoul extends FlyingEnemy {
-    public static final int DEFAULT_WIDTH = 2 * TILE_SIZE;
-    public static final int DEFAULT_HEIGHT = 2 * TILE_SIZE;
-    public static final Rectangle BOUNDS = new Rectangle(3, 3, DEFAULT_WIDTH - 3, DEFAULT_HEIGHT - 3);
+    public static final int LOGIC_WIDTH = 2 * TILE_SIZE;
+    public static final int LOGIC_HEIGHT = 2 * TILE_SIZE;
+    public static final Rectangle BOUNDS = new Rectangle(3, 3, LOGIC_WIDTH - 3, LOGIC_HEIGHT - 3);
 
     public static final int VISUAL_WIDTH = 7 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 5 * TILE_SIZE;
@@ -32,52 +36,55 @@ public class Ghoul extends FlyingEnemy {
     protected static final float Y_RANGE = 30f;
     protected static final float HOVER_SPEED = 0.05f;
 
-    // --- Sistemul ActionState (Inspirat direct de la Hunter) ---
-    public enum ActionState {
-        IDLE(0, 0, 0, 0),
-        SCREECHING(40, 10, 30, 150); // Windup, Active, Recovery, Cooldown
+    // --- TIMPI DE ATAC (IN CADRE) ---
+    private static final int SCREECH_WINDUP = 40;
+    private static final int SCREECH_ACTIVE = 10;
+    private static final int SCREECH_RECOVERY = 30;
+    private static final int SCREECH_COOLDOWN = 150;
 
-        public final int windup, active, recovery, baseCooldown;
-
-        ActionState(int windup, int active, int recovery, int baseCooldown) {
-            this.windup = windup;
-            this.active = active;
-            this.recovery = recovery;
-            this.baseCooldown = baseCooldown;
-        }
-
-        public int getDuration() { return windup + active + recovery; }
-    }
-
-    private ActionState currAction = ActionState.IDLE;
-    private int actionTimer = 0;
-    private int attackCooldown = 0;
-
-    // --- Sistemul de Animatii ---
-    public enum AnimationState {
-        IDLE, FLY, ATTACK, HURT, DIE
-    }
-
-    private final Animation[] animations = new Animation[AnimationState.values().length];
-    private AnimationState currAnim = AnimationState.IDLE;
-
-    private boolean isDead = false;
     private boolean hitGround = false;
 
+    /**
+     * Metoda care initializeaza zburatorul si adauga actiunea de atac (Screech).
+     */
     public Ghoul(Handler handler, float x, float y) {
-        super(handler, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_HP, KNOCK_PERCENT, Y_RANGE, HOVER_SPEED);
+        super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT, Y_RANGE, HOVER_SPEED);
         this.bounds = new Rectangle(BOUNDS);
 
         this.baseSpeed = BASE_SPEED;
         this.aggroSpeed = AGGRO_SPEED;
-        this.attackRange = ATTACK_RANGE;
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
-        this.gravity = 0f;
+        this.visualWidth = VISUAL_WIDTH;
+        this.visualHeight = VISUAL_HEIGHT;
+
+        availableActions.add(new EnemyAction("SCREECH", SCREECH_WINDUP, SCREECH_ACTIVE, SCREECH_RECOVERY, SCREECH_COOLDOWN, ATTACK_RANGE, false));
 
         setAnimations();
     }
 
+    /**
+     * Metoda care lanseaza proiectilul in momentul in care actiunea a ajuns la faza activa.
+     */
+    @Override
+    protected void executeActionHitbox(String actionId) {
+        if (actionId.equals("SCREECH")) {
+            float[] spawnCoords = getCenter();
+            float[] targetCoords = handler.getDante().getCenter();
+
+            // Centram coordonatele proiectilului
+            float startX = spawnCoords[0] - ((float) TILE_SIZE);
+            float startY = spawnCoords[1] - ((float) TILE_SIZE);
+
+            handler.getLevel().getEntityManager().addEntity(
+                    new Screech(handler, startX, startY, targetCoords[0], targetCoords[1], this)
+            );
+        }
+    }
+
+    /**
+     * Metoda care actualizeaza starea interna, gestionand si fizica de cadere la deces.
+     */
     @Override
     public void Update() {
         if (isDead) {
@@ -86,159 +93,74 @@ public class Ghoul extends FlyingEnemy {
         }
 
         super.Update();
-        updateCooldowns();
-
-        if (knockbackTimer > 0 || pauseTimer > 0) {
-            currAction = ActionState.IDLE;
-            actionTimer = 0;
-        } else {
-            updateActionState();
-        }
-
-        updateAnimationLogic();
-
-        // Sincronizare cu FlyingEnemy (pentru ca makeDecision sa stie ca atacam si sa opreasca miscarea)
-        isWindingUp = (currAction != ActionState.IDLE);
     }
 
+    /**
+     * Metoda care asigura faptul ca inamicul moare cu adevarat (este sters din lista)
+     * doar DUPA ce atinge o platforma solida.
+     */
     private void handleDeathPhysics() {
         if (!hitGround) {
-            yMove += 0.8f; // Cadere
+            yMove += 0.8f; // Fortam caderea
             if (yMove > 15f) yMove = 15f;
 
             float lastY = y;
-            moveY();
+            move();
 
             if (y == lastY || Math.abs(yMove) < 0.1f) {
                 hitGround = true;
             }
         } else {
-            animations[AnimationState.DIE.ordinal()].Update();
-            if (animations[AnimationState.DIE.ordinal()].isFinished()) {
+            animations.get("DIE").Update();
+            if (animations.get("DIE").isFinished()) {
                 active = false;
             }
         }
     }
 
-    private void updateCooldowns() {
-        if (attackCooldown > 0) attackCooldown--;
-    }
-
-    private void updateActionState() {
-        if (currAction == ActionState.IDLE) return;
-
-        actionTimer--;
-
-        // Tragem proiectilul exact când se termină Windup-ul
-        if (actionTimer == (currAction.active + currAction.recovery)) {
-            executeAttackHitbox();
-        }
-
-        if (actionTimer <= 0) {
-            currAction = ActionState.IDLE;
-        }
-    }
-
-    @Override
-    protected void attack() {
-        if (attackCooldown > 0 || currAction != ActionState.IDLE) return;
-
-        currAction = ActionState.SCREECHING;
-        actionTimer = currAction.getDuration();
-        attackCooldown = currAction.baseCooldown;
-
-        animations[AnimationState.ATTACK.ordinal()].reset();
-    }
-
-    private void executeAttackHitbox() {
-        float[] spawnCoords = getCenter();
-        float[] targetCoords = handler.getDante().getCenter();
-
-        // Proiectilul Screech are dimensiunile de 1 * TILE_SIZE.
-        // Scădem jumătate din dimensiunea lui din coordonatele de spawn pentru a-l centra perfect.
-        float startX = spawnCoords[0] - ((float) TILE_SIZE);
-        float startY = spawnCoords[1] - ((float) TILE_SIZE);
-
-        handler.getLevel().getEntityManager().addEntity(
-                new Screech(handler, startX, startY,
-                        targetCoords[0], targetCoords[1], this)
-        );
-    }
-
-    private void updateAnimationLogic() {
-        AnimationState prevAnim = currAnim;
-
-        if (knockbackTimer > 0) {
-            currAnim = AnimationState.HURT;
-        } else if (currAction == ActionState.SCREECHING) {
-            currAnim = AnimationState.ATTACK;
-        } else if (Math.abs(xMove) > 0.1f) {
-            currAnim = AnimationState.FLY;
-        } else {
-            currAnim = AnimationState.IDLE;
-        }
-
-        if (currAnim != prevAnim) {
-            animations[currAnim.ordinal()].reset();
-        }
-        animations[currAnim.ordinal()].Update();
-    }
-
-    @Override
-    public void Draw(Graphics g) {
-        int screenX = (int) (x - handler.getGameCamera().getxOffset());
-        int screenY = (int) (y - handler.getGameCamera().getyOffset());
-
-        int drawX = screenX + (DEFAULT_WIDTH - VISUAL_WIDTH) / 2;
-        int drawY = screenY + (DEFAULT_HEIGHT - VISUAL_HEIGHT);
-
-        if (direction != 1) {
-            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                    drawX + VISUAL_WIDTH, drawY, -VISUAL_WIDTH, VISUAL_HEIGHT, null);
-        } else {
-            g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                    drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
-        }
-
-        if (handler.getDebugMode()) {
-            g.setColor(new Color(255, 0, 0, 100));
-            g.fillRect((int) (x + bounds.x - handler.getGameCamera().getxOffset()),
-                    (int) (y + bounds.y - handler.getGameCamera().getyOffset()),
-                    bounds.width, bounds.height);
-        }
-    }
-
+    /**
+     * Metoda care declanseaza faza de moarte (caderea spre podea).
+     */
     @Override
     public void die() {
         if (isDead) return;
         isDead = true;
-        currAnim = AnimationState.DIE;
-        currAction = ActionState.IDLE;
-        isWindingUp = false;
+        animations.get("DIE").reset();
 
-        animations[AnimationState.DIE.ordinal()].reset();
+        // Resetam variabilele de miscare pentru a incepe caderea libera curat
         xMove = 0;
         bounds.width = 0;
         bounds.height = 0;
     }
 
+    /**
+     * Metoda care incarca cadrele si configureaza duratele specifice de atac.
+     */
     @Override
     public void setAnimations() {
         try {
-            animations[AnimationState.IDLE.ordinal()] = new Animation(10, VisualAssets.Ghoul.get("Idle"));
-            animations[AnimationState.FLY.ordinal()] = new Animation(8, VisualAssets.Ghoul.get("Fly"));
-            animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Ghoul.get("Hurt"));
-            animations[AnimationState.DIE.ordinal()] = new Animation(12, VisualAssets.Ghoul.get("Die"));
+            animations.put("IDLE", new Animation(10, VisualAssets.Ghoul.get("Idle")));
+            animations.put("FLY", new Animation(8, VisualAssets.Ghoul.get("Fly")));
+            animations.put("HURT", new Animation(6, VisualAssets.Ghoul.get("Hurt")));
 
-            animations[AnimationState.ATTACK.ordinal()] = new Animation(ActionState.SCREECHING.windup / 6, VisualAssets.Ghoul.get("Attack"));
-            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(6, ActionState.SCREECHING.active);
-            animations[AnimationState.ATTACK.ordinal()].setFrameDuration(7, ActionState.SCREECHING.recovery);
-        }
-        catch (Exception e) {
-            System.err.println("Eroare la incarcarea animatiilor Ghoul: " + e.getMessage());
+            // Animatia de deces nu se randeaza ciclic
+            Animation dieAnim = new Animation(12, VisualAssets.Ghoul.get("Die"));
+            dieAnim.setFrameDuration(VisualAssets.Ghoul.get("Die").length - 1, -1);
+            animations.put("DIE", dieAnim);
+
+            Animation attackAnim = new Animation(SCREECH_WINDUP / 6, VisualAssets.Ghoul.get("Attack"));
+            attackAnim.setFrameDuration(6, SCREECH_ACTIVE);
+            attackAnim.setFrameDuration(7, SCREECH_RECOVERY);
+            animations.put("SCREECH", attackAnim);
+
+        } catch (Exception e) {
+            System.err.println("[EROARE]: La incarcarea animatiilor Ghoul: " + e.getMessage());
         }
     }
 
+    /**
+     * Metoda care provoaca daune jucatorului la simpla atingere aeriana.
+     */
     @Override
     public void onInteraction(Entity e) {
         if (isDead) return;

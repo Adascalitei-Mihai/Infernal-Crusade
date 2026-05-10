@@ -67,8 +67,8 @@ public class TMXParser {
             Document doc = buildXMLDocument(path); // 1
 
             Element mapElement = doc.getDocumentElement();
-            int mapWidth = Integer.parseInt(mapElement.getAttribute("logicWidth"));
-            int mapHeight = Integer.parseInt(mapElement.getAttribute("logicHeight")); // 2
+            int mapWidth = Integer.parseInt(mapElement.getAttribute("width"));
+            int mapHeight = Integer.parseInt(mapElement.getAttribute("height")); // 2
 
             NodeList layerNodes = doc.getElementsByTagName("layer");
 

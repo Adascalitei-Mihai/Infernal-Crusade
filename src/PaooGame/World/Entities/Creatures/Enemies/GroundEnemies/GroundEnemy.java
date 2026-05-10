@@ -5,65 +5,36 @@ import PaooGame.World.Entities.Creatures.Enemies.Enemy;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa abstracta care reprezinta un inamic terestru
+ */
 public abstract class GroundEnemy extends Enemy {
+
+    /**
+     * Constructorul care initializeaza un inamic terestru.
+     */
     public GroundEnemy(Handler handler, float x, float y, int width, int height, float hp, float weight) {
         super(handler, x, y, width, height, hp, weight);
     }
 
+    /**
+     * Metoda care adauga forta gravitationala la miscarea verticala
+     */
     @Override
-    protected void makeDecision() {
-        yMove += 0.5f;
-        if (isWindingUp || isAttacking) {
-            currState = EnemyState.ATTACKING;
-            xMove = 0;
-            return;
-        }
+    protected void applyVerticalMovement() {
+        yMove += gravity;
+    }
 
-        float distance = getDistanceToPlayer();
-        float speed = baseSpeed;
-
-        if (distance <= attackRange) {
-            currState = EnemyState.ATTACKING;
-            speed = 0;
-        }
-        else if (distance <= aggroRange) {
-            currState = EnemyState.CHASING;
-            speed = aggroSpeed;
-        }
-        else {
-            currState = EnemyState.PATROLLING;
-        }
-
-        if(currState != EnemyState.PATROLLING) {
-            direction = isPlayerToTheRight() ? 1 : -1;
-        }
-
-        xMove = direction * speed;
-        int nextX;
-        if (direction == 1) {
-            nextX = (int) (x + bounds.x + bounds.width + xMove) / TILE_SIZE;
-        }
-        else {
-            nextX = (int) (x + bounds.x + xMove) / TILE_SIZE;
-        }
-
+    /**
+     * Metoda care verifica atat coliziunea cu un perete in fata {@link #collisionWithTile(int, int)}, cat si existenta
+     * unui bloc transparent dedesubt {@link #checkHorizontalCollision()}
+     * @return Daca drumul este blocat sau daca urmeaza o prapastie
+     */
+    @Override
+    protected boolean checkPathBlocked() {
+        int nextX = (int) (x + bounds.x + xMove + (direction == 1 ? bounds.width : 0)) / TILE_SIZE;
         int belowY = (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE;
-        if (currState == EnemyState.PATROLLING) {
-            if (x <= patrolRange[0]) {
-                direction = 1;
-                xMove = direction * speed;
-            }
-            else if (x >= patrolRange[1]) {
-                direction = -1;
-                xMove = direction * speed;
-            }
-            else if (!collisionWithTile(nextX, belowY) || checkHorizontalCollision()) {
-                direction *= -1;
-                xMove = direction * speed;
-            }
-        }
-        else if (!collisionWithTile(nextX, belowY) || checkHorizontalCollision()) {
-            xMove = 0;
-        }
+
+        return !collisionWithTile(nextX, belowY) || checkHorizontalCollision();
     }
 }
