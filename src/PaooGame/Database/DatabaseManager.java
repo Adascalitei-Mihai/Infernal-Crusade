@@ -120,10 +120,10 @@ public class DatabaseManager {
                 handler.setPlayerID(generatedKeys.getInt(1));
                 handler.setCurrLevel(1);
                 handler.setCurrChkp(0);
-                System.out.println("[DATABASE]: Jucător nou creat: " + name);
+                System.out.println("[DATABASE]: Jucator nou creat: " + name);
             }
         } catch (SQLException e) {
-            System.err.println("Eroare la crearea jucătorului: " + e.getMessage());
+            System.err.println("Eroare la crearea jucatorului: " + e.getMessage());
         }
     }
 

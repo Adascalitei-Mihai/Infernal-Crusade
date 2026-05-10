@@ -6,7 +6,9 @@ import PaooGame.World.Entities.Creatures.Creature;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,10 +17,10 @@ import java.util.Map;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
- * Clasa abstracta care defineste "creierul" tuturor inamicilor.
- * Gestioneaza un sistem dinamic de actiuni (atacuri, vraji) si cooldown-uri.
+ * Clasa abstracta care defineste logica de baza pentru toti inamicii din joc
  */
 public abstract class Enemy extends Creature {
+
     protected enum EnemyState { PATROLLING, CHASING, ACTING }
     protected EnemyState currState = EnemyState.PATROLLING;
 
@@ -28,12 +30,14 @@ public abstract class Enemy extends Creature {
     protected float aggroRange;
     protected float[] patrolRange;
 
+    /**
+     * Campul care denota miscarea pe Ox: {@code stanga / dreapta => -1 / 1 }
+     */
     protected int direction = 1;
     protected float baseSpeed, aggroSpeed;
     protected float knockPercent;
     protected float gravity = 0.5f;
 
-    // --- SISTEMUL DINAMIC DE ACTIUNI ---
     protected List<EnemyAction> availableActions = new ArrayList<>();
     protected Map<String, Integer> actionCooldowns = new HashMap<>();
 
@@ -41,61 +45,55 @@ public abstract class Enemy extends Creature {
     protected int actionTimer = 0;
     protected boolean hasExecutedActiveFrame = false;
 
-    // --- SISTEMUL DINAMIC DE ANIMATII ---
     protected Map<String, Animation> animations = new HashMap<>();
     protected String currentAnimId = "IDLE";
 
     protected boolean isDead;
     protected int deathTimer;
+    /**
+     * Campul care denota daca inamicul are Super Armour - nu isi ia knockback si intrerupere la atac in timpul de windup
+     */
+    protected boolean hasSuperArmor;
+    /**
+     * Campul care denota directia in care este imaginea din {@link PaooGame.Graphics.VisualAssets}: {@code stanga / dreapta => true / false }
+     */
+    protected boolean flipSpriteDirection;
 
+    /**
+     * Constructorul pentru initializarea campurilor
+     */
     public Enemy(Handler handler, float x, float y, int width, int height, float hp, float knockPercent) {
         super(handler, x, y, width, height, hp);
         this.knockPercent = knockPercent;
     }
 
-    protected boolean hasSuperArmor = false;
-
+    /**
+     * Metoda abstracta care aplica miscarea pe verticala
+     */
     protected abstract void applyVerticalMovement();
+
+    /**
+     * Metoda abstracta care verifica daca calea este blocata
+     * @return Daca e blocata
+     */
     protected abstract boolean checkPathBlocked();
+
+    /**
+     * Metoda care executa atacul
+     * @param actionId Tipul de atac
+     */
     protected abstract void executeActionHitbox(String actionId);
 
+    /**
+     * Metoda care verifica daca inamicul se afla in faza de pregatire a unui atac
+     */
     protected boolean isWindingUp() {
         return currentAction != null && actionTimer >= (currentAction.active() + currentAction.recovery());
     }
 
-    @Override
-    public boolean hurt(float dmg) {
-        if (invulnerabilityTimer > 0) {
-            return false;
-        }
-        hp -= dmg;
-        invulnerabilityTimer = INVULN_TIME;
-
-        if (hp <= 0) {
-            die();
-        } else {
-            // Logica de Super Armor: Daca inamicul are abilitatea si e in Windup,
-            // sare peste anularea atacului si peste animatia de HURT!
-            if (!(hasSuperArmor && isWindingUp())) {
-                cancelCurrentAction();
-                currentAnimId = "HURT";
-                if (animations.containsKey("HURT")) {
-                    animations.get("HURT").reset();
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void applyKnockback(float forceX, float forceY) {
-        // Super Armor: Ignoram socul fizic in timpul windup-ului
-        if (hasSuperArmor && isWindingUp()) {
-            return;
-        }
-        super.applyKnockback(forceX, forceY);
-    }
-
+    /**
+     * Metoda care actualizeaza logica inamicului: fizica, AI, actiuni si animatii
+     */
     @Override
     public void Update() {
         super.Update();
@@ -120,14 +118,47 @@ public abstract class Enemy extends Creature {
     }
 
     /**
-     * Metoda generala, apelabila de clasele copil, pentru a executa un atac de tip MELEE.
-     * Calculeaza cutia de lovire (hitbox-ul) si verifica intersectia cu jucatorul.
-     * * @param targetBox Referinta catre un obiect Rectangle pe care metoda il va dimensiona si pozitiona.
-     * @param hWidth Latimea cutiei de lovire.
-     * @param hHeight Inaltimea cutiei de lovire.
-     * @param dmg Daunele care vor fi aplicate jucatorului.
-     * @param forceX Forta bruta de knockback (pe X). Semnul se va ajusta automat dupa directia de atac.
-     * @param forceY Forta bruta de knockback (pe Y).
+     * Metoda care gestioneaza primirea de daune, tinand cont de mecanica de Super Armor
+     */
+    @Override
+    public boolean hurt(float dmg) {
+        if (invulnerabilityTimer > 0) {
+            return false;
+        }
+
+        hp -= dmg;
+        invulnerabilityTimer = INVULN_TIME;
+
+        if (hp <= 0) {
+            die();
+        } else {
+            if (!(hasSuperArmor && isWindingUp())) {
+                cancelCurrentAction();
+                currentAnimId = "HURT";
+
+                if (animations.containsKey("HURT")) {
+                    animations.get("HURT").reset();
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Metoda care aplica knockback inamicului, exceptand situatiile de Super Armor
+     */
+    @Override
+    public void applyKnockback(float forceX, float forceY) {
+        if (hasSuperArmor && isWindingUp()) {
+            return;
+        }
+
+        super.applyKnockback(forceX, forceY);
+    }
+
+    /**
+     * Metoda care executa un atac Melee cu hitbox-ul dreptunghiular
      */
     protected void executeMeleeAttack(Rectangle targetBox, int hWidth, int hHeight, float dmg, float forceX, float forceY, int hitPauseFrames) {
         targetBox.setSize(hWidth, hHeight);
@@ -137,15 +168,16 @@ public abstract class Enemy extends Creature {
         } else {
             targetBox.x = (int) (x + bounds.x - hWidth);
         }
+
         targetBox.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
 
         Dante dante = handler.getDante();
+
         if (targetBox.intersects(dante.getCollisionBounds(0f, 0f))) {
             if (dante.hurt(dmg)) {
                 float knockX = (direction == 1) ? Math.abs(forceX) : -Math.abs(forceX);
                 dante.applyKnockback(knockX, forceY);
 
-                // Acum inamicul ingheata doar daca ii spunem sa o faca!
                 if (hitPauseFrames > 0) {
                     pauseTimer = hitPauseFrames;
                 }
@@ -153,10 +185,8 @@ public abstract class Enemy extends Creature {
         }
     }
 
-
     /**
-     * Metoda care deseneaza inamicul pe ecran.
-     * De asemenea, randeaza vizual zona atacului in modul de depanare.
+     * Metoda care desseneaza inamicul si hitbox-ul de debug daca este activat
      */
     @Override
     public void Draw(Graphics g) {
@@ -169,7 +199,13 @@ public abstract class Enemy extends Creature {
         Animation currentAnim = isDead ? animations.get("DIE") : animations.get(currentAnimId);
 
         if (currentAnim != null && currentAnim.getCurrentFrame() != null) {
-            if (direction != 1) {
+            boolean shouldFlip = (direction != 1);
+
+            if (flipSpriteDirection) {
+                shouldFlip = !shouldFlip;
+            }
+
+            if (shouldFlip) {
                 g.drawImage(currentAnim.getCurrentFrame(), drawX + visualWidth, drawY, -visualWidth, visualHeight, null);
             } else {
                 g.drawImage(currentAnim.getCurrentFrame(), drawX, drawY, visualWidth, visualHeight, null);
@@ -185,20 +221,18 @@ public abstract class Enemy extends Creature {
     }
 
     /**
-     * Metoda care scade timpul de asteptare. Varianta perfect sigura in Java.
+     * Metoda care scade timpul de reincarcare pentru toate abilitatile disponibile
      */
     private void updateCooldowns() {
         actionCooldowns.replaceAll((_, v) -> v > 0 ? v - 1 : 0);
     }
 
     /**
-     * Metoda refactorizata care rezolva AI-ul inamicilor.
-     * Acum inamicii stau pe loc cand asteapta sa atace in loc sa intre in jucator.
+     * Metoda care are logica de decizie a AI-ului {@link EnemyState}
      */
     protected void makeDecision() {
         applyVerticalMovement();
 
-        // 1. Daca deja executam un atac care ne cere sa stam pe loc, xMove e 0.
         if (currentAction != null) {
             if (currentAction.stopsMovement()) {
                 xMove = 0;
@@ -209,13 +243,11 @@ public abstract class Enemy extends Creature {
         float distance = getDistanceToPlayer();
         boolean isInAttackRange = false;
 
-        // 2. Cautam o actiune pe care o putem folosi
         for (EnemyAction action : availableActions) {
             if (distance <= action.triggerRange()) {
-                isInAttackRange = true; // Inamicul e destul de aproape ca sa loveasca
+                isInAttackRange = true;
 
                 if (actionCooldowns.getOrDefault(action.actionId(), 0) <= 0) {
-                    // Daca atacul e gata, ne uitam spre jucator si tragem/lovim!
                     direction = isPlayerToTheRight() ? 1 : -1;
                     startAction(action);
 
@@ -227,23 +259,17 @@ public abstract class Enemy extends Creature {
             }
         }
 
-        // 3. Daca NU atacam, calculam miscarea.
         float speed = baseSpeed;
 
         if (isInAttackRange) {
-            // Suntem in raza de atac, dar lovitura e pe cooldown (se incarca)!
-            // STAM PE LOC si il privim amenintator pe Dante.
             currState = EnemyState.CHASING;
             direction = isPlayerToTheRight() ? 1 : -1;
             xMove = 0;
             return;
-        }
-        else if (distance <= aggroRange) {
-            // Dante e in raza vizuala, dar inca nu a ajuns la raza de atac
+        } else if (distance <= aggroRange) {
             currState = EnemyState.CHASING;
             speed = aggroSpeed;
         } else {
-            // Dante e departe
             currState = EnemyState.PATROLLING;
         }
 
@@ -255,8 +281,13 @@ public abstract class Enemy extends Creature {
         handlePathing(speed);
     }
 
+    /**
+     * Metoda care gestioneaza tranzitiile intre fazele unei actiuni (Windup, Active, Recovery)
+     */
     private void updateActionState() {
-        if (currentAction == null) return;
+        if (currentAction == null) {
+            return;
+        }
 
         actionTimer--;
 
@@ -270,10 +301,13 @@ public abstract class Enemy extends Creature {
 
         if (actionTimer <= 0) {
             currentAction = null;
-            currState = EnemyState.CHASING; // Lasam pe Chasing pentru a recalcula logic urmatorul frame
+            currState = EnemyState.CHASING;
         }
     }
 
+    /**
+     * Metoda care incepe o actiune noua si seteaza cronometrele necesare
+     */
     protected void startAction(EnemyAction action) {
         currState = EnemyState.ACTING;
         currentAction = action;
@@ -287,15 +321,15 @@ public abstract class Enemy extends Creature {
         }
     }
 
+    /**
+     * Metoda care sincronizeaza starea logica a inamicului cu animatia vizuala redata
+     */
     protected void updateAnimations() {
-        // Dacă avem Super Armor și atacăm, animația de atac are prioritate absolută!
-        // Nu lăsăm "HURT" să întrerupă vizual atacul.
         if (hasSuperArmor && currentAction != null) {
             currentAnimId = currentAction.actionId();
-        }
-        // Altfel, verificăm dacă suntem în starea HURT
-        else if (currentAnimId.equals("HURT") && animations.containsKey("HURT")) {
+        } else if (currentAnimId.equals("HURT") && animations.containsKey("HURT")) {
             Animation hurtAnim = animations.get("HURT");
+
             if (!hurtAnim.isFinished()) {
                 hurtAnim.Update();
                 return;
@@ -304,7 +338,6 @@ public abstract class Enemy extends Creature {
 
         String prevAnim = currentAnimId;
 
-        // Logica standard de priorități (dacă nu suntem deja blocați în Super Armor Attack)
         if (currentAction != null) {
             currentAnimId = currentAction.actionId();
         } else if (Math.abs(xMove) > 0.1f) {
@@ -322,15 +355,23 @@ public abstract class Enemy extends Creature {
         }
     }
 
+    /**
+     * Metoda care aplica frictiunea si gravitatia in timpul stărilor de stun sau knockback
+     */
     private void applyPhysics() {
         xMove *= 0.8f;
-        if (gravity == 0f) yMove *= 0.8f;
-        else yMove += gravity;
+
+        if (gravity == 0f) {
+            yMove *= 0.8f;
+        } else {
+            yMove += gravity;
+        }
+
         move();
     }
 
     /**
-     * S-a reparat bug-ul de vibrare la limitele de patrulare.
+     * Metoda care gestioneaza deplasarea in regim de patrulare si evitarea obstacolelor
      */
     private void handlePathing(float speed) {
         if (currState == EnemyState.PATROLLING) {
@@ -341,28 +382,45 @@ public abstract class Enemy extends Creature {
             } else if (checkPathBlocked()) {
                 direction *= -1;
             }
+
             xMove = direction * speed;
         } else if (checkPathBlocked()) {
             xMove = 0;
         }
     }
 
+    /**
+     * Metoda care calculeaza distanta fata de jucator
+     */
     protected float getDistanceToPlayer() {
         Entity player = handler.getDante();
-        if(player == null) return Float.MAX_VALUE;
+
+        if (player == null) {
+            return Float.MAX_VALUE;
+        }
 
         float dx = (x + bounds.x) - (player.getX() + player.getBounds().x);
         float dy = (y + bounds.y) - (player.getY() + player.getBounds().y);
+
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
+    /**
+     * Metoda care verifica pozitia relativa a jucatorului fata de inamic
+     */
     protected boolean isPlayerToTheRight() {
         Entity player = handler.getDante();
-        if(player == null) return false;
+
+        if (player == null) {
+            return false;
+        }
 
         return (player.getX() + player.getBounds().x) > (this.x + this.bounds.x);
     }
 
+    /**
+     * Metoda care verifica daca inamicul se afla pe un tile de foc
+     */
     private void checkEnvironmentDamage() {
         int tx = (int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE;
         int ty = (int) (y + bounds.y + bounds.height + 16) / TILE_SIZE;
@@ -374,26 +432,31 @@ public abstract class Enemy extends Creature {
         }
     }
 
+    /**
+     * Metoda care verifica coliziunea orizontala cu marginea harii sau tile-uri solide
+     */
     public boolean checkHorizontalCollision() {
         int tx = (int) (x + xMove + (xMove > 0 ? bounds.x + bounds.width : bounds.x)) / TILE_SIZE;
         return isSolidOnEdge(tx, true);
     }
-    
 
     /**
-     * Metoda care anuleaza fortat orice actiune pe care inamicul o facea in acel moment.
+     * Metoda care reseteaza actiunea curenta
      */
     protected void cancelCurrentAction() {
         currentAction = null;
         actionTimer = 0;
         hasExecutedActiveFrame = false;
-        currState = EnemyState.CHASING; // Sa nu se blocheze, il punem sa fie alert.
+        currState = EnemyState.CHASING;
     }
 
+    /**
+     * Metoda care notifica {@link PaooGame.World.Entities.EntityManager} ca inamicul este mort
+     */
     @Override
-    public void die() { active = false; }
-
-    public float getKnockPercent() {
-        return knockPercent;
+    public void die() {
+        active = false;
     }
+
+    public float getKnockPercent() { return knockPercent; }
 }

@@ -2,7 +2,6 @@ package PaooGame.World.Entities.Creatures.Enemies.GroundEnemies;
 
 import PaooGame.Handler;
 import PaooGame.World.Entities.Creatures.Enemies.Enemy;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
@@ -11,7 +10,7 @@ import static PaooGame.World.Tile.TILE_SIZE;
 public abstract class GroundEnemy extends Enemy {
 
     /**
-     * Constructorul care initializeaza un inamic terestru.
+     * Constructorul care initializeaza campurile
      */
     public GroundEnemy(Handler handler, float x, float y, int width, int height, float hp, float weight) {
         super(handler, x, y, width, height, hp, weight);
@@ -21,9 +20,7 @@ public abstract class GroundEnemy extends Enemy {
      * Metoda care adauga forta gravitationala la miscarea verticala
      */
     @Override
-    protected void applyVerticalMovement() {
-        yMove += gravity;
-    }
+    protected void applyVerticalMovement() { yMove += gravity; }
 
     /**
      * Metoda care verifica atat coliziunea cu un perete in fata {@link #collisionWithTile(int, int)}, cat si existenta

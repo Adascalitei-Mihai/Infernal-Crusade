@@ -20,12 +20,18 @@ import PaooGame.World.Levels.Level2;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * Clasa care centralizeaza accesul la resurse, input, baza de date si starea curenta
+ */
 public class Handler {
     public static final int NR_CHKPTS = 9;
-    private boolean debugMode = false;
+    public enum Difficulty { EASY, NORMAL, HARD }
 
-    private State state;
+    private boolean debugMode = false;
+    private Difficulty currDifficulty = Difficulty.NORMAL;
+
     private Game game;
+    private State state;
     private Level level;
     private final DatabaseManager dbMan;
     private final ScoreManager scoreMan;
@@ -33,60 +39,68 @@ public class Handler {
 
     private int playerID;
     private int currLevel, currChkp;
+    private int bestScore, globalScore;
 
-    public enum Difficulty { EASY, NORMAL, HARD }
-
-    private Difficulty currDifficulty = Difficulty.NORMAL;
-
-    private int bestScore;
-    private int globalScore;
-
+    /**
+     * Constructorul care initializeaza campurile, conexiunea cu baza de date si starea initiala {@link StartMenu}
+     * @param game Jocul
+     */
     public Handler(Game game) {
         this.game = game;
+        this.transMan = new TransitionManager();
+        this.dbMan = new DatabaseManager();
+        this.scoreMan = new ScoreManager(this);
 
-        transMan = new TransitionManager();
-
-        dbMan = new DatabaseManager();
         dbMan.connect("jdbc:sqlite:game.db");
-
-        scoreMan = new ScoreManager(this);
-
         setState(new StartMenu(this));
     }
 
-    // --- METODĂ NOUĂ ---
-    // Este apelată doar când jucătorul chiar intră în PlayState
+    /**
+     * Metoda care instantiaza nivelul corespunzator progresului curent
+     */
     public void initLevel() {
         level = switch (currLevel) {
-            case 1 -> new Level1(this);
             case 2 -> new Level2(this);
-            default -> new Level1(this); // Fallback sigur la Nivelul 1
+            case 3 -> new Level2(this);
+            default -> new Level1(this);
         };
     }
 
+    /**
+     * Metoda care gestioneaza autentificarea jucatorului si incarca scorurile
+     */
     public void playerLogin(String playerName) {
         dbMan.loadOrCreatePlayer(playerName, this);
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
     }
 
+    /**
+     * Metoda care actualizeaza checkpoint-ul curent si salveaza scorul in baza de date
+     * @param newChkp Checkpoint-ul nou
+     */
     public void updateCurrChkp(int newChkp) {
         int score = scoreMan.calculateFinalScore();
         scoreMan.resetCheckpointTimer();
 
         dbMan.saveScore(playerID, currLevel, currChkp, newChkp, score);
         currChkp = newChkp;
-
         dbMan.updatePlayerCheckpoint(playerID, currChkp);
     }
 
+    /**
+     * Metoda care actualizeaza nivelul curent si reseteaza checkpoint-ul
+     * @param newLevel Nivelul nou
+     */
     public void updateCurrLevel(int newLevel) {
         currLevel = newLevel;
         currChkp = 0;
-
         dbMan.updatePlayerProgress(playerID, newLevel, 0);
     }
 
+    /**
+     * Metoda care inchide conexiunea cu baza de date si opreste thread-ul principal de joc
+     */
     public void StopGame() {
         if (dbMan != null) {
             dbMan.close();
@@ -94,40 +108,55 @@ public class Handler {
         game.StopGame();
     }
 
+    /**
+     * Metoda care transmite {@link State#Update()} si {@link TransitionManager#Update()}
+     */
     public void Update() {
-        if(state != null) {
+        if (state != null) {
             state.Update();
         }
         transMan.Update();
     }
 
+    /**
+     * Metoda care transmite {@link State#Draw(Graphics)} si {@link TransitionManager#Draw(Graphics, int, int)}
+     * @param g Grafica de desenat
+     */
     public void Draw(Graphics g) {
-        if(state != null) {
+        if (state != null) {
             state.Draw(g);
         }
         transMan.Draw(g, game.getWidth(), game.getHeight());
     }
 
     public TransitionManager getTransitionManager() { return transMan; }
-    public void setCursor(Cursor c) { game.getWnd().getCanvas().setCursor(c); }
     public ScoreManager getScoreMan() { return scoreMan; }
+    public DatabaseManager getDbMan() { return dbMan; }
+
     public KeyManager getKeyManager() { return game.getKeyMan(); }
     public GamepadManager getPadManager() { return game.getPadMan(); }
     public InputManager getInputManager() { return game.getInputMan(); }
     public void setInput(InputManager inputMan) { game.setInput(inputMan); }
     public MouseManager getMouseManager() { return game.getMouseMan(); }
-    public GameCamera getGameCamera() { return game.getGameCamera(); }
-    public int getCreatureCount() { return level.getEntityManager().getEnemyCount(); }
-    public void addEntity(Entity e) { level.getEntityManager().addEntity(e); }
-    public int getWidth() { return game.getWidth(); }
-    public int getHeight() { return game.getHeight(); }
-    public State getState() { return state; }
-    public void setState(State state) { this.state = state; }
+
     public Game getGame() { return game; }
     public void setGame(Game game) { this.game = game; }
+    public GameCamera getGameCamera() { return game.getGameCamera(); }
+    public float getxOffset() { return game.getGameCamera().getxOffset(); }
+    public float getyOffset() { return game.getGameCamera().getyOffset(); }
+    public int getWidth() { return game.getWidth(); }
+    public int getHeight() { return game.getHeight(); }
+    public void setCursor(Cursor c) { game.getWnd().getCanvas().setCursor(c); }
+
+    public State getState() { return state; }
+    public void setState(State state) { this.state = state; }
     public Level getLevel() { return level; }
     public void setLevel(Level level) { this.level = level; }
-    public DatabaseManager getDbMan() { return dbMan; }
+    public ArrayList<Entity> getEntities() { return level.getEntityManager().getEntities(); }
+    public Dante getDante() { return level.getEntityManager().getDante(); }
+    public int getCreatureCount() { return level.getEntityManager().getEnemyCount(); }
+    public void addEntity(Entity e) { level.getEntityManager().addEntity(e); }
+
     public int getPlayerID() { return playerID; }
     public void setPlayerID(int playerID) { this.playerID = playerID; }
     public int getCurrLevel() { return currLevel; }
@@ -138,10 +167,7 @@ public class Handler {
     public void setDifficulty(Difficulty difficulty) { this.currDifficulty = difficulty; }
     public int getBestScore() { return bestScore; }
     public int getGlobalScore() { return globalScore; }
-    public float getxOffset() { return game.getGameCamera().getxOffset(); }
-    public float getyOffset() { return game.getGameCamera().getyOffset(); }
-    public ArrayList<Entity> getEntities() { return level.getEntityManager().getEntities(); }
-    public Dante getDante() { return level.getEntityManager().getDante(); }
+
     public boolean getDebugMode() { return debugMode; }
     public void setDebugMode(boolean debugMode) { this.debugMode = debugMode; }
 }

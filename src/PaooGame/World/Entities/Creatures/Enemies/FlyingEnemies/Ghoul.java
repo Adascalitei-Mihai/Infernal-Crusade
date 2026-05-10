@@ -8,18 +8,15 @@ import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Projectiles.Screech;
 import PaooGame.World.Entities.Creatures.Enemies.EnemyAction;
 import java.awt.Rectangle;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
- * Clasa care reprezinta inamicul zburator de tip Ghoul.
- * Trage cu un proiectil ultrasonic ("Screech") si cade pe pamant la zero HP.
+ * Clasa care reprezinta inamicul Ghoul
  */
 public class Ghoul extends FlyingEnemy {
     public static final int LOGIC_WIDTH = 2 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 2 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(3, 3, LOGIC_WIDTH - 3, LOGIC_HEIGHT - 3);
-
     public static final int VISUAL_WIDTH = 7 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 5 * TILE_SIZE;
 
@@ -36,7 +33,6 @@ public class Ghoul extends FlyingEnemy {
     protected static final float Y_RANGE = 30f;
     protected static final float HOVER_SPEED = 0.05f;
 
-    // --- TIMPI DE ATAC (IN CADRE) ---
     private static final int SCREECH_WINDUP = 40;
     private static final int SCREECH_ACTIVE = 10;
     private static final int SCREECH_RECOVERY = 30;
@@ -44,9 +40,6 @@ public class Ghoul extends FlyingEnemy {
 
     private boolean hitGround = false;
 
-    /**
-     * Metoda care initializeaza zburatorul si adauga actiunea de atac (Screech).
-     */
     public Ghoul(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT, Y_RANGE, HOVER_SPEED);
         this.bounds = new Rectangle(BOUNDS);
@@ -63,28 +56,6 @@ public class Ghoul extends FlyingEnemy {
         setAnimations();
     }
 
-    /**
-     * Metoda care lanseaza proiectilul in momentul in care actiunea a ajuns la faza activa.
-     */
-    @Override
-    protected void executeActionHitbox(String actionId) {
-        if (actionId.equals("SCREECH")) {
-            float[] spawnCoords = getCenter();
-            float[] targetCoords = handler.getDante().getCenter();
-
-            // Centram coordonatele proiectilului
-            float startX = spawnCoords[0] - ((float) TILE_SIZE);
-            float startY = spawnCoords[1] - ((float) TILE_SIZE);
-
-            handler.getLevel().getEntityManager().addEntity(
-                    new Screech(handler, startX, startY, targetCoords[0], targetCoords[1], this)
-            );
-        }
-    }
-
-    /**
-     * Metoda care actualizeaza starea interna, gestionand si fizica de cadere la deces.
-     */
     @Override
     public void Update() {
         if (isDead) {
@@ -95,10 +66,34 @@ public class Ghoul extends FlyingEnemy {
         super.Update();
     }
 
-    /**
-     * Metoda care asigura faptul ca inamicul moare cu adevarat (este sters din lista)
-     * doar DUPA ce atinge o platforma solida.
-     */
+    @Override
+    public void onInteraction(Entity e) {
+        if (isDead) return;
+
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
+                dante.applyKnockback(knockX, -15.0f);
+            }
+        }
+    }
+
+    @Override
+    protected void executeActionHitbox(String actionId) {
+        if (actionId.equals("SCREECH")) {
+            float[] spawnCoords = getCenter();
+            float[] targetCoords = handler.getDante().getCenter();
+
+            float startX = spawnCoords[0] - ((float) TILE_SIZE);
+            float startY = spawnCoords[1] - ((float) TILE_SIZE);
+
+            handler.getLevel().getEntityManager().addEntity(
+                    new Screech(handler, startX, startY, targetCoords[0], targetCoords[1], this)
+            );
+        }
+    }
+
+
     private void handleDeathPhysics() {
         if (!hitGround) {
             yMove += 0.8f; // Fortam caderea
@@ -118,24 +113,17 @@ public class Ghoul extends FlyingEnemy {
         }
     }
 
-    /**
-     * Metoda care declanseaza faza de moarte (caderea spre podea).
-     */
     @Override
     public void die() {
         if (isDead) return;
         isDead = true;
         animations.get("DIE").reset();
 
-        // Resetam variabilele de miscare pentru a incepe caderea libera curat
         xMove = 0;
         bounds.width = 0;
         bounds.height = 0;
     }
 
-    /**
-     * Metoda care incarca cadrele si configureaza duratele specifice de atac.
-     */
     @Override
     public void setAnimations() {
         try {
@@ -143,7 +131,6 @@ public class Ghoul extends FlyingEnemy {
             animations.put("FLY", new Animation(8, VisualAssets.Ghoul.get("Fly")));
             animations.put("HURT", new Animation(6, VisualAssets.Ghoul.get("Hurt")));
 
-            // Animatia de deces nu se randeaza ciclic
             Animation dieAnim = new Animation(12, VisualAssets.Ghoul.get("Die"));
             dieAnim.setFrameDuration(VisualAssets.Ghoul.get("Die").length - 1, -1);
             animations.put("DIE", dieAnim);
@@ -155,21 +142,6 @@ public class Ghoul extends FlyingEnemy {
 
         } catch (Exception e) {
             System.err.println("[EROARE]: La incarcarea animatiilor Ghoul: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Metoda care provoaca daune jucatorului la simpla atingere aeriana.
-     */
-    @Override
-    public void onInteraction(Entity e) {
-        if (isDead) return;
-
-        if (e instanceof Dante dante) {
-            if (dante.hurt(COLLISION_DMG)) {
-                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
-                dante.applyKnockback(knockX, -15.0f);
-            }
         }
     }
 }

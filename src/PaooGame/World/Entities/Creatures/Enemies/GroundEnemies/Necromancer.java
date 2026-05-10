@@ -8,18 +8,15 @@ import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Spells.SummonCircle;
 import PaooGame.World.Entities.Creatures.Enemies.EnemyAction;
 import java.awt.Rectangle;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
- * Clasa care reprezinta inamicul terestru de tip Necromant.
- * Acest inamic ataca evocand o vraja magica (SummonCircle) si se poate vindeca (Lifesteal).
+ * Clasa care reprezinta inamicul Necromancer care dispune de Lifesteal
  */
 public class Necromancer extends GroundEnemy {
     public static final int LOGIC_WIDTH = 3 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 5 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(4, 1, LOGIC_WIDTH - 8, LOGIC_HEIGHT - 2);
-
     public static final int VISUAL_WIDTH = 10 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 10 * TILE_SIZE;
 
@@ -32,22 +29,17 @@ public class Necromancer extends GroundEnemy {
     public static final float MAX_HP = 300;
     public static final float KNOCK_PERCENT = 0.7f;
 
-    // --- TIMPI DE ATAC (IN CADRE) ---
     private static final int SUMMON_WINDUP = 90;
     private static final int SUMMON_ACTIVE = 10;
     private static final int SUMMON_RECOVERY = 40;
     private static final int SUMMON_COOLDOWN = 200;
 
-    // --- TIMPI DE LIFESTEAL ---
-    private static final int LIFESTEAL_DURATION = 120; // Timpul cat sta oprit pentru a rula animatia
+    private static final int LIFESTEAL_DURATION = 120;
     private static final int LIFESTEAL_COOLDOWN = 240;
 
     public static final float COLLISION_DMG = 20f;
     private final EnemyAction lifestealAction;
 
-    /**
-     * Metoda care initializeaza necromantul si ii inregistreaza atacurile (Summon si Lifesteal).
-     */
     public Necromancer(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT);
         this.bounds = new Rectangle(BOUNDS);
@@ -59,18 +51,35 @@ public class Necromancer extends GroundEnemy {
         this.visualWidth = VISUAL_WIDTH;
         this.visualHeight = VISUAL_HEIGHT;
 
-        // Actiunea principala de atac pe care Enemy o va declansa automat la distanta ATTACK_RANGE
         availableActions.add(new EnemyAction("SUMMON", SUMMON_WINDUP, SUMMON_ACTIVE, SUMMON_RECOVERY, SUMMON_COOLDOWN, ATTACK_RANGE, true));
-
-        // Cream actiunea de vindecare, dar nu o adaugam in lista disponibila (ea va fi declansata doar extern din metoda heal)
         lifestealAction = new EnemyAction("LIFESTEAL", 0, LIFESTEAL_DURATION, 0, LIFESTEAL_COOLDOWN, 0, true);
 
         setAnimations();
     }
 
-    /**
-     * Metoda care spawneaza cercul magic exact in momentul activ al actiunii SUMMON.
-     */
+    @Override
+    public void Update() {
+        if (isDead) {
+            handleDeath();
+            return;
+        }
+
+        super.Update();
+    }
+
+    @Override
+    public void onInteraction(Entity e) {
+        if (isDead) return;
+
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
+                dante.applyKnockback(knockX, -15.0f);
+                pauseTimer = PAUSE_DURATION;
+            }
+        }
+    }
+
     @Override
     protected void executeActionHitbox(String actionId) {
         if (actionId.equals("SUMMON")) {
@@ -83,17 +92,19 @@ public class Necromancer extends GroundEnemy {
         }
     }
 
-    /**
-     * Metoda care actualizeaza starea inamicului (delegata la Enemy, cu exceptia mortii).
-     */
-    @Override
-    public void Update() {
+    public void heal(float hp) {
         if (isDead) {
-            handleDeath();
             return;
         }
 
-        super.Update();
+        if (actionCooldowns.getOrDefault("LIFESTEAL", 0) <= 0) {
+            this.hp += hp;
+            if (this.hp > MAX_HP) {
+                this.hp = MAX_HP;
+            }
+
+            startAction(lifestealAction);
+        }
     }
 
     private void handleDeath() {
@@ -105,9 +116,6 @@ public class Necromancer extends GroundEnemy {
         }
     }
 
-    /**
-     * Metoda care opreste actiunile curente si incepe declinul mortal al inamicului.
-     */
     @Override
     public void die() {
         if (isDead) return;
@@ -119,9 +127,6 @@ public class Necromancer extends GroundEnemy {
         bounds.height = 0;
     }
 
-    /**
-     * Metoda care asociaza cadrele de animatie corespunzatoare starilor necromantului.
-     */
     @Override
     public void setAnimations() {
         try {
@@ -145,41 +150,6 @@ public class Necromancer extends GroundEnemy {
 
         } catch (Exception e) {
             System.err.println("[EROARE]: La setarea animatiilor Necromancer: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Metoda care aplica daune si repinge jucatorul la coliziune fizica.
-     */
-    @Override
-    public void onInteraction(Entity e) {
-        if (isDead) return;
-
-        if (e instanceof Dante dante) {
-            if (dante.hurt(COLLISION_DMG)) {
-                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
-                dante.applyKnockback(knockX, -15.0f);
-                pauseTimer = PAUSE_DURATION;
-            }
-        }
-    }
-
-    /**
-     * Metoda care reface o parte din punctele de viata ale necromantului.
-     * Declansaza actiunea "LIFESTEAL" pentru a intrerupe miscarea si a afisa animatia vizuala.
-     *
-     * @param hp Cantitatea de sanatate de regenerat.
-     */
-    public void heal(float hp) {
-        if (isDead) return;
-
-        // Verificam in mapa de cooldown-uri din clasa Enemy (administrata automat)
-        if (actionCooldowns.getOrDefault("LIFESTEAL", 0) <= 0) {
-            this.hp += hp;
-            if (this.hp > MAX_HP) this.hp = MAX_HP;
-
-            // Apelam metoda din Enemy.java pentru a lansa corect animatia/starea
-            startAction(lifestealAction);
         }
     }
 }

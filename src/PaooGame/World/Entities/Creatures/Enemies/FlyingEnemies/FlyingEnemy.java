@@ -13,7 +13,7 @@ public abstract class FlyingEnemy extends Enemy {
     protected float hoverSpeed;
 
     /**
-     * Constructorul care initializeaza un inamic zburator si ii elimina forta gravitationala
+     * Constructorul care initializeaza campurile si ii elimina forta gravitationala
      */
     public FlyingEnemy(Handler handler, float x, float y, int width, int height, float hp, float weight,
                        float yRange, float hoverSpeed) {

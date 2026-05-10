@@ -8,24 +8,19 @@ import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Projectiles.SoulSpear;
 import PaooGame.World.Entities.Spells.SoulPillar;
 import PaooGame.World.Entities.Creatures.Enemies.EnemyAction;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.Random;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
- * Clasa care reprezinta inamicul final (Boss-ul jocului).
- * Dispune de o inteligenta artificiala complexa bazata pe probabilitati,
- * un sistem de tranzitie in doua faze si atacuri multiple.
+ * Clasa care reprezinta inamicul Beelzebub, dispune de SuperArmour si Lifesteal
  */
 public class Boss extends GroundEnemy {
     public static final int LOGIC_WIDTH = 6 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 7 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(-5, -5, LOGIC_WIDTH + 10, LOGIC_HEIGHT + 10);
-
     public static final int VISUAL_WIDTH = 20 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 16 * TILE_SIZE;
     public static final int VISUAL_OFFSET_Y = 24;
@@ -40,8 +35,6 @@ public class Boss extends GroundEnemy {
     public static final float MAX_HP = 1000f;
     public static final float KNOCK_PERCENT = 0.05f;
 
-    // --- TIMPI DE ATAC SI RAZE DE ACTIUNE MODIFICATE ---
-    // Acum actiunile folosesc MELEE_RANGE si ATTACK_RANGE corespunzator in loc de 0.
     private final EnemyAction meleeAct = new EnemyAction("MELEE", 50, 20, 30, 150, MELEE_RANGE, false);
     private final EnemyAction projAct = new EnemyAction("PROJECTILE", 80, 10, 30, 100, ATTACK_RANGE, true);
     private final EnemyAction spellAct = new EnemyAction("SPELL", 50, 10, 20, 40, ATTACK_RANGE, true);
@@ -53,7 +46,6 @@ public class Boss extends GroundEnemy {
     }
     private TransitionState transitionState = TransitionState.NONE;
 
-    // --- Logica originala a Boss-ului ---
     private static final int[] PROJECTILE_SPELL_PERC = {60, 100};
     private static final int[] PROJECTILE_SPELL_MELEE_PERC = {35, 50, 100};
     private static final int[] PROJECTILE_SPELL_SUMMON_PERC = {60, 90, 100};
@@ -80,9 +72,6 @@ public class Boss extends GroundEnemy {
             0, 0, HITBOX_WIDTH, HITBOX_HEIGHT
     );
 
-    /**
-     * Metoda care initializeaza Boss-ul si ii defineste constantele specifice.
-     */
     public Boss(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT);
         this.bounds = new Rectangle(BOUNDS);
@@ -125,7 +114,6 @@ public class Boss extends GroundEnemy {
         EnemyAction nextAction = determineNextAttack();
 
         if (nextAction != null) {
-            // BUG FIXED 2: Îl forțăm să se întoarcă fix cu fața la tine chiar înainte de a începe animația
             direction = isPlayerToTheRight() ? 1 : -1;
 
             startAction(nextAction);
@@ -147,9 +135,8 @@ public class Boss extends GroundEnemy {
         int creatureCount = handler.getCreatureCount();
         int r = rand.nextInt(100);
 
-        // BUG FIXED 1: Adăugăm verificarea razei (distance <= ATTACK_RANGE) pentru a nu ataca de la kilometri distanță!
         if (distance > ATTACK_RANGE) {
-            return null; // Este prea departe pentru ORICE atac. Se va întoarce la super.makeDecision() pentru a-l urmări (CHASING).
+            return null;
         }
 
         if (!isPhaseTwo || creatureCount != BASE_CREATURE_COUNT) {
@@ -176,9 +163,7 @@ public class Boss extends GroundEnemy {
         return null;
     }
 
-    private boolean isReady(EnemyAction action) {
-        return actionCooldowns.getOrDefault(action.actionId(), 0) <= 0;
-    }
+    private boolean isReady(EnemyAction action) { return actionCooldowns.getOrDefault(action.actionId(), 0) <= 0; }
 
     private EnemyAction generateSpell() {
         currSpellCount = SPELL_COUNT - 1;
@@ -196,9 +181,7 @@ public class Boss extends GroundEnemy {
         }
     }
 
-    private void executeMelee() {
-        executeMeleeAttack(attackBounds, HITBOX_WIDTH, HITBOX_HEIGHT, ATTACK_DMG, 120f, -20f, 15);
-    }
+    private void executeMelee() { executeMeleeAttack(attackBounds, HITBOX_WIDTH, HITBOX_HEIGHT, ATTACK_DMG, 120f, -20f, 15); }
 
     private void executeProjectile() {
         float[] spawnCoords = getCenter(), targetCoords = handler.getDante().getCenter();
@@ -260,67 +243,6 @@ public class Boss extends GroundEnemy {
         }
     }
 
-    public void heal(float hp) {
-        if (isDead || transitionState != TransitionState.NONE) return;
-
-        if (actionCooldowns.getOrDefault("LIFESTEAL", 0) <= 0) {
-            this.hp += hp;
-            if (this.hp > MAX_HP) this.hp = MAX_HP;
-            startAction(lifestealAct);
-        }
-    }
-
-    @Override
-    public void die() {
-        if (transitionState != TransitionState.NONE) return;
-
-        if (isPhaseTwo) {
-            if (isDead) return;
-            isDead = true;
-            currentAnimId = "DEATH2";
-            currentAction = null;
-            animations.get("DEATH2").reset();
-            deathTimer = 180;
-        } else {
-            transitionState = TransitionState.DEATH1;
-            currentAction = null;
-        }
-        xMove = 0;
-        bounds.width = 0;
-        bounds.height = 0;
-    }
-
-    private void handleDeath2() {
-        if (deathTimer > 0) {
-            deathTimer--;
-            animations.get("DEATH2").Update();
-        } else {
-            active = false;
-        }
-    }
-
-    /**
-     * Protejeaza Boss-ul impotriva intreruperilor de la jucator (Super Armor Logic).
-     */
-    @Override
-    public boolean hurt(float dmg) {
-        if (isDead || transitionState != TransitionState.NONE) return false;
-
-        // Suprascriem hurt-ul normal ca sa nu ne anulam actiunea!
-        if (isWindingUp()) {
-            if (invulnerabilityTimer > 0) return false;
-
-            hp -= dmg;
-            invulnerabilityTimer = INVULN_TIME;
-
-            if (hp <= 0) die();
-            return true;
-        }
-
-        // Daca nu e in windup, folosim comportamentul default de intrerupere
-        return super.hurt(dmg);
-    }
-
     @Override
     public void Draw(Graphics g) {
         int screenX = (int) (x - handler.getGameCamera().getxOffset());
@@ -350,6 +272,88 @@ public class Boss extends GroundEnemy {
                         attackBounds.width, attackBounds.height);
             }
         }
+    }
+    @Override
+    public void onInteraction(Entity e) {
+        if (isDead || transitionState != TransitionState.NONE) return;
+
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
+                dante.applyKnockback(knockX, -20.0f);
+                pauseTimer = PAUSE_DURATION;
+            }
+        }
+    }
+
+    public void heal(float hp) {
+        if (isDead || transitionState != TransitionState.NONE) {
+            return;
+        }
+
+        if (actionCooldowns.getOrDefault("LIFESTEAL", 0) <= 0) {
+            this.hp += hp;
+            if (this.hp > MAX_HP) {
+                this.hp = MAX_HP;
+            }
+            startAction(lifestealAct);
+        }
+    }
+
+    @Override
+    public void die() {
+        if (transitionState != TransitionState.NONE) {
+            return;
+        }
+
+        if (isPhaseTwo) {
+            if (isDead) {
+                return;
+            }
+            isDead = true;
+            currentAnimId = "DEATH2";
+            currentAction = null;
+            animations.get("DEATH2").reset();
+            deathTimer = 180;
+        } else {
+            transitionState = TransitionState.DEATH1;
+            currentAction = null;
+        }
+        xMove = 0;
+        bounds.width = 0;
+        bounds.height = 0;
+    }
+
+    private void handleDeath2() {
+        if (deathTimer > 0) {
+            deathTimer--;
+            animations.get("DEATH2").Update();
+        } else {
+            active = false;
+        }
+    }
+
+    @Override
+    public boolean hurt(float dmg) {
+        if (isDead || transitionState != TransitionState.NONE) {
+            return false;
+        }
+
+        if (isWindingUp()) {
+            if (invulnerabilityTimer > 0) {
+                return false;
+            }
+
+            hp -= dmg;
+            invulnerabilityTimer = INVULN_TIME;
+
+            if (hp <= 0) {
+                die();
+            }
+            return true;
+        }
+
+        return super.hurt(dmg);
     }
 
     @Override
@@ -390,19 +394,6 @@ public class Boss extends GroundEnemy {
 
         } catch (Exception e) {
             System.err.println("[EROARE]: La setarea animatiilor Boss: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public void onInteraction(Entity e) {
-        if (isDead || transitionState != TransitionState.NONE) return;
-
-        if (e instanceof Dante dante) {
-            if (dante.hurt(COLLISION_DMG)) {
-                float knockX = (this.x > dante.getX()) ? -12.0f : 12.0f;
-                dante.applyKnockback(knockX, -20.0f);
-                pauseTimer = PAUSE_DURATION;
-            }
         }
     }
 }

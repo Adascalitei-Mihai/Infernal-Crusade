@@ -14,17 +14,17 @@ import java.awt.Rectangle;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 /**
- * Clasa care reprezinta inamicul masiv de tip Ciclope.
- * Dispune de un atac cu arie mare de efect si mecanica de Super Armor
- * (nu poate fi intrerupt cat timp isi pregateste lovitura).
+ * Clasa care reprezinta inamicul Cyclops care dispune de SuperArmour
  */
 public class Cyclops extends GroundEnemy {
     public static final int LOGIC_WIDTH = 4 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 6 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(10, 5, LOGIC_WIDTH - 20, LOGIC_HEIGHT - 10);
-
     public static final int VISUAL_WIDTH = 16 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 8 * TILE_SIZE;
+    /**
+     * Campul care centreaza cadrele din {@link VisualAssets#Cyclops} pe hitbox
+     */
     public static final int VISUAL_OFFSET_X = -(int)(5 * TILE_SIZE);
 
     public static final float BASE_SPEED = 1f;
@@ -36,7 +36,6 @@ public class Cyclops extends GroundEnemy {
     public static final float MAX_HP = 500f;
     public static final float KNOCK_PERCENT = 0.2f;
 
-    // --- TIMPI DE ATAC (IN CADRE) ---
     private static final int ATTACK_WINDUP = 100;
     private static final int ATTACK_ACTIVE = 30;
     private static final int ATTACK_RECOVERY = 40;
@@ -51,9 +50,6 @@ public class Cyclops extends GroundEnemy {
             0, 0, HITBOX_WIDTH, HITBOX_HEIGHT
     );
 
-    /**
-     * Metoda care initializeaza ciclopele si ii inregistreaza atacul devastator.
-     */
     public Cyclops(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT);
         this.bounds = new Rectangle(BOUNDS);
@@ -71,19 +67,6 @@ public class Cyclops extends GroundEnemy {
         hasSuperArmor = true;
     }
 
-    /**
-     * Metoda care executa logica de daune pentru atacul inamicului.
-     */
-    @Override
-    protected void executeActionHitbox(String actionId) {
-        if (actionId.equals("ATTACK")) {
-            executeMeleeAttack(attackBounds, HITBOX_WIDTH, HITBOX_HEIGHT, ATTACK_DMG, 25.0f, -15.0f, PAUSE_DURATION);
-        }
-    }
-
-    /**
-     * Metoda care actualizeaza starea inamicului, blocand update-ul normal in caz de moarte.
-     */
     @Override
     public void Update() {
         if (isDead) {
@@ -91,7 +74,6 @@ public class Cyclops extends GroundEnemy {
             return;
         }
 
-        // Daca are actiunea de atac activa, suprascriem starea de knockback ca sa nu ii intrerupem animatia (Super Armor partial vizual)
         if (currentAction != null && "ATTACK".equals(currentAction.actionId())) {
             currentAnimId = "ATTACK";
         }
@@ -99,21 +81,6 @@ public class Cyclops extends GroundEnemy {
         super.Update();
     }
 
-    /**
-     * Metoda care proceseaza tranzitia si disparitia inamicului.
-     */
-    private void handleDeath() {
-        if (deathTimer > 0) {
-            deathTimer--;
-            animations.get("DIE").Update();
-        } else {
-            active = false;
-        }
-    }
-
-    /**
-     * Metoda care deseneaza ciclopele, tinand cont de offset-ul sau vizual specific (sprite mai lat decat hitbox-ul).
-     */
     @Override
     public void Draw(Graphics g) {
         int screenX = (int) (x - handler.getGameCamera().getxOffset());
@@ -151,9 +118,34 @@ public class Cyclops extends GroundEnemy {
         }
     }
 
-    /**
-     * Metoda care opreste inamicul si ii incepe secventa de moarte.
-     */
+    @Override
+    public void onInteraction(Entity e) {
+        if (isDead) return;
+        if (e instanceof Dante dante) {
+            if (dante.hurt(COLLISION_DMG)) {
+                float knockX = (this.x > dante.getX()) ? -15.0f : 15.0f;
+                dante.applyKnockback(knockX, -15.0f);
+                pauseTimer = PAUSE_DURATION;
+            }
+        }
+    }
+
+    @Override
+    protected void executeActionHitbox(String actionId) {
+        if (actionId.equals("ATTACK")) {
+            executeMeleeAttack(attackBounds, HITBOX_WIDTH, HITBOX_HEIGHT, ATTACK_DMG, 25.0f, -15.0f, 15);
+        }
+    }
+
+    private void handleDeath() {
+        if (deathTimer > 0) {
+            deathTimer--;
+            animations.get("DIE").Update();
+        } else {
+            active = false;
+        }
+    }
+
     @Override
     public void die() {
         if (isDead) return;
@@ -165,9 +157,6 @@ public class Cyclops extends GroundEnemy {
         bounds.height = 0;
     }
 
-    /**
-     * Metoda care incarca si sincronizeaza animatiile specifice ciclopelui.
-     */
     @Override
     public void setAnimations() {
         try {
@@ -192,17 +181,4 @@ public class Cyclops extends GroundEnemy {
             System.err.println("[EROARE]: La setarea animatiilor Cyclops: " + e.getMessage());
         }
     }
-
-    @Override
-    public void onInteraction(Entity e) {
-        if (isDead) return;
-        if (e instanceof Dante dante) {
-            if (dante.hurt(COLLISION_DMG)) {
-                float knockX = (this.x > dante.getX()) ? -15.0f : 15.0f;
-                dante.applyKnockback(knockX, -15.0f);
-                pauseTimer = PAUSE_DURATION;
-            }
-        }
-    }
-
 }
