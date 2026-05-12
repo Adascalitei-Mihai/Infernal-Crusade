@@ -36,6 +36,9 @@ public class GameDoneState extends State {
         int btnY = handler.getHeight() / 2 + 100;
 
         returnBtn = new Button(btnX, btnY, BOX_WIDTH, BOX_HEIGHT, new String[]{"Return to Menu"});
+
+        handler.updateScores();
+        handler.resetEnd();
     }
 
     /**
@@ -73,12 +76,7 @@ public class GameDoneState extends State {
     private void returnToMainMenu() {
         handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
-        handler.getTransitionManager().start(() -> {
-            handler.updateScores();
-            handler.setCurrChkp(0);
-            handler.setCurrLevel(1);
-            handler.setState(new MainMenu(handler, "Start Game"));
-        });
+        handler.getTransitionManager().start(() -> handler.setState(new MainMenu(handler, "Continue")));
     }
 
     /**

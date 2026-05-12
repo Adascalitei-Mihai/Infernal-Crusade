@@ -4,35 +4,26 @@ import PaooGame.Audio.SongAssets;
 import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
-
 import PaooGame.World.Arena;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level2Factory;
-
-import java.awt.*;
+import java.awt.Graphics;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Level2 extends Level {
     private static final float SCALE = 1.25f;
-    // Dimensiunile citite direct din TMX: logicWidth="200" logicHeight="300"
     private static final int L2_WIDTH = 200;
     private static final int L2_HEIGHT = 300;
 
-    // Setări Parallax pentru Backgrounds extrase din TMX
-    // Index 0: cer | Index 1: ceata | Index 2: arena1 | Index 3: arena2 | Index 4: arena3
-    // Cerul e fix (0f), ceața are puțin parallax (0.5f), arenele sunt fixe pe hartă (1.0f)
     private static final float[] PX = {0f, 0.5f, 1.0f, 1.0f, 1.0f};
     private static final float[] PY = {0f, 0.5f, 1.0f, 1.0f, 1.0f};
 
-    // Offset-urile (offsetx, offsety) extrase din <imagelayer>
     private static final int[] OX = {0, 3, 4826, 4824, 4828};
     private static final int[] OY = {0, 8169, 670, 694, 1460};
 
     private boolean isTransitioning = false;
 
-    // --- CONFIGURARE TMX PARSER ---
-    // Cele 5 layere dorite, ordonate de la cel mai îndepărtat (nori) la cel mai apropiat (iarba)
     private static final String[] RENDER_ORDER = {
             "nori",
             "munte",
@@ -44,7 +35,7 @@ public class Level2 extends Level {
             "platforme pamant",
             "decor"
     };
-    // Stratul folosit pentru calculul coliziunilor fizice
+
     private static final String[] SOLID_LAYERS = {
             "decor",
             "platforme pamant",
@@ -147,7 +138,6 @@ public class Level2 extends Level {
         for (int i = 0; i < VisualAssets.bg2.length; i++) {
             if (VisualAssets.bg2[i] == null) continue;
 
-            // 1. MATEMATICA CORECTA PENTRU PARALLAX: (Lume - Camera) * FactorParallax
             int x = (int) ((OX[i] * SCALE - handler.getGameCamera().getxOffset()) * PX[i]);
             int y = (int) ((OY[i] * SCALE - handler.getGameCamera().getyOffset()) * PY[i]);
 
@@ -155,23 +145,18 @@ public class Level2 extends Level {
             int imgH = (int) (VisualAssets.bg2[i].getHeight() * SCALE);
 
             if (i == 0) {
-                // Logica pentru cer si ceata (Axa X si Axa Y)
-                // Calculam offset-ul astfel incat sa desenam incepand fix de la marginea ecranului
                 int startX = x % imgW;
                 if (startX > 0) startX -= imgW;
 
                 int startY = y % imgH;
                 if (startY > 0) startY -= imgH;
 
-                // Desenam in grila (repeat-x si repeat-y) pentru a acoperi absolut tot ecranul,
-                // indiferent de rezolutia monitorului
                 for (int drawX = startX; drawX < handler.getWidth(); drawX += imgW) {
                     for (int drawY = startY; drawY < handler.getHeight(); drawY += imgH) {
                         g.drawImage(VisualAssets.bg2[i], drawX, drawY, imgW, imgH, null);
                     }
                 }
             } else {
-                // Logica pentru arene (sunt fixe pe harta, deci se deseneaza o singura data)
                 g.drawImage(VisualAssets.bg2[i], x, y, imgW, imgH, null);
             }
         }

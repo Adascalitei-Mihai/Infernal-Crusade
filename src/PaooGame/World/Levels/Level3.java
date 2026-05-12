@@ -94,14 +94,12 @@ public class Level3 extends Level {
         for (int i = 0; i < VisualAssets.bg3.length; i++) {
             if (VisualAssets.bg3[i] == null) continue;
 
-            // Calculul poziției luând în considerare offset-ul camerei și scalarea
             int x = (int) (OX[i] * SCALE - handler.getGameCamera().getxOffset());
             int y = (int) (OY[i] * SCALE - handler.getGameCamera().getyOffset());
 
             int imgW = (int) (VisualAssets.bg3[i].getWidth() * SCALE);
             int imgH = (int) (VisualAssets.bg3[i].getHeight() * SCALE);
 
-            // Index 0 e cerul/golul negru, vrem să repete peste tot (atât pe X cât și pe Y)
             if (i == 0) {
                 int startX = x % imgW;
                 if (startX > 0) startX -= imgW;

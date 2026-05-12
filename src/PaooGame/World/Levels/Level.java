@@ -10,56 +10,53 @@ import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
 import PaooGame.World.Entities.EntityManager;
 import PaooGame.World.Factories.EntityFactory;
 import PaooGame.World.Tile;
-
 import javax.sound.sampled.Clip;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Map;
-
 import static PaooGame.World.Entities.Creatures.Dante.FIRE_TIMER;
 import static PaooGame.World.Entities.Creatures.Dante.ICE_TIMER;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public abstract class Level {
+    public static final int EXPOSED_NONE = 0;
+    public static final int EXPOSED_EAST = 1;
+    public static final int EXPOSED_NORTH = 1 << 1;
+    public static final int EXPOSED_WEST = 1 << 2;
+    public static final int EXPOSED_SOUTH = 1 << 3;
+
     protected final Handler handler;
     protected final EntityFactory factory;
     protected final Clip bgSong;
 
     protected int width, height;
-
-    // Suport pentru multiple straturi de randare
     protected Map<String, int[][]> mapLayers;
     protected String[] layerRenderOrder;
-
-    // Matricea de bază pentru logică și coliziuni (reprezintă "solidLayerName")
+    protected String[] solidLayerNames;
     protected int[][] tiles;
 
     protected int[][] fireTimers;
     protected int[][] iceTimers;
-    protected EntityManager entityManager;
-    private boolean pendingRespawn;
-
-    public static final int EXPOSED_NONE  = 0;
-    public static final int EXPOSED_EAST = 1;
-    public static final int EXPOSED_NORTH  = 1 << 1;
-    public static final int EXPOSED_WEST = 1 << 2;
-    public static final int EXPOSED_SOUTH  = 1 << 3;
     protected int[][] exposureMask;
 
+    protected EntityManager entityManager;
     protected Animation fireAnim;
     protected Animation iceAnim;
     protected Arena arena;
-    protected String[] solidLayerNames;
 
-    // Actualizează constructorul
+    private boolean pendingRespawn;
+
     public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong, String[] layerRenderOrder, String[] solidLayerNames) {
         this.handler = handler;
         this.factory = factory;
         this.width = width;
         this.height = height;
         this.layerRenderOrder = layerRenderOrder;
-        this.solidLayerNames = solidLayerNames; // Salvăm array-ul de layere solide
+        this.solidLayerNames = solidLayerNames;
 
         handler.setLevel(this);
         loadLevel(path);
@@ -75,16 +72,13 @@ public abstract class Level {
     public abstract void setEnemies();
 
     public void loadLevel(String path) {
-        // Folosim noul TMXParser pentru a obține doar layerele vizuale și cel de coliziuni
         mapLayers = TMXParser.parseTMXLayers(path, Arrays.asList(layerRenderOrder));
-
         fireTimers = new int[width][height];
         iceTimers = new int[width][height];
     }
 
     public void Update() {
         entityManager.Update();
-
         fireAnim.Update();
         iceAnim.Update();
 
@@ -95,7 +89,7 @@ public abstract class Level {
             }
         }
 
-        if(pendingRespawn) {
+        if (pendingRespawn) {
             spawn();
             pendingRespawn = false;
         }
@@ -112,28 +106,23 @@ public abstract class Level {
     }
 
     public void Draw(Graphics g) {
-        drawBackground(g); // Desenează cerul / ceața
+        drawBackground(g);
 
-        // Calculăm limitele ecranului pentru Culling (Optimizare)
         int xStart = (int) Math.max(0, handler.getxOffset() / TILE_SIZE);
         int xEnd = (int) Math.min(width, (handler.getxOffset() + handler.getWidth()) / TILE_SIZE + 1);
         int yStart = (int) Math.max(0, handler.getyOffset() / TILE_SIZE);
         int yEnd = (int) Math.min(height, (handler.getyOffset() + handler.getHeight()) / TILE_SIZE + 1);
 
-        // Randăm Layerele TMX în ordinea corectă (ex: Nori -> Munte -> Platforme)
         for (String layerName : layerRenderOrder) {
             int[][] currentLayer = mapLayers.get(layerName);
             if (currentLayer == null) continue;
 
             for (int y = yStart; y < yEnd; y++) {
                 for (int x = xStart; x < xEnd; x++) {
-
-                    // Siguranță pentru array bounds
                     if (x < 0 || y < 0 || x >= width || y >= height) continue;
 
                     int id = currentLayer[x][y];
 
-                    // Sărim peste tile-urile goale
                     if (id <= 0 || id >= Tile.TILES.length || Tile.TILES[id] == null) continue;
 
                     Tile t = Tile.TILES[id];
@@ -142,10 +131,12 @@ public abstract class Level {
 
                     t.Draw(g, screenX, screenY);
 
-                    // Debug Mode (Randează contururi DOAR pentru layerele care sunt in array-ul de coliziuni)
                     if (handler.getDebugMode() && isSolidLayer(layerName)) {
-                        if (t.isSolid()) g.setColor(new Color(0, 255, 0, 100)); // Verde pentru solid
-                        else g.setColor(new Color(255, 255, 0, 100));          // Galben pentru pasabil
+                        if (t.isSolid()) {
+                            g.setColor(new Color(0, 255, 0, 100));
+                        } else {
+                            g.setColor(new Color(255, 255, 0, 100));
+                        }
 
                         g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
                         g.setColor(Color.BLACK);
@@ -155,23 +146,22 @@ public abstract class Level {
             }
         }
 
-        // --- Logica pentru a randa Foc/Gheată ---
         int xStartFx = Math.max(0, xStart - 1);
         int xEndFx = Math.min(width, xEnd + 1);
         int yStartFx = Math.max(0, yStart - 1);
         int yEndFx = Math.min(height, yEnd + 1);
 
-        for(int y = yStartFx; y < yEndFx; y++) {
-            for(int x = xStartFx; x < xEndFx; x++) {
+        for (int y = yStartFx; y < yEndFx; y++) {
+            for (int x = xStartFx; x < xEndFx; x++) {
                 if (isFire(x, y) || isIce(x, y)) {
                     int mask = exposureMask[x][y];
-                    int screenX = (int)(x * TILE_SIZE - handler.getxOffset());
-                    int screenY = (int)(y * TILE_SIZE - handler.getyOffset());
+                    int screenX = (int) (x * TILE_SIZE - handler.getxOffset());
+                    int screenY = (int) (y * TILE_SIZE - handler.getyOffset());
 
                     BufferedImage fxImg = isFire(x, y) ? fireAnim.getCurrentFrame() : iceAnim.getCurrentFrame();
                     int offset = TILE_SIZE / 2;
 
-                    if(mask != 0 && handler.getDebugMode()) {
+                    if (mask != 0 && handler.getDebugMode()) {
                         g.setColor(new Color(255, 165, 0, 100));
                         g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
                     }
@@ -183,7 +173,6 @@ public abstract class Level {
             }
         }
 
-        // UI & Debug
         if (handler.getDebugMode()) {
             g.setColor(Color.RED);
             g.setFont(new Font("MONOSPACED", Font.BOLD, 36));
@@ -230,24 +219,20 @@ public abstract class Level {
         }
     }
 
-    public void requestRespawn() { pendingRespawn = true; }
+    public void requestRespawn() {
+        pendingRespawn = true;
+    }
 
-    // Rămâne neschimbat: folosit de entități pentru a verifica logic coliziunile
     public Tile getTile(int x, int y) {
-        // Dacă e în afara hărții, returnăm perete (ca să nu iasă din hartă)
-        if(x < 0 || x >= width || y >= height) return Tile.TILES[1];
-        // Dacă sare prea sus, returnăm cer (liber)
-        if(y < 0) return Tile.TILES[0];
+        if (x < 0 || x >= width || y >= height) return Tile.TILES[1];
+        if (y < 0) return Tile.TILES[0];
 
-        // Verificăm fiecare layer setat ca fiind solid
         for (String layerName : solidLayerNames) {
             int[][] currentLayer = mapLayers.get(layerName);
             if (currentLayer != null) {
                 int id = currentLayer[x][y];
 
-                // Dacă tile-ul există pe acest layer
                 if (id > 0 && id < Tile.TILES.length && Tile.TILES[id] != null) {
-                    // Dacă tile-ul este declarat SOLID în Factory, îl returnăm imediat (coliziune!)
                     if (Tile.TILES[id].isSolid()) {
                         return Tile.TILES[id];
                     }
@@ -255,12 +240,16 @@ public abstract class Level {
             }
         }
 
-        // Dacă a verificat toate layerele și nu a lovit nimic solid, returnăm spațiu gol (0)
         return Tile.TILES[0];
     }
 
-    public boolean isFire(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0; }
-    public boolean isIce(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && iceTimers[x][y] > 0; }
+    public boolean isFire(int x, int y) {
+        return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0;
+    }
+
+    public boolean isIce(int x, int y) {
+        return (x >= 0 && y >= 0 && x < width && y < height) && iceTimers[x][y] > 0;
+    }
 
     public void setFire(int x, int y, int time) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -281,13 +270,12 @@ public abstract class Level {
 
     public int getWidth() { return width; }
     public void setWidth(int width) { this.width = width; }
-    public int getHeight() { return height;}
+    public int getHeight() { return height; }
     public void setHeight(int height) { this.height = height; }
     public EntityFactory getFactory() { return factory; }
     public EntityManager getEntityManager() { return entityManager; }
     public void drawBackground(Graphics g) {}
     public boolean inArena() { return arena != null && arena.isRunning(); }
-    public boolean isArenaFinished() { return arena != null && arena.isFinished(); }
     public int getCurrWave() { return (arena == null) ? 0 : arena.getCurrWave(); }
     public Boss getBoss() { return arena.getBoss(); }
 }

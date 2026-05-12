@@ -93,6 +93,10 @@ public class Handler {
         dbMan.updatePlayerCheckpoint(playerID, currChkp);
     }
 
+    public void resetEnd() {
+        dbMan.updatePlayerCheckpoint(playerID, 1);
+    }
+
     /**
      * Metoda care actualizeaza nivelul curent si reseteaza checkpoint-ul
      * @param newLevel Nivelul nou

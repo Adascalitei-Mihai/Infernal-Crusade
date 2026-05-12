@@ -64,10 +64,10 @@ public class MainMenu extends State {
     private String[] getLevelSelectTexts(Handler handler) {
         if (handler.getBestScore() != 0) {
             return new String[]{
-                    "Level select: Continue Saved",
-                    "Level select: Cogito (L1)",
-                    "Level select: Selva Antica (L2)",
-                    "Level select: Flegitonta (L3)"
+                    "Level select: Beelzebub fight",
+                    "Level select: L1 - Cogito",
+                    "Level select: L2 - Selva Antica",
+                    "Level select: L3 - Flegitonta"
             };
         }
         return new String[]{"Level select: Locked"};
@@ -152,7 +152,13 @@ public class MainMenu extends State {
             }
         }
 
-        handler.getTransitionManager().start(() -> handler.setState(new PlayState(handler)));
+        String text = switch (handler.getCurrLevel()) {
+            case 2 -> "L2 - Selva Antica";
+            case 3 -> "L3 - Flegitonta";
+            default -> "L1 - Cocito";
+        };
+
+        handler.getTransitionManager().start(() -> handler.setState(new PlayState(handler)), text);
     }
 
     /**

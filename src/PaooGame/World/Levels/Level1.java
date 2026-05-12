@@ -8,8 +8,7 @@ import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level1Factory;
-
-import java.awt.*;
+import java.awt.Graphics;
 
 import static PaooGame.World.Tile.TILE_SIZE;
 

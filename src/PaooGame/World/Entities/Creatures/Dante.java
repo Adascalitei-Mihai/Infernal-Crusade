@@ -150,7 +150,7 @@ public class Dante extends Creature {
             deathTimer--;
             animations[AnimationState.DEATH.ordinal()].Update();
         } else {
-            handler.getTransitionManager().start(() -> handler.getLevel().requestRespawn());
+            handler.getTransitionManager().start(() -> handler.getLevel().requestRespawn(), "YOU DIED");
 
             hp = MAX_HP;
             currMove = MovementState.IDLE;
