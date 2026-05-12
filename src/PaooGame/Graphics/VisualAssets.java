@@ -56,7 +56,7 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 34;
+    public static int TOTAL_LOAD = 46;
 
     /**
      * Metoda de incarcare a tuturor elementelor vizuale, actualizeaza procentul de elemente incarcat <br>
@@ -77,7 +77,7 @@ public class VisualAssets implements Runnable {
 
         InitL1(); // +5 loadPercent
         InitL2(); // +17 loadPercent
-        InitL3();
+        InitL3(); // +12 loadPercent
     }
 
     /**

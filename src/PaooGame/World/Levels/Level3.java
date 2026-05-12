@@ -4,7 +4,8 @@ import PaooGame.Audio.SongAssets;
 import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
-import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
+import PaooGame.World.Arena;
+import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level3Factory;
 import java.awt.Graphics;
 
@@ -34,7 +35,15 @@ public class Level3 extends Level {
             {84 * TILE_SIZE, 116 * TILE_SIZE},
     };
 
-    private final static float[] BOSS_COORDS = {114 * TILE_SIZE, 175 * TILE_SIZE};
+    private final static int[] ARENA_COORDS = {
+            80 * TILE_SIZE, 111 * TILE_SIZE, 145 * TILE_SIZE, 197 * TILE_SIZE
+    };
+
+    private final static int[] ARENA_TRIGGER_POS = {
+            109 * TILE_SIZE, 122 * TILE_SIZE, 8 * TILE_SIZE, TILE_SIZE
+    };
+
+    private final static int[][][][] ARENA_WAVES = {{{}, {{114 * TILE_SIZE, 175 * TILE_SIZE}}}};
 
     public Level3(Handler handler) {
         super(handler, new Level3Factory(handler),
@@ -60,6 +69,17 @@ public class Level3 extends Level {
                     CHKP_COORDS[i][0], CHKP_COORDS[i][1], i));
         }
 
+        arena = new Arena(handler, ARENA_WAVES,
+                ARENA_COORDS[0], ARENA_COORDS[1],
+                ARENA_COORDS[2] - ARENA_COORDS[0],
+                ARENA_COORDS[3] - ARENA_COORDS[1]);
+
+        entityManager.addEntity(factory.createArenaTrigger(
+                ARENA_TRIGGER_POS[0], ARENA_TRIGGER_POS[1],
+                ARENA_TRIGGER_POS[2], ARENA_TRIGGER_POS[3],
+                arena, new Gate[]{}, SongAssets.boss
+        ));
+
         setEnemies();
         handler.getDante().resetDeath();
         handler.getGameCamera().snapTo(handler.getDante());
@@ -67,8 +87,6 @@ public class Level3 extends Level {
 
     @Override
     public void setEnemies() {
-        boss = new Boss(handler, BOSS_COORDS[0], BOSS_COORDS[1]);
-        entityManager.addEntity(boss);
     }
 
     @Override

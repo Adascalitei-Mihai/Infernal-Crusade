@@ -74,19 +74,12 @@ public class PlayState extends State {
                     if (!isTransitioning) {
                         isTransitioning = true;
 
-                        if (handler.getCurrLevel() != 3) {
-                            handler.updateCurrLevel(handler.getCurrLevel() + 1);
+                        handler.updateCurrChkp(2);
 
-                            handler.getTransitionManager().start(() -> {
-                                handler.initLevel();
-                                isTransitioning = false;
-                            });
-                        } else {
-                            handler.getTransitionManager().start(() -> {
-                                handler.setState(new GameDoneState(handler));
-                                isTransitioning = false;
-                            });
-                        }
+                        handler.getTransitionManager().start(() -> {
+                            handler.setState(new GameDoneState(handler));
+                            isTransitioning = false;
+                        });
                     }
                 }
             }

@@ -1,6 +1,8 @@
 package PaooGame.World;
 
 import PaooGame.Handler;
+import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
+
 import java.awt.Rectangle;
 
 /**
@@ -29,6 +31,8 @@ public class Arena {
      * Campul care retine numarul de creaturi in momentul de {@link #start()}
      */
     private int noCreaturesStart;
+
+    private Boss boss;
 
     /**
      * Constructorul care initializeaza campurile
@@ -100,6 +104,12 @@ public class Arena {
      * @param waveIndex Indexul valului care trebuie generat pe harta
      */
     private void spawnWave(int waveIndex) {
+        if(handler.getCurrLevel() == 3) {
+            boss = new Boss(handler, waves[waveIndex][1][0][0], waves[waveIndex][1][0][1]);
+            handler.addEntity(boss);
+            return;
+        }
+
         int[][] minorEnemies = waves[waveIndex][0];
         int[][] majorEnemies = waves[waveIndex][1];
 
@@ -117,4 +127,5 @@ public class Arena {
     public boolean isFinished() { return !isRunning && currWave >= waves.length; }
     public boolean isRunning() { return isRunning; }
     public int getCurrWave() { return currWave; }
+    public Boss getBoss() { return boss; }
 }

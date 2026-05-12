@@ -32,12 +32,12 @@ public class Boss extends GroundEnemy {
     public static final float AGGRO_RANGE = TILE_SIZE * 26;
     public static final float X_RANGE = TILE_SIZE * 30;
 
-    public static final float MAX_HP = 1000f;
+    public static final float MAX_HP = 250f;
     public static final float KNOCK_PERCENT = 0.05f;
 
     private final EnemyAction meleeAct = new EnemyAction("MELEE", 50, 20, 30, 150, MELEE_RANGE, false);
     private final EnemyAction projAct = new EnemyAction("PROJECTILE", 80, 10, 30, 100, ATTACK_RANGE, true);
-    private final EnemyAction spellAct = new EnemyAction("SPELL", 50, 10, 20, 40, ATTACK_RANGE, true);
+    private final EnemyAction spellAct = new EnemyAction("SPELL", 50, 10, 20, 120, ATTACK_RANGE, true);
     private final EnemyAction summonAct = new EnemyAction("SUMMON", 60, 20, 40, 300, ATTACK_RANGE, true);
     private final EnemyAction lifestealAct = new EnemyAction("LIFESTEAL", 0, 120, 0, 240, 0, false);
 

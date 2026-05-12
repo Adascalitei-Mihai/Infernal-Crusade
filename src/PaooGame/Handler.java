@@ -72,6 +72,10 @@ public class Handler {
      */
     public void playerLogin(String playerName) {
         dbMan.loadOrCreatePlayer(playerName, this);
+        updateScores();
+    }
+
+    public void updateScores() {
         bestScore = dbMan.getTotalBestScore(playerID, NR_CHKPTS);
         globalScore = dbMan.getGlobalBestScore(NR_CHKPTS);
     }

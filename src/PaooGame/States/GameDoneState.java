@@ -73,7 +73,12 @@ public class GameDoneState extends State {
     private void returnToMainMenu() {
         handler.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
-        handler.getTransitionManager().start(() -> handler.setState(new MainMenu(handler, "Start Game")));
+        handler.getTransitionManager().start(() -> {
+            handler.updateScores();
+            handler.setCurrChkp(0);
+            handler.setCurrLevel(1);
+            handler.setState(new MainMenu(handler, "Start Game"));
+        });
     }
 
     /**

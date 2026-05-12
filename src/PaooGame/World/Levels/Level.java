@@ -50,7 +50,6 @@ public abstract class Level {
     protected Animation fireAnim;
     protected Animation iceAnim;
     protected Arena arena;
-    protected Boss boss;
     protected String[] solidLayerNames;
 
     // Actualizează constructorul
@@ -290,5 +289,5 @@ public abstract class Level {
     public boolean inArena() { return arena != null && arena.isRunning(); }
     public boolean isArenaFinished() { return arena != null && arena.isFinished(); }
     public int getCurrWave() { return (arena == null) ? 0 : arena.getCurrWave(); }
-    public Boss getBoss() { return boss; }
+    public Boss getBoss() { return arena.getBoss(); }
 }
