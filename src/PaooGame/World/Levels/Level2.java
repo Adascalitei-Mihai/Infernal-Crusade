@@ -29,6 +29,8 @@ public class Level2 extends Level {
     private static final int[] OX = {0, 3, 4826, 4824, 4828};
     private static final int[] OY = {0, 8169, 670, 694, 1460};
 
+    private boolean isTransitioning = false;
+
     // --- CONFIGURARE TMX PARSER ---
     // Cele 5 layere dorite, ordonate de la cel mai îndepărtat (nori) la cel mai apropiat (iarba)
     private static final String[] RENDER_ORDER = {
@@ -51,7 +53,6 @@ public class Level2 extends Level {
             "munte"
     };
 
-    // --- CHKP & ARENA (Placeholder temporar, conform cerinței) ---
     private static final int[][] CHKP_COORDS = {
             {TILE_SIZE, 292 * TILE_SIZE},
             {32 * TILE_SIZE, 217 * TILE_SIZE},
@@ -83,6 +84,25 @@ public class Level2 extends Level {
 
         calculateExposureMasks();
         requestRespawn();
+    }
+
+    @Override
+    public void Update() {
+        if(!isTransitioning) {
+            super.Update();
+            if (arena.isFinished()) {
+
+                isTransitioning = true;
+
+                handler.updateCurrChkp(4);
+                handler.updateCurrLevel(3);
+
+                handler.getTransitionManager().start(() -> {
+                    Level3 nextLevel = new Level3(handler);
+                    handler.setLevel(nextLevel);
+                });
+            }
+        }
     }
 
     @Override
@@ -120,10 +140,6 @@ public class Level2 extends Level {
 
     @Override
     public void setEnemies() {
-        // Placeholder pentru inamici (poți adăuga în funcție de noile coordonate din Tiled)
-       // entityManager.addEntity(new Skeleton(handler, 1000, 800));
-        //boss = new Boss(handler, 2000, 640);
-        //entityManager.addEntity(boss);
     }
 
     @Override

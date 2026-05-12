@@ -16,6 +16,7 @@ import PaooGame.World.Entities.Entity;
 import PaooGame.World.Levels.Level;
 import PaooGame.World.Levels.Level1;
 import PaooGame.World.Levels.Level2;
+import PaooGame.World.Levels.Level3;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class Handler {
     public void initLevel() {
         level = switch (currLevel) {
             case 2 -> new Level2(this);
-            case 3 -> new Level2(this);
+            case 3 -> new Level3(this);
             default -> new Level1(this);
         };
     }

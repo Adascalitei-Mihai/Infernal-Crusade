@@ -249,11 +249,49 @@ public class VisualAssets implements Runnable {
             System.err.println("[EROARE] Incarcarea automata a dalelor nivelului 2 din TMX: " + e.getMessage());
         }
     }
+
     /**
-     * Metoda care incarca nivelul 3, fundalele in {@link #bg3} si dalele in {@link #worldTiles3} (folosind {@link TMXParser#parseTMXTilesets(String)} impreuna cu {@link #fillTiles(BufferedImage[], SpriteSheet, int, int, int)})
+     * Metoda care incarca nivelul 3, fundalele in {@link #bg3} si dalele in {@link #worldTiles3}
+     * (folosind {@link TMXParser#parseTMXTilesets(String)} impreuna cu {@link #fillTiles})
      */
     public static void InitL3() {
+        try {
+            bg3 = new BufferedImage[]{
+                    ImageLoader.LoadImage("/textures/Maps/L3/background Arena.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/redBg.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/redBg.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/redBg.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/arena trans.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/Background layerARENA.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/back layerARENA.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/middle layerARENA.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/front layerARENA.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/Background layer.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/front layer rev.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/back layer.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/middle layer.png"),
+                    ImageLoader.LoadImage("/textures/Maps/L3/front layer.png"),
+            };
+            ++loadPercent;
+        } catch (Exception e) {
+            System.err.println("[EROARE] Incarcarea fundalelor nivelului 3: " + e.getMessage());
+        }
 
+        try {
+            List<TMXParser.TilesetData> tilesets = TMXParser.parseTMXTilesets("/textures/Maps/L3/L3.tmx");
+
+            for (TMXParser.TilesetData ts : tilesets) {
+                BufferedImage sheetImg = ImageLoader.LoadImage(ts.imagePath);
+                if (sheetImg != null) {
+                    SpriteSheet sheet = new SpriteSheet(sheetImg, ts.tileWidth, ts.tileHeight);
+                    fillTiles(worldTiles3, sheet, ts.firstGid, ts.columns, ts.tileCount);
+                }
+                ++loadPercent;
+            }
+
+        } catch (Exception e) {
+            System.err.println("[EROARE] Incarcarea automata a dalelor nivelului 3 din TMX: " + e.getMessage());
+        }
     }
 
     /**

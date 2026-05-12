@@ -485,7 +485,7 @@ public class Dante extends Creature {
         actionTimer--;
 
         if (actionTimer == currAction.active + currAction.recovery - 1) {
-            spreadFire((int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE, (int) (y + bounds.y + bounds.height + 1) / TILE_SIZE, FIERY_JUDGEMENT_SPREAD);
+            spreadFire((int) (x + bounds.x + (float) bounds.width / 2) / TILE_SIZE, (int) (y + bounds.y + bounds.height + 6) / TILE_SIZE, FIERY_JUDGEMENT_SPREAD);
         }
 
         if (actionTimer <= 0) {
@@ -496,21 +496,24 @@ public class Dante extends Creature {
     /**
      * Metoda care propaga focul in mod recursiv prin tile-urile hartii
      */
-    private void spreadFire(int tx, int ty, int steps) {
-        if (steps <= 0 || tx < 0 || ty < 0 || tx >= handler.getLevel().getWidth() || ty >= handler.getLevel().getHeight()) {
+    private void spreadFire(int tx, int ty, int remainingSteps) {
+        if (remainingSteps <= 0 || tx < 0 || ty < 0 ||
+                tx >= handler.getLevel().getWidth() || ty >= handler.getLevel().getHeight()) {
             return;
         }
 
-        if (handler.getLevel().isFire(tx, ty) || handler.getLevel().isIce(tx, ty)) {
+        if (!handler.getLevel().getTile(tx, ty).isSolid() ||
+                handler.getLevel().isFire(tx, ty) ||
+                handler.getLevel().isIce(tx, ty)) {
             return;
         }
 
         handler.getLevel().setFire(tx, ty, FIRE_TIMER);
 
-        spreadFire(tx + 1, ty, steps - 1);
-        spreadFire(tx - 1, ty, steps - 1);
-        spreadFire(tx, ty + 1, steps - 1);
-        spreadFire(tx, ty - 1, steps - 1);
+        spreadFire(tx + 1, ty, remainingSteps - 1);
+        spreadFire(tx - 1, ty, remainingSteps - 1);
+        spreadFire(tx, ty + 1, remainingSteps - 1);
+        spreadFire(tx, ty - 1, remainingSteps - 1);
     }
 
     /**

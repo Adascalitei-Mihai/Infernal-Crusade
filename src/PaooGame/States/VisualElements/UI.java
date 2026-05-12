@@ -179,10 +179,19 @@ public class UI {
      */
     private void drawCooldowns(Graphics g) {
         float cooldownProgress = handler.getDante().getCooldownProgress();
-        int frameIndex = (int) (cooldownProgress * (VisualAssets.uiCd.length - 1));
-
+        int frameIndex;
+        
+        if (cooldownProgress >= 1.0f) {
+            frameIndex = VisualAssets.uiCd.length - 1;
+        } else {
+            frameIndex = (int) (cooldownProgress * (VisualAssets.uiCd.length - 1));
+            
+            if (frameIndex >= VisualAssets.uiCd.length - 1) {
+                frameIndex = VisualAssets.uiCd.length - 2;
+            }
+        }
+        
         if (frameIndex < 0) frameIndex = 0;
-        if (frameIndex >= VisualAssets.uiCd.length) frameIndex = VisualAssets.uiCd.length - 1;
 
         if (VisualAssets.uiCd[frameIndex] != null) {
             int cdWidth = VisualAssets.uiCd[frameIndex].getWidth() * 2;

@@ -172,6 +172,11 @@ public abstract class Level {
                     BufferedImage fxImg = isFire(x, y) ? fireAnim.getCurrentFrame() : iceAnim.getCurrentFrame();
                     int offset = TILE_SIZE / 2;
 
+                    if(mask != 0 && handler.getDebugMode()) {
+                        g.setColor(new Color(255, 165, 0, 100));
+                        g.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+                    }
+
                     if ((mask & EXPOSED_NORTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
                     if ((mask & EXPOSED_EAST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI / 2, offset);
                     if ((mask & EXPOSED_WEST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI * 1.5, offset);
@@ -260,7 +265,7 @@ public abstract class Level {
 
     public void setFire(int x, int y, int time) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
-            if (exposureMask[x][y] != EXPOSED_NONE && !isIce(x, y)) fireTimers[x][y] = time;
+            if (exposureMask[x][y] > EXPOSED_NONE && !isIce(x, y)) fireTimers[x][y] = time;
         }
     }
 

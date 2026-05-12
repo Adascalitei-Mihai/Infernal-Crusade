@@ -93,10 +93,10 @@
         },
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/L3.tmx": {
             "scale": 0.5,
-            "selectedLayer": 15,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 3531,
-                "y": 5640
+                "x": 3809,
+                "y": 3440
             }
         },
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Large Skull.tsx": {
@@ -113,7 +113,7 @@
         },
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/lava_tileset.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 1.5
         },
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/platforme_lava.tsx": {
             "scaleInDock": 1.5

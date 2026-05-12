@@ -55,7 +55,7 @@ public class Boss extends GroundEnemy {
     private int currSpellCount;
     private final int BASE_CREATURE_COUNT;
 
-    private static final float[][] SUMMON_COORDS = {{6020, 150}, {4532, 150}};
+    private static final float[][] SUMMON_COORDS = {{101 * TILE_SIZE, 168 * TILE_SIZE}, {125 * TILE_SIZE, 169 * TILE_SIZE}};
     public boolean awaitingSummon;
     public boolean isPhaseTwo;
     public Random rand;
