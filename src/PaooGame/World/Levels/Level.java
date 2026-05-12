@@ -4,7 +4,6 @@ import PaooGame.Graphics.Animation;
 import PaooGame.Graphics.VisualAssets;
 import PaooGame.Graphics.TMXParser;
 import PaooGame.Handler;
-import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Arena;
 import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
@@ -136,9 +135,9 @@ public abstract class Level {
                     int id = currentLayer[x][y];
 
                     // Sărim peste tile-urile goale
-                    if (id <= 0 || id >= Tile.tiles.length || Tile.tiles[id] == null) continue;
+                    if (id <= 0 || id >= Tile.TILES.length || Tile.TILES[id] == null) continue;
 
-                    Tile t = Tile.tiles[id];
+                    Tile t = Tile.TILES[id];
                     int screenX = (int) (x * TILE_SIZE - handler.getxOffset());
                     int screenY = (int) (y * TILE_SIZE - handler.getyOffset());
 
@@ -175,7 +174,6 @@ public abstract class Level {
 
                     if ((mask & EXPOSED_NORTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, 0, offset);
                     if ((mask & EXPOSED_EAST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI / 2, offset);
-                    if ((mask & EXPOSED_SOUTH) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI, offset);
                     if ((mask & EXPOSED_WEST) != 0) drawRotatedEffect(g, fxImg, screenX, screenY, Math.PI * 1.5, offset);
                 }
             }
@@ -233,9 +231,9 @@ public abstract class Level {
     // Rămâne neschimbat: folosit de entități pentru a verifica logic coliziunile
     public Tile getTile(int x, int y) {
         // Dacă e în afara hărții, returnăm perete (ca să nu iasă din hartă)
-        if(x < 0 || x >= width || y >= height) return Tile.tiles[1];
+        if(x < 0 || x >= width || y >= height) return Tile.TILES[1];
         // Dacă sare prea sus, returnăm cer (liber)
-        if(y < 0) return Tile.tiles[0];
+        if(y < 0) return Tile.TILES[0];
 
         // Verificăm fiecare layer setat ca fiind solid
         for (String layerName : solidLayerNames) {
@@ -244,17 +242,17 @@ public abstract class Level {
                 int id = currentLayer[x][y];
 
                 // Dacă tile-ul există pe acest layer
-                if (id > 0 && id < Tile.tiles.length && Tile.tiles[id] != null) {
+                if (id > 0 && id < Tile.TILES.length && Tile.TILES[id] != null) {
                     // Dacă tile-ul este declarat SOLID în Factory, îl returnăm imediat (coliziune!)
-                    if (Tile.tiles[id].isSolid()) {
-                        return Tile.tiles[id];
+                    if (Tile.TILES[id].isSolid()) {
+                        return Tile.TILES[id];
                     }
                 }
             }
         }
 
         // Dacă a verificat toate layerele și nu a lovit nimic solid, returnăm spațiu gol (0)
-        return Tile.tiles[0];
+        return Tile.TILES[0];
     }
 
     public boolean isFire(int x, int y) { return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0; }
@@ -285,6 +283,7 @@ public abstract class Level {
     public EntityManager getEntityManager() { return entityManager; }
     public void drawBackground(Graphics g) {}
     public boolean inArena() { return arena != null && arena.isRunning(); }
+    public boolean isArenaFinished() { return arena != null && arena.isFinished(); }
     public int getCurrWave() { return (arena == null) ? 0 : arena.getCurrWave(); }
     public Boss getBoss() { return boss; }
 }

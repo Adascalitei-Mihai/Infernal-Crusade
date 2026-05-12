@@ -2,36 +2,38 @@ package PaooGame.Graphics;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.List;
 
 import static PaooGame.World.Tile.NO_TILES;
 
 /**
- * Clasa care incarcă fiecare element grafic necesar jocului.
+ * Clasa care incarca elementele vizuale
+ * Implementeaza Runnable pentru folosirea thread-urilor
+ * @see java.awt.image.BufferedImage
  */
 public class VisualAssets implements Runnable {
+    /**
+     * Tuple intern care usureaza crearea animatiilor
+     * @param label Denumirea animatiei
+     * @param offset Micsorarea pe Oy a cadrelor din imaginea originala
+     * @param row Randul din imaginea originala
+     * @param col Coloana din imaginea originala
+     * @param count Numarul de cadre
+     */
     public record AnimationData(String label, int offset, int row, int col, int count) {
-        public AnimationData(String label, int count) {
-            this(label, 0, 0, 0, count);
-        }
-        public AnimationData(String label, int offset, int count) {
-            this(label, offset, 0, 0, count);
-        }
-        public AnimationData(String label, int row, int col, int count) {
-            this(label, 0, row, col, count);
-        }
+        public AnimationData(String label, int count) { this(label, 0, 0, 0, count); }
+        public AnimationData(String label, int offset, int count) { this(label, offset, 0, 0, count); }
+        public AnimationData(String label, int row, int col, int count) { this(label, 0, row, col, count); }
     }
 
-    // Meniuri
     public static BufferedImage startMenuBg;
     public static BufferedImage mainMenuBg;
     public static BufferedImage controlsMenuBg;
 
-    // Elemente UI
     public static BufferedImage[] uiHealth;
     public static BufferedImage[] uiRanks;
     public static BufferedImage[] uiCd;
 
-    // Entități (Jucător și Inamici)
     public static HashMap<String, BufferedImage[]> Dante;
     public static HashMap<String, BufferedImage[]> Skeleton;
     public static HashMap<String, BufferedImage[]> Cyclops;
@@ -46,7 +48,6 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] SummonCircle;
     public static BufferedImage[] SoulPillar;
 
-    // Elemente de hartă
     public static BufferedImage[] bg1, bg2, bg3;
     public static BufferedImage[] worldTiles1 = new BufferedImage[NO_TILES] , worldTiles2 = new BufferedImage[NO_TILES], worldTiles3 = new BufferedImage[NO_TILES];
     public static BufferedImage[] chkp;
@@ -55,10 +56,11 @@ public class VisualAssets implements Runnable {
     public static BufferedImage[] fire;
 
     public static int loadPercent;
-    public static int TOTAL_LOAD = 27;
+    public static int TOTAL_LOAD = 34;
 
     /**
-     * Functia care initializaza toate elementele grafice globale utilizate.
+     * Metoda de incarcare a tuturor elementelor vizuale, actualizeaza procentul de elemente incarcat <br>
+     * Apeleaza {@link #InitMenus()}, {@link #InitDante()}, {@link #InitEnemies()}, {@link #InitUI()}, {@link #InitEnvironment()}, {@link #InitEffects()}, {@link #InitL1()}, {@link #InitL2()}, {@link #InitL3()}
      */
     public void run() {
         InitMenus();
@@ -74,12 +76,12 @@ public class VisualAssets implements Runnable {
         ++loadPercent;
 
         InitL1(); // +5 loadPercent
-        InitL2();
+        InitL2(); // +17 loadPercent
         InitL3();
     }
 
     /**
-     * Încarcă animațiile pentru toți inamicii din cele 3 niveluri.
+     * Metoda care incarca animatiile si atacurile specifice inamicilor
      */
     private static void InitEnemies() {
         AnimationData[] skeletonFrames = {new AnimationData("Idle", 8), new AnimationData("Walk", 10),
@@ -128,45 +130,65 @@ public class VisualAssets implements Runnable {
         ++loadPercent;
     }
 
+    /**
+     * Metoda care incarca animatiile lui Dante
+     */
     private static void InitDante() {
         AnimationData[] frames = {new AnimationData("Idle", 16, 6), new AnimationData("Run", 16, 8),
                 new AnimationData("Jump", 16, 2), new AnimationData("Fall", 16, 2), new AnimationData("Hit", 16, 3),
                 new AnimationData("Death", 16, 9), new AnimationData("Attack1", 16, 4), new AnimationData("Attack2", 16, 4),
-                new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 3)};
+                new AnimationData("Ice_Morph", 3), new AnimationData("Eden_Shield", 3), new AnimationData("Fiery_Judgement", 20, 3)};
         Dante = loadAnim("Dante", frames);
     }
 
+    /**
+     * Metoda care incarca animatiile unei entitati, din imagini diferite, folosind {@link ImageLoader} impreuna cu {@link SpriteSheet}
+     * @param folder Folderul unde se gasesc imaginile
+     * @param frames Metoda de a taia cadrele
+     * @return Vectorii de cadre pentru fiecare animatie
+     */
     private static HashMap<String, BufferedImage[]> loadAnim(String folder, AnimationData[] frames) {
         HashMap<String, BufferedImage[]> animations = new HashMap<>();
-        for(AnimationData anim : frames) {
+        for (AnimationData anim : frames) {
             try {
                 BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" + folder + "/" + anim.label + ".png");
 
                 animations.put(anim.label, new SpriteSheet(img, img.getWidth() / anim.count, img.getHeight() - anim.offset)
                         .makeSelection(anim.row, anim.col, anim.count));
-            }
-            catch (Exception e) {
-                System.out.println("Eroare la incarcarea " + folder + ": " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("[EROARE]: Incarcarea imaginilor din " + folder + ": " + e.getMessage());
             }
         }
 
         return animations;
     }
+
+    /**
+     * Metoda care incarca animatiile unei entitati, din aceeasi imagine, folosind {@link ImageLoader} impreuna cu {@link SpriteSheet}
+     * @param fileName Imaginea totala
+     * @param frames Metoda de a taia cadrele
+     * @param width Latimea unui cadru
+     * @param height Inaltimea unui cadru
+     * @return Vectorii de cadre pentru fiecare animatie
+     */
     private static HashMap<String, BufferedImage[]> loadAnim(String fileName, AnimationData[] frames, int width, int height) {
         HashMap<String, BufferedImage[]> animations = new HashMap<>();
-        for(AnimationData anim : frames) {
+        for (AnimationData anim : frames) {
             try {
                 BufferedImage img = ImageLoader.LoadImage("/textures/Entities/" + fileName + ".png");
 
                 animations.put(anim.label, new SpriteSheet(img, width, height).makeSelection(anim.row, anim.col, anim.count));
-            }
-            catch (Exception e) {
-                System.out.println("Eroare la incarcarea " + fileName + ": " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("[EROARE]: Incarcarea imaginii: " + fileName + ": " + e.getMessage());
             }
         }
 
         return animations;
     }
+
+    /**
+     * Metoda care incarca nivelul 1, fundalele in {@link #bg1} si dalele in {@link #worldTiles1} (folosind {@link TMXParser#parseTMXTilesets(String)} impreuna cu {@link #fillTiles(BufferedImage[], SpriteSheet, int, int, int)})
+     */
     private static void InitL1() {
         try {
             bg1 = new BufferedImage[]{
@@ -180,30 +202,26 @@ public class VisualAssets implements Runnable {
             ++loadPercent;
         }
         catch (Exception e) {
-            System.out.println("Eroare la incarcarea fundalelor nivelului 1: " + e.getMessage());
+            System.err.println("[EROARE] Incarcarea fundalelor nivelului 1: " + e.getMessage());
         }
 
         try {
-            SpriteSheet snowSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/platform_snow.png"), 16, 16);
-            fillTiles(worldTiles1, snowSheet, 1, 11, 121);
-            ++loadPercent;
+            List<TMXParser.TilesetData> tilesets = TMXParser.parseTMXTilesets("/textures/Maps/L1/L1.tmx");
 
-            SpriteSheet decoSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/deco.png"), 16, 16);
-            fillTiles(worldTiles1, decoSheet, 122, 48, 2304);
-            ++loadPercent;
+            for (TMXParser.TilesetData ts : tilesets) {
+                SpriteSheet sheet = new SpriteSheet(ImageLoader.LoadImage(ts.imagePath), ts.tileWidth, ts.tileHeight);
+                fillTiles(worldTiles1, sheet, ts.firstGid, ts.columns, ts.tileCount);
+                ++loadPercent;
+            }
 
-            SpriteSheet penguinSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/penguin.png"), 16, 16);
-            fillTiles(worldTiles1, penguinSheet, 2426, 4, 32);
-            ++loadPercent;
-
-            SpriteSheet allSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/L1/all.png"), 16, 16);
-            fillTiles(worldTiles1, allSheet, 2458, 64, 2176);
-            ++loadPercent;
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea dalelor nivelului 1: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[EROARE] Incarcarea automata a dalelor nivelului 1 din TMX: " + e.getMessage());
         }
     }
+
+    /**
+     * Metoda care incarca nivelul 2, fundalele in {@link #bg2} si dalele in {@link #worldTiles2} (folosind {@link TMXParser#parseTMXTilesets(String)} impreuna cu {@link #fillTiles(BufferedImage[], SpriteSheet, int, int, int)})
+     */
     public static void InitL2() {
         try {
             bg2 = new BufferedImage[]{
@@ -214,33 +232,33 @@ public class VisualAssets implements Runnable {
                     ImageLoader.LoadImage("/textures/Maps/L2/arena3.png")
             };
             ++loadPercent;
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea fundalelor nivelului 2: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[EROARE] Incarcarea fundalelor nivelului 2: " + e.getMessage());
         }
 
         try {
-            // Citim datele din TMX (firstGid, lățime, înălțime, coloane, număr total, imagine)
-            java.util.List<TMXParser.TilesetData> tilesets = TMXParser.parseTilesets("/textures/Maps/L2/L2.tmx");
+            List<TMXParser.TilesetData> tilesets = TMXParser.parseTMXTilesets("/textures/Maps/L2/L2.tmx");
 
-            // Parcurgem lista și încărcăm automat fiecare sprite sheet
             for (TMXParser.TilesetData ts : tilesets) {
                 SpriteSheet sheet = new SpriteSheet(ImageLoader.LoadImage(ts.imagePath), ts.tileWidth, ts.tileHeight);
-
-                // worldTiles1 este vectorul tău global de tile-uri
                 fillTiles(worldTiles2, sheet, ts.firstGid, ts.columns, ts.tileCount);
-
-                ++loadPercent; // Poți păstra procentul de load per tileset
+                ++loadPercent;
             }
 
         } catch (Exception e) {
-            System.out.println("Eroare la incarcarea automata a dalelor din TMX: " + e.getMessage());
+            System.err.println("[EROARE] Incarcarea automata a dalelor nivelului 2 din TMX: " + e.getMessage());
         }
     }
+    /**
+     * Metoda care incarca nivelul 3, fundalele in {@link #bg3} si dalele in {@link #worldTiles3} (folosind {@link TMXParser#parseTMXTilesets(String)} impreuna cu {@link #fillTiles(BufferedImage[], SpriteSheet, int, int, int)})
+     */
     public static void InitL3() {
 
     }
 
+    /**
+     * Metoda care incarca portile si checkpoint-urile
+     */
     private static void InitEnvironment() {
         try {
             SpriteSheet spearSheet = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/spear.png"), 16, 64);
@@ -254,9 +272,8 @@ public class VisualAssets implements Runnable {
                     spearSheet.crop(2, 0), spearSheet.crop(1, 0),
                     spearSheet.crop(0, 0)
             };
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea gate-urilor:" + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[EROARE]: Incarcarea portilor: " + e.getMessage());
         }
 
         try {
@@ -267,12 +284,14 @@ public class VisualAssets implements Runnable {
                     checkSheet.crop(1, 0),
                     checkSheet.crop(1, 1)
             };
-        }
-        catch (Exception e) {
-            System.out.println("Eroare la incarcarea checkpoint-urilor: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[EROARE]: Incarcarea checkpoint-urilor: " + e.getMessage());
         }
     }
 
+    /**
+     * Metoda care incarca elementele de UI
+     */
     private static void InitUI() {
         try {
             BufferedImage uiSheetImg = ImageLoader.LoadImage("/textures/UI/Overlay.png");
@@ -293,13 +312,21 @@ public class VisualAssets implements Runnable {
             }
         }
         catch (IllegalArgumentException e) {
-            System.out.println("Eroare la incarcarea UI-ului: " + e.getMessage());
+            System.out.println("[EROARE] Incarcarea UI-ului: " + e.getMessage());
         }
         catch (Exception e) {
-            System.out.println("Eroare la decuparea UI-ului: " + e.getMessage());
+            System.out.println("[EROARE] Decuparea UI-ului: " + e.getMessage());
         }
     }
 
+    /**
+     * Metoda care umple dalele nivelului
+     * @param worldTiles Nivelul ales
+     * @param sheet Sursa dalelor
+     * @param startID Start ID-ul generat de TiledMapEditor
+     * @param columns Numarul de coloane
+     * @param totalCount Numarul total de dale
+     */
     private static void fillTiles(BufferedImage[] worldTiles, SpriteSheet sheet, int startID, int columns, int totalCount) {
         int id = startID;
         for (int i = 0; i < totalCount; i++) {
@@ -310,11 +337,17 @@ public class VisualAssets implements Runnable {
         }
     }
 
+    /**
+     * Metoda care incarca efectele de gheata si de foc
+     */
     private static void InitEffects() {
         ice = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/ice.png"), 32, 32).makeSelection(0, 2, 6);
         fire = new SpriteSheet(ImageLoader.LoadImage("/textures/Maps/fire.png"), 24, 32).makeSelection(0, 0, 8);
     }
 
+    /**
+     * Metoda care incarca fundalele meniurilor
+     */
     private static void InitMenus() {
         startMenuBg = ImageLoader.LoadImage("/textures/UI/Start-Menu.png");
         mainMenuBg = ImageLoader.LoadImage("/textures/UI/Main-Menu.png");

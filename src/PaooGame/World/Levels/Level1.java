@@ -5,44 +5,45 @@ import PaooGame.Graphics.VisualAssets;
 import PaooGame.Handler;
 import PaooGame.States.AudioElements.AudioManager;
 import PaooGame.World.Arena;
-import PaooGame.World.Entities.Creatures.Enemies.FlyingEnemies.Ghoul;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level1Factory;
 
 import java.awt.*;
 
-import static PaooGame.World.Tile.SCALE;
 import static PaooGame.World.Tile.TILE_SIZE;
 
 public class Level1 extends Level {
+    private static final float SCALE = 2.5f;
     private static final int L1_WIDTH = 500;
     private static final int L1_HEIGHT = 29;
 
-    // Setări Parallax pentru Backgrounds (simulate în Java pe baza image layers din TMX)
     private static final float[] PX = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f};
     private static final float[] PY = {0f, 0.3f, 0.6f, 1.0f, 1.0f, 1.0f};
     private static final int[] OX = {0, 0, 0, 2, -34, 7200};
     private static final int[] OY = {0, 0, -100, -70, 62, -1};
-
-    // --- CONFIGURARE TMX PARSER ---
-    // Numele layerelor exact așa cum apar în fișierul L1.tmx furnizat
-    private static final String[] RENDER_ORDER = {
-            "Tile Layer 1"
-    };
-    // Stratul folosit pentru calculul coliziunilor fizice
+    private static final String[] RENDER_ORDER = {"Tile Layer 1"};
     private static final String[] SOLID_LAYERS = {"Tile Layer 1"};
 
-    private static final int[][] CHKP_POS = {
-            {1, 20},
-            {219, 20},
-            {436, 20}
+    private static final int[][] CHKP_COORDS = {
+            {TILE_SIZE, 20 * TILE_SIZE},
+            {219 * TILE_SIZE, 20 * TILE_SIZE},
+            {436 * TILE_SIZE, 20 * TILE_SIZE}
     };
 
     private static final int[] ARENA_COORDS = {
-            450 * TILE_SIZE, 0, 500 * TILE_SIZE, 29 * TILE_SIZE
+            450 * TILE_SIZE, TILE_SIZE, 500 * TILE_SIZE, 28 * TILE_SIZE
+    };
+    private static final int[] GATE_COORDS = {
+            449 * TILE_SIZE, 20 * TILE_SIZE
     };
 
+    private static final int[][] MINOR_ENEMIES = {
+            {2480, 800}, {2036, 520}, {4600, 240}, {4400, 800}, {4880, 800}, {6070, 240}, {7520, 280}, {8448, 120}, {12901, 560}, {17060, 480}
+    };
+    private static final int[][] MAJOR_ENEMIES = {
+            {6680, 720}, {10125, 720}, {13900, 720}
+    };
     private static final int[][][][] ARENA_WAVES = {
             {{{18800, 680}, {19200, 680}, {19500, 680}}, {}},
             {{{18400, 680}, {18800, 680}, {19400, 680}}, {{19000, 680}}},
@@ -50,13 +51,9 @@ public class Level1 extends Level {
             {{{18500, 680}, {18800, 680}, {19300, 680}, {19600, 680}}, {{19000, 680}}}
     };
 
-    private static final int[] GATE_COORDS = {
-            449 * TILE_SIZE, 20 * TILE_SIZE
-    };
+    private boolean isTransitioning = false;
 
     public Level1(Handler handler) {
-        // Aici apelăm constructorul actualizat din clasa de bază Level,
-        // transmițând array-ul RENDER_ORDER și numele SOLID_LAYER.
         super(handler, new Level1Factory(handler),
                 L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1,
                 RENDER_ORDER, SOLID_LAYERS);
@@ -66,18 +63,37 @@ public class Level1 extends Level {
     }
 
     @Override
+    public void Update() {
+        if(!isTransitioning) {
+            super.Update();
+            if (arena.isFinished()) {
+
+                isTransitioning = true;
+
+                handler.updateCurrChkp(3);
+                handler.updateCurrLevel(2);
+
+                handler.getTransitionManager().start(() -> {
+                    Level2 nextLevel = new Level2(handler);
+                    handler.setLevel(nextLevel);
+                });
+            }
+        }
+    }
+
+    @Override
     public void spawn() {
         handler.getGameCamera().resetToLevelBounds();
         AudioManager.playBGM(bgSong);
 
-        entityManager.getDante().setX(CHKP_POS[handler.getCurrChkp()][0] * TILE_SIZE);
-        entityManager.getDante().setY(CHKP_POS[handler.getCurrChkp()][1] * TILE_SIZE);
+        entityManager.getDante().setX(CHKP_COORDS[handler.getCurrChkp()][0]);
+        entityManager.getDante().setY(CHKP_COORDS[handler.getCurrChkp()][1]);
 
         entityManager.resetEntities();
 
-        for(int i = 0; i < CHKP_POS.length; ++i) {
+        for(int i = 0; i < CHKP_COORDS.length; ++i) {
             entityManager.addEntity(factory.createCheckpoint(
-                    CHKP_POS[i][0] * TILE_SIZE, CHKP_POS[i][1] * TILE_SIZE, i));
+                    CHKP_COORDS[i][0], CHKP_COORDS[i][1], i));
         }
 
         Gate gate = factory.createGate(GATE_COORDS[0], GATE_COORDS[1]);
@@ -89,7 +105,7 @@ public class Level1 extends Level {
         entityManager.addEntity(gate);
         entityManager.addEntity(factory.createArenaTrigger(
                 GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
-                gate.getWidth(), gate.getHeight(),
+                gate.getLogicWidth(), gate.getLogicHeight(),
                 arena, new Gate[]{gate}, SongAssets.arena
         ));
 
@@ -100,13 +116,12 @@ public class Level1 extends Level {
 
     @Override
     public void setEnemies() {
-        entityManager.addEntity(new Skeleton(handler, 1000, 800));
-        entityManager.addEntity(new Cyclops(handler, 2000, 400));
-        entityManager.addEntity(new Hunter(handler, 3000, 800));
-        entityManager.addEntity(new Necromancer(handler, 4000, 800));
-        entityManager.addEntity(new Ghoul(handler, 800, 200));
-        boss = new Boss(handler, 5100, 640);
-        entityManager.addEntity(boss);
+        for (int[] coords : MINOR_ENEMIES) {
+            entityManager.addEntity(factory.createMinorEnemy(coords[0], coords[1]));
+        }
+        for (int[] coords : MAJOR_ENEMIES) {
+            entityManager.addEntity(factory.createMajorEnemy(coords[0], coords[1]));
+        }
     }
 
     @Override

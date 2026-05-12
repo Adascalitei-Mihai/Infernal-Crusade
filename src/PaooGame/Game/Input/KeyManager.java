@@ -1,19 +1,22 @@
 package PaooGame.Game.Input;
 
 import PaooGame.Handler;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 
 /**
- * Clasa care traduce actiunile tastaturii.
+ * Clasa care asculta input-urile tastaturii
  */
 public class KeyManager extends InputManager implements KeyListener {
+    /**
+     * Campul care este un vector de caracteristica pentru valorile ASCII ale tastaturii
+     */
     private final boolean[] keys;
 
     /**
-     * Constructor vid, initializeaza un vector in care retinem caracterele apasate.
+     * Constructor care initializeaza {@link #keys} cu valori de {@code false}
+     * @param handler Handler-ul
      */
     public KeyManager(Handler handler) {
         super(handler);
@@ -21,7 +24,7 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care traduce tastele uzuale.
+     * Metoda care retine activarea butoanelor
      */
     @Override
     public void Update() {
@@ -39,12 +42,13 @@ public class KeyManager extends InputManager implements KeyListener {
 
         enter = keys[KeyEvent.VK_ENTER];
         escape = keys[KeyEvent.VK_ESCAPE];
+        pause = keys[KeyEvent.VK_P];
         debug = keys[KeyEvent.VK_BACK_SLASH];
     }
 
     /**
-     * Functie care retine apasarea unei taste.
-     * @param e Evenimentul procesat.
+     * Metoda care retine apasarea unei taste
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyPressed(KeyEvent e) {
@@ -54,8 +58,8 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care retine eliberarea unei taste.
-     * @param e Evenimentul procesat.
+     * Metoda care retine eliberarea unei taste
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyReleased(KeyEvent e) {
@@ -65,8 +69,8 @@ public class KeyManager extends InputManager implements KeyListener {
     }
 
     /**
-     * Functie care trimite scrierea unei taste starii actuale.
-     * @param e Evenimentul procesat.
+     * Metoda care trimite scrierea unei taste starii actuale
+     * @param e Evenimentul procesat
      */
     @Override
     public void keyTyped(KeyEvent e) {
@@ -74,6 +78,7 @@ public class KeyManager extends InputManager implements KeyListener {
             handler.getState().onKeyTyped(e.getKeyChar());
         }
     }
+
 
     @Override
     public void reset() {

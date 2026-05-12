@@ -3,30 +3,60 @@ package PaooGame.States.VisualElements;
 import java.awt.Color;
 import java.awt.Graphics;
 
+/**
+ * Clasa care realizeaza tranzitiile, ruland o actiune in timp ce ecranul este negru
+ */
 public class TransitionManager {
     public static final int TRANSITION_TIME = 60;
 
-    private float alpha = 0;
-    private boolean fadingOut = false;
-    private boolean fadingIn = false;
-    private int currentFrame = 0;
+    /**
+     * Campul care este o metoda ce ruleaza cat timp ecranul este negru
+     */
     private Runnable onBlackScreen;
+    /**
+     * Campul care este gradul curent de transparenta
+     */
+    private float alpha;
 
+    private boolean fadingOut;
+    private boolean fadingIn;
+    /**
+     * Campul care este un temporizator, incrementat pentru {@link #fadingIn} activ si decrementat pentru {@link #fadingOut} activ
+     */
+    private int currFrame;
+
+    /**
+     * Metoda care modifica {@link #onBlackScreen} si incepe logica de {@link #fadingOut}
+     * @param action Actiunea de aplicat
+     */
     public void start(Runnable action) {
         if (!fadingOut && !fadingIn) {
             this.onBlackScreen = action;
             this.fadingOut = true;
-            this.currentFrame = TRANSITION_TIME;
+            this.currFrame = TRANSITION_TIME;
         }
     }
 
+    /**
+     * Metoda de actualizare, asigura tranzitia intre {@link #fadingIn} - {@link #onBlackScreen} - {@link #fadingOut}
+     */
     public void Update() {
-        if (fadingOut) {
-            currentFrame--;
+         if (fadingIn) {
+            currFrame++;
 
-            alpha = ((float) (TRANSITION_TIME - currentFrame) / TRANSITION_TIME) * 255f;
+            alpha = ((float) (TRANSITION_TIME - currFrame) / TRANSITION_TIME) * 255f;
 
-            if (currentFrame <= 0) {
+            if (currFrame >= TRANSITION_TIME) {
+                alpha = 0;
+                fadingIn = false;
+                currFrame = 0;
+            }
+        } else if (fadingOut) {
+            currFrame--;
+
+            alpha = ((float) (TRANSITION_TIME - currFrame) / TRANSITION_TIME) * 255f;
+
+            if (currFrame <= 0) {
                 alpha = 255;
                 fadingOut = false;
 
@@ -37,19 +67,15 @@ public class TransitionManager {
 
                 fadingIn = true;
             }
-        } else if (fadingIn) {
-            currentFrame++;
-
-            alpha = ((float) (TRANSITION_TIME - currentFrame) / TRANSITION_TIME) * 255f;
-
-            if (currentFrame >= TRANSITION_TIME) {
-                alpha = 0;
-                fadingIn = false;
-                currentFrame = 0;
-            }
         }
     }
 
+    /**
+     * Metoda de desenare, umple ecranul de dreptunghiul cu transparenta {@link #alpha}
+     * @param g Grafica de desenare
+     * @param screenWidth Latimea ferestrei
+     * @param screenHeight Inaltimea ferestrei
+     */
     public void Draw(Graphics g, int screenWidth, int screenHeight) {
         if (alpha > 0) {
             int a = (int) Math.max(0, Math.min(255, alpha));

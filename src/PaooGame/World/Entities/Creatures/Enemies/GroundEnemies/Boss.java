@@ -7,61 +7,45 @@ import PaooGame.World.Entities.Creatures.Dante;
 import PaooGame.World.Entities.Entity;
 import PaooGame.World.Entities.Projectiles.SoulSpear;
 import PaooGame.World.Entities.Spells.SoulPillar;
-
-import java.awt.*;
+import PaooGame.World.Entities.Creatures.Enemies.EnemyAction;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.Random;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta inamicul Beelzebub, dispune de SuperArmour si Lifesteal
+ */
 public class Boss extends GroundEnemy {
-    // --- Dimensiuni ---
-    public static final int LOGIC_WIDTH = 7 * TILE_SIZE;
+    public static final int LOGIC_WIDTH = 6 * TILE_SIZE;
     public static final int LOGIC_HEIGHT = 7 * TILE_SIZE;
     public static final Rectangle BOUNDS = new Rectangle(-5, -5, LOGIC_WIDTH + 10, LOGIC_HEIGHT + 10);
-
     public static final int VISUAL_WIDTH = 20 * TILE_SIZE;
     public static final int VISUAL_HEIGHT = 16 * TILE_SIZE;
     public static final int VISUAL_OFFSET_Y = 24;
 
-    public enum Attacks { MELEE, PROJECTILE, SPELL, SUMMON }
+    public static final float BASE_SPEED = 2f;
+    public static final float AGGRO_SPEED = 3f;
+    public static final float MELEE_RANGE = TILE_SIZE * 10;
+    public static final float ATTACK_RANGE = TILE_SIZE * 20;
+    public static final float AGGRO_RANGE = TILE_SIZE * 26;
+    public static final float X_RANGE = TILE_SIZE * 30;
 
-    public enum ActionState {
-        IDLE(0, 0, 0, 0),
-        MELEE(50, 20, 30, 150),
-        PROJECTILE(40, 10, 30, 100),
-        SPELL(30, 10, 20, 40),
-        SUMMON(60, 20, 40, 300),
-        LIFESTEAL(0, 120, 0, 0);
+    public static final float MAX_HP = 1000f;
+    public static final float KNOCK_PERCENT = 0.05f;
 
-        public final int windup, active, recovery, baseCooldown;
-
-        ActionState(int windup, int active, int recovery, int baseCooldown) {
-            this.windup = windup; this.active = active; this.recovery = recovery; this.baseCooldown = baseCooldown;
-        }
-        public int getDuration() { return windup + active + recovery; }
-    }
-
-    public enum AnimationState {
-        IDLE, WALK, MELEE, PROJECTILE, SPELL, SUMMON, HURT, LIFESTEAL,
-        DEATH1, MOVE_TO_PHASE2, PHASE2_START, DEATH2
-    }
+    private final EnemyAction meleeAct = new EnemyAction("MELEE", 50, 20, 30, 150, MELEE_RANGE, false);
+    private final EnemyAction projAct = new EnemyAction("PROJECTILE", 80, 10, 30, 100, ATTACK_RANGE, true);
+    private final EnemyAction spellAct = new EnemyAction("SPELL", 50, 10, 20, 40, ATTACK_RANGE, true);
+    private final EnemyAction summonAct = new EnemyAction("SUMMON", 60, 20, 40, 300, ATTACK_RANGE, true);
+    private final EnemyAction lifestealAct = new EnemyAction("LIFESTEAL", 0, 120, 0, 240, 0, false);
 
     public enum TransitionState {
         NONE, DEATH1, MOVING, STARTING_PHASE_2
     }
-
-    // --- Variabile State Machine ---
-    private ActionState currAction = ActionState.IDLE;
-    private AnimationState currAnim = AnimationState.IDLE;
     private TransitionState transitionState = TransitionState.NONE;
-    private final Animation[] animations = new Animation[AnimationState.values().length];
 
-    private int actionTimer = 0;
-    private int attackCooldown = 0;
-    private int deathTimer = 0;
-    private boolean isDead = false;
-
-    // --- Logica originală a Boss-ului ---
     private static final int[] PROJECTILE_SPELL_PERC = {60, 100};
     private static final int[] PROJECTILE_SPELL_MELEE_PERC = {35, 50, 100};
     private static final int[] PROJECTILE_SPELL_SUMMON_PERC = {60, 90, 100};
@@ -76,26 +60,17 @@ public class Boss extends GroundEnemy {
     public boolean isPhaseTwo;
     public Random rand;
 
-    public static final float BASE_SPEED = 2f;
-    public static final float AGGRO_SPEED = 3f;
-    public static final float MELEE_RANGE = TILE_SIZE * 9;
-    public static final float ATTACK_RANGE = TILE_SIZE * 30;
-    public static final float AGGRO_RANGE = TILE_SIZE * 36;
-    public static final float X_RANGE = TILE_SIZE * 30;
-
-    public static final float MAX_HP = 1000f;
-    public static final float KNOCK_PERCENT = 0.05f;
-
-    private Rectangle attackBounds = new Rectangle();
     private static final float ATTACK_DMG = 100f;
     private static final float COLLISION_DMG = 50f;
 
-    private static final int LIFESTEAL_COOLDOWN = 240;
-    private int lifestealTimer;
-    private float phase2TargetX;
-
-    // Variabile folosite pentru umplerea progresiva a vietii in Phase 2
+    private final float phase2TargetX;
     private float hpRegenPerTick = 0f;
+
+    private static final int HITBOX_WIDTH = TILE_SIZE * 6;
+    private static final int HITBOX_HEIGHT = TILE_SIZE * 6;
+    private final Rectangle attackBounds = new Rectangle(
+            0, 0, HITBOX_WIDTH, HITBOX_HEIGHT
+    );
 
     public Boss(Handler handler, float x, float y) {
         super(handler, x, y, LOGIC_WIDTH, LOGIC_HEIGHT, MAX_HP, KNOCK_PERCENT);
@@ -103,15 +78,15 @@ public class Boss extends GroundEnemy {
 
         this.baseSpeed = BASE_SPEED;
         this.aggroSpeed = AGGRO_SPEED;
-        this.attackRange = ATTACK_RANGE;
         this.aggroRange = AGGRO_RANGE;
         this.patrolRange = new float[]{x - X_RANGE, x + X_RANGE};
-        this.rand = new Random();
-        this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getCreatureCount();
 
+        this.rand = new Random();
+        this.BASE_CREATURE_COUNT = handler.getLevel().getEntityManager().getEnemyCount();
         this.phase2TargetX = (patrolRange[0] + patrolRange[1]) / 2f;
 
         setAnimations();
+        hasSuperArmor = true;
     }
 
     @Override
@@ -127,226 +102,144 @@ public class Boss extends GroundEnemy {
         }
 
         super.Update();
-        updateCooldowns();
-
-        if (knockbackTimer > 0 || pauseTimer > 0) {
-            currAction = ActionState.IDLE;
-            actionTimer = 0;
-        } else {
-            updateActionState();
-        }
-
-        updateAnimationLogic();
-    }
-
-    private void handlePhaseTransition() {
-        switch (transitionState) {
-            case DEATH1:
-                changeAnimation(AnimationState.DEATH1);
-                animations[currAnim.ordinal()].Update();
-                if (animations[currAnim.ordinal()].isFinished()) {
-                    transitionState = TransitionState.MOVING;
-                }
-                break;
-
-            case MOVING:
-                changeAnimation(AnimationState.MOVE_TO_PHASE2);
-
-                if (Math.abs(this.x - phase2TargetX) > baseSpeed) {
-                    this.direction = (this.x < phase2TargetX) ? 1 : -1;
-                    this.x += direction * baseSpeed * 1.5f;
-                    animations[currAnim.ordinal()].Update();
-                } else {
-                    this.x = phase2TargetX;
-                    transitionState = TransitionState.STARTING_PHASE_2;
-
-                    // Calculăm cât HP trebuie să regenerăm per tick
-                    // Știm din setAnimations că PHASE2_START are viteza 10
-                    // Și are 14 cadre (conform bossFrames trimis anterior)
-                    // Timp total: 10 * 14 = 140 ticks
-                    hpRegenPerTick = MAX_HP / 320f;
-                }
-                break;
-
-            case STARTING_PHASE_2:
-                changeAnimation(AnimationState.PHASE2_START);
-                animations[currAnim.ordinal()].Update();
-
-                // Creștem treptat viața
-                if (this.hp < MAX_HP) {
-                    this.hp += hpRegenPerTick;
-                    if (this.hp > MAX_HP) {
-                        this.hp = MAX_HP;
-                    }
-                }
-
-                if (animations[currAnim.ordinal()].isFinished()) {
-                    // Terminăm tranziția, începe efectiv Faza 2
-                    transitionState = TransitionState.NONE;
-                    isPhaseTwo = true;
-                    awaitingSummon = true;
-
-                    this.bounds.width = BOUNDS.width;
-                    this.bounds.height = BOUNDS.height;
-
-                    // Garanție finală că HP-ul este perfect plin
-                    this.hp = MAX_HP;
-                }
-                break;
-        }
-    }
-
-    private void updateCooldowns() {
-        if (attackCooldown > 0) attackCooldown--;
-        if (lifestealTimer > 0) lifestealTimer--;
-    }
-
-    private void updateActionState() {
-        if (currAction == ActionState.IDLE) return;
-
-        actionTimer--;
-
-        if (actionTimer == (currAction.active + currAction.recovery)) {
-            executeAttackHitbox();
-        }
-
-        if (actionTimer <= 0) {
-            currAction = ActionState.IDLE;
-        }
     }
 
     @Override
-    protected void attack() {
-        if (attackCooldown > 0 || currAction != ActionState.IDLE) return;
-
-        Attacks nextAtk = selectAttack();
-
-        switch (nextAtk) {
-            case MELEE -> currAction = ActionState.MELEE;
-            case PROJECTILE -> currAction = ActionState.PROJECTILE;
-            case SPELL -> currAction = ActionState.SPELL;
-            case SUMMON -> currAction = ActionState.SUMMON;
+    protected void makeDecision() {
+        if (currentAction != null) {
+            super.makeDecision();
+            return;
         }
 
-        actionTimer = currAction.getDuration();
-        attackCooldown = currAction.baseCooldown;
+        EnemyAction nextAction = determineNextAttack();
+
+        if (nextAction != null) {
+            direction = isPlayerToTheRight() ? 1 : -1;
+
+            startAction(nextAction);
+            applyVerticalMovement();
+            if (currentAction.stopsMovement()) {
+                xMove = 0;
+            }
+            return;
+        }
+
+        super.makeDecision();
     }
 
-    private void executeAttackHitbox() {
-        switch (currAction) {
-            case MELEE -> melee();
-            case PROJECTILE -> projectile();
-            case SPELL -> spell();
-            case SUMMON -> summon();
+    private EnemyAction determineNextAttack() {
+        if (awaitingSummon && isReady(summonAct)) { awaitingSummon = false; return summonAct; }
+        if (currSpellCount > 0 && isReady(spellAct)) { --currSpellCount; return spellAct; }
+
+        float distance = getDistanceToPlayer();
+        int creatureCount = handler.getCreatureCount();
+        int r = rand.nextInt(100);
+
+        if (distance > ATTACK_RANGE) {
+            return null;
+        }
+
+        if (!isPhaseTwo || creatureCount != BASE_CREATURE_COUNT) {
+            if (distance > MELEE_RANGE) {
+                if (r < PROJECTILE_SPELL_PERC[0] && isReady(projAct)) return projAct;
+                if (isReady(spellAct)) return generateSpell();
+            } else {
+                if (r < PROJECTILE_SPELL_MELEE_PERC[0] && isReady(projAct)) return projAct;
+                if (r < PROJECTILE_SPELL_MELEE_PERC[1] && isReady(spellAct)) return generateSpell();
+                if (isReady(meleeAct)) return meleeAct;
+            }
+        } else {
+            if (distance > MELEE_RANGE) {
+                if (r < PROJECTILE_SPELL_SUMMON_PERC[0] && isReady(projAct)) return projAct;
+                if (r < PROJECTILE_SPELL_SUMMON_PERC[1] && isReady(spellAct)) return generateSpell();
+                if (isReady(summonAct)) return summonAct;
+            } else {
+                if (r < PROJECTILE_SPELL_SUMMON_MELEE_PERC[0] && isReady(projAct)) return projAct;
+                if (r < PROJECTILE_SPELL_SUMMON_MELEE_PERC[1] && isReady(spellAct)) return generateSpell();
+                if (r < PROJECTILE_SPELL_SUMMON_MELEE_PERC[2] && isReady(summonAct)) return summonAct;
+                if (isReady(meleeAct)) return meleeAct;
+            }
+        }
+        return null;
+    }
+
+    private boolean isReady(EnemyAction action) { return actionCooldowns.getOrDefault(action.actionId(), 0) <= 0; }
+
+    private EnemyAction generateSpell() {
+        currSpellCount = SPELL_COUNT - 1;
+        return spellAct;
+    }
+
+    @Override
+    protected void executeActionHitbox(String actionId) {
+        switch (actionId) {
+            case "MELEE" -> executeMelee();
+            case "PROJECTILE" -> executeProjectile();
+            case "SPELL" -> executeSpell();
+            case "SUMMON" -> executeSummon();
             default -> {}
         }
     }
 
-    private void melee() {
-        int hWidth = TILE_SIZE * 6;
-        int hHeight = (int) (bounds.height * 0.6f);
-        attackBounds.setSize(hWidth, hHeight);
+    private void executeMelee() { executeMeleeAttack(attackBounds, HITBOX_WIDTH, HITBOX_HEIGHT, ATTACK_DMG, 120f, -20f, 15); }
 
-        attackBounds.x = (direction == 1) ? (int) (x + bounds.x + bounds.width) : (int) (x + bounds.x - hWidth);
-        attackBounds.y = (int) (y + bounds.y + (float) (bounds.height - hHeight) / 2);
-
-        Dante dante = handler.getDante();
-        if (attackBounds.intersects(dante.getCollisionBounds(0f, 0f))) {
-            if (dante.hurt(ATTACK_DMG)) {
-                float knockX = (direction == 1) ? 120.0f : -120.0f;
-                dante.applyKnockback(knockX, -20.0f);
-                pauseTimer = PAUSE_DURATION;
-            }
-        }
-    }
-
-    private void projectile() {
+    private void executeProjectile() {
         float[] spawnCoords = getCenter(), targetCoords = handler.getDante().getCenter();
-        handler.getLevel().getEntityManager().addEntity(
-                new SoulSpear(handler, spawnCoords[0], spawnCoords[1], targetCoords[0], targetCoords[1], this)
-        );
+        handler.getLevel().getEntityManager().addEntity(new SoulSpear(handler, spawnCoords[0], spawnCoords[1], targetCoords[0], targetCoords[1], this));
     }
 
-    private void spell() {
+    private void executeSpell() {
         float[] danteCenter = handler.getDante().getCenter();
         float spellX = danteCenter[0] - SoulPillar.LOGIC_WIDTH / 2f;
         float spellY = danteCenter[1] - SoulPillar.LOGIC_HEIGHT / 2f;
         handler.getLevel().getEntityManager().addEntity(new SoulPillar(handler, spellX, spellY, this));
     }
 
-    private void summon() {
+    private void executeSummon() {
         handler.addEntity(new Necromancer(handler, SUMMON_COORDS[0][0], SUMMON_COORDS[0][1]));
         handler.addEntity(new Necromancer(handler, SUMMON_COORDS[1][0], SUMMON_COORDS[1][1]));
     }
 
-    public Attacks selectAttack() {
-        if (awaitingSummon) {
-            awaitingSummon = false;
-            return Attacks.SUMMON;
-        }
-        if (currSpellCount > 0) {
-            --currSpellCount;
-            return Attacks.SPELL;
-        }
-
-        float distance = getDistanceToPlayer();
-        int creatureCount = handler.getCreatureCount();
-        int randomNumber = rand.nextInt(100);
-
-        if (!isPhaseTwo || creatureCount != BASE_CREATURE_COUNT) {
-            if (distance > MELEE_RANGE) {
-                return (randomNumber < PROJECTILE_SPELL_PERC[0]) ? Attacks.PROJECTILE : generateSpell();
-            } else {
-                if (randomNumber < PROJECTILE_SPELL_MELEE_PERC[0]) return Attacks.PROJECTILE;
-                if (randomNumber < PROJECTILE_SPELL_MELEE_PERC[1]) return generateSpell();
-                return Attacks.MELEE;
+    private void handlePhaseTransition() {
+        switch (transitionState) {
+            case DEATH1 -> {
+                currentAnimId = "DEATH1";
+                animations.get(currentAnimId).Update();
+                if (animations.get(currentAnimId).isFinished()) transitionState = TransitionState.MOVING;
             }
-        } else {
-            if (distance > MELEE_RANGE) {
-                if (randomNumber < PROJECTILE_SPELL_SUMMON_PERC[0]) return Attacks.PROJECTILE;
-                if (randomNumber < PROJECTILE_SPELL_SUMMON_PERC[1]) return generateSpell();
-                return Attacks.SUMMON;
-            } else {
-                if (randomNumber < PROJECTILE_SPELL_SUMMON_MELEE_PERC[0]) return Attacks.PROJECTILE;
-                if (randomNumber < PROJECTILE_SPELL_SUMMON_MELEE_PERC[1]) return generateSpell();
-                if (randomNumber < PROJECTILE_SPELL_SUMMON_MELEE_PERC[2]) return Attacks.SUMMON;
-                return Attacks.MELEE;
+            case MOVING -> {
+                currentAnimId = "MOVE_TO_PHASE2";
+                if (Math.abs(this.x - phase2TargetX) > baseSpeed) {
+                    this.direction = (this.x < phase2TargetX) ? 1 : -1;
+                    this.x += direction * baseSpeed * 1.5f;
+                    animations.get(currentAnimId).Update();
+                } else {
+                    this.x = phase2TargetX;
+                    transitionState = TransitionState.STARTING_PHASE_2;
+                    hpRegenPerTick = MAX_HP / 100f;
+                    animations.get("PHASE2_START").reset();
+                }
             }
-        }
-    }
+            case STARTING_PHASE_2 -> {
+                currentAnimId = "PHASE2_START";
+                animations.get(currentAnimId).Update();
 
-    public Attacks generateSpell() {
-        currSpellCount = SPELL_COUNT - 1;
-        return Attacks.SPELL;
-    }
+                if (this.hp < MAX_HP) {
+                    this.hp += hpRegenPerTick;
+                    if (this.hp > MAX_HP) this.hp = MAX_HP;
+                }
 
-    private void updateAnimationLogic() {
-        AnimationState nextAnim = AnimationState.IDLE;
-
-        if (knockbackTimer > 0) {
-            nextAnim = AnimationState.HURT;
-        } else if (currAction != ActionState.IDLE) {
-            switch(currAction) {
-                case MELEE -> nextAnim = AnimationState.MELEE;
-                case PROJECTILE -> nextAnim = AnimationState.PROJECTILE;
-                case SPELL -> nextAnim = AnimationState.SPELL;
-                case SUMMON -> nextAnim = AnimationState.SUMMON;
-                case LIFESTEAL -> nextAnim = AnimationState.LIFESTEAL;
+                if (animations.get(currentAnimId).isFinished()) {
+                    transitionState = TransitionState.NONE;
+                    isPhaseTwo = true;
+                    awaitingSummon = true;
+                    this.bounds.width = BOUNDS.width;
+                    this.bounds.height = BOUNDS.height;
+                    this.hp = MAX_HP;
+                    currentAnimId = "IDLE";
+                }
             }
-        } else if (Math.abs(xMove) > 0.1f) {
-            nextAnim = AnimationState.WALK;
-        }
-
-        changeAnimation(nextAnim);
-        animations[currAnim.ordinal()].Update();
-    }
-
-    private void changeAnimation(AnimationState newAnim) {
-        if (currAnim != newAnim) {
-            currAnim = newAnim;
-            if (animations[currAnim.ordinal()] != null) {
-                animations[currAnim.ordinal()].reset();
-            }
+            default -> {}
         }
     }
 
@@ -358,38 +251,28 @@ public class Boss extends GroundEnemy {
         int drawX = screenX + (LOGIC_WIDTH - VISUAL_WIDTH) / 2;
         int drawY = screenY + (LOGIC_HEIGHT - VISUAL_HEIGHT) + VISUAL_OFFSET_Y;
 
-        if (animations[currAnim.ordinal()] != null && animations[currAnim.ordinal()].getCurrentFrame() != null) {
+        Animation currentAnim = animations.get(currentAnimId);
+
+        if (currentAnim != null && currentAnim.getCurrentFrame() != null) {
             if (direction == 1) {
-                g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                        drawX + VISUAL_WIDTH, drawY, -VISUAL_WIDTH, VISUAL_HEIGHT, null);
+                g.drawImage(currentAnim.getCurrentFrame(), drawX + VISUAL_WIDTH, drawY, -VISUAL_WIDTH, VISUAL_HEIGHT, null);
             } else {
-                g.drawImage(animations[currAnim.ordinal()].getCurrentFrame(),
-                        drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
+                g.drawImage(currentAnim.getCurrentFrame(), drawX, drawY, VISUAL_WIDTH, VISUAL_HEIGHT, null);
             }
         }
 
-        if (handler.getDebugMode()) {
+        if (handler.getDebugMode() && !isDead) {
             g.setColor(new Color(255, 0, 0, 100));
             g.fillRect(screenX + bounds.x, screenY + bounds.y, bounds.width, bounds.height);
 
-            if (currAction == ActionState.MELEE) {
-                boolean isActive = actionTimer < (currAction.active + currAction.recovery) && actionTimer >= currAction.recovery;
-                if (isActive) {
-                    g.setColor(new Color(255, 255, 255, 150));
-                    g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
-                            (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
-                            attackBounds.width, attackBounds.height);
-                }
+            if ("MELEE".equals(currentAnimId) && currentAction != null && hasExecutedActiveFrame) {
+                g.setColor(new Color(255, 255, 255, 150));
+                g.fillRect((int) (attackBounds.x - handler.getGameCamera().getxOffset()),
+                        (int) (attackBounds.y - handler.getGameCamera().getyOffset()),
+                        attackBounds.width, attackBounds.height);
             }
         }
     }
-
-    @Override
-    public boolean hurt(float dmg) {
-        if (isDead || transitionState != TransitionState.NONE) return false;
-        return super.hurt(dmg);
-    }
-
     @Override
     public void onInteraction(Entity e) {
         if (isDead || transitionState != TransitionState.NONE) return;
@@ -403,92 +286,114 @@ public class Boss extends GroundEnemy {
         }
     }
 
+    public void heal(float hp) {
+        if (isDead || transitionState != TransitionState.NONE) {
+            return;
+        }
+
+        if (actionCooldowns.getOrDefault("LIFESTEAL", 0) <= 0) {
+            this.hp += hp;
+            if (this.hp > MAX_HP) {
+                this.hp = MAX_HP;
+            }
+            startAction(lifestealAct);
+        }
+    }
+
     @Override
     public void die() {
-        if (transitionState != TransitionState.NONE) return;
+        if (transitionState != TransitionState.NONE) {
+            return;
+        }
 
         if (isPhaseTwo) {
-            if (isDead) return;
-            isDead = true;
-            currAnim = AnimationState.DEATH2;
-            currAction = ActionState.IDLE;
-            if(animations[AnimationState.DEATH2.ordinal()] != null) {
-                animations[AnimationState.DEATH2.ordinal()].reset();
+            if (isDead) {
+                return;
             }
+            isDead = true;
+            currentAnimId = "DEATH2";
+            currentAction = null;
+            animations.get("DEATH2").reset();
             deathTimer = 180;
-            xMove = 0; bounds.width = 0; bounds.height = 0;
         } else {
             transitionState = TransitionState.DEATH1;
-            currAction = ActionState.IDLE;
-            xMove = 0;
-
-            bounds.width = 0;
-            bounds.height = 0;
+            currentAction = null;
         }
+        xMove = 0;
+        bounds.width = 0;
+        bounds.height = 0;
     }
 
     private void handleDeath2() {
         if (deathTimer > 0) {
             deathTimer--;
-            animations[AnimationState.DEATH2.ordinal()].Update();
+            animations.get("DEATH2").Update();
         } else {
             active = false;
         }
     }
 
-    public void heal(float hp) {
-        if (isDead || transitionState != TransitionState.NONE) return;
-
-        if (lifestealTimer <= 0) {
-            this.hp += hp;
-            if (this.hp > MAX_HP) this.hp = MAX_HP;
-
-            currAction = ActionState.LIFESTEAL;
-            actionTimer = ActionState.LIFESTEAL.getDuration();
-            lifestealTimer = LIFESTEAL_COOLDOWN;
+    @Override
+    public boolean hurt(float dmg) {
+        if (isDead || transitionState != TransitionState.NONE) {
+            return false;
         }
+
+        if (isWindingUp()) {
+            if (invulnerabilityTimer > 0) {
+                return false;
+            }
+
+            hp -= dmg;
+            invulnerabilityTimer = INVULN_TIME;
+
+            if (hp <= 0) {
+                die();
+            }
+            return true;
+        }
+
+        return super.hurt(dmg);
     }
 
     @Override
     public void setAnimations() {
         try {
-            animations[AnimationState.IDLE.ordinal()] = new Animation(10, VisualAssets.Boss.get("Idle"));
-            animations[AnimationState.WALK.ordinal()] = new Animation(10, VisualAssets.Boss.get("Walk"));
-            animations[AnimationState.HURT.ordinal()] = new Animation(6, VisualAssets.Boss.get("Hurt"));
-            animations[AnimationState.LIFESTEAL.ordinal()] = new Animation(ActionState.LIFESTEAL.active / 10, VisualAssets.Boss.get("Lifesteal"));
+            animations.put("IDLE", new Animation(10, VisualAssets.Boss.get("Idle")));
+            animations.put("WALK", new Animation(10, VisualAssets.Boss.get("Walk")));
+            animations.put("HURT", new Animation(6, VisualAssets.Boss.get("Hurt")));
+            animations.put("LIFESTEAL", new Animation(lifestealAct.active() / 10, VisualAssets.Boss.get("Lifesteal")));
 
-            animations[AnimationState.DEATH1.ordinal()] = new Animation(10, VisualAssets.Boss.get("Death1"));
-            animations[AnimationState.MOVE_TO_PHASE2.ordinal()] = new Animation(8, VisualAssets.Boss.get("MoveToPhase2"));
+            animations.put("DEATH1", new Animation(10, VisualAssets.Boss.get("Death1")));
+            animations.put("MOVE_TO_PHASE2", new Animation(8, VisualAssets.Boss.get("MoveToPhase2")));
+            animations.put("PHASE2_START", new Animation(10, VisualAssets.Boss.get("Phase2Start")));
 
-            animations[AnimationState.PHASE2_START.ordinal()] = new Animation(10, VisualAssets.Boss.get("Phase2Start"));
+            Animation death2Anim = new Animation(10, VisualAssets.Boss.get("Death2"));
+            death2Anim.setFrameDuration(VisualAssets.Boss.get("Death2").length - 1, -1);
+            animations.put("DEATH2", death2Anim);
 
-            animations[AnimationState.DEATH2.ordinal()] = new Animation(10, VisualAssets.Boss.get("Death2"));
-            animations[AnimationState.DEATH2.ordinal()].setFrameDuration(VisualAssets.Boss.get("Death2").length - 1, -1);
+            Animation meleeAnim = new Animation(meleeAct.windup() / 9, VisualAssets.Boss.get("Melee"));
+            meleeAnim.setFrameDuration(9, meleeAct.active());
+            for (int i = 0; i < 5; ++i) meleeAnim.setFrameDuration(10 + i, meleeAct.recovery() / 5);
+            animations.put("MELEE", meleeAnim);
 
-            animations[AnimationState.MELEE.ordinal()] = new Animation(ActionState.MELEE.windup / 9, VisualAssets.Boss.get("Melee"));
-            animations[AnimationState.MELEE.ordinal()].setFrameDuration(9, ActionState.MELEE.active);
-            for (int i = 0; i < 5; ++i) {
-                animations[AnimationState.MELEE.ordinal()].setFrameDuration(10 + i, ActionState.MELEE.recovery / 5);
-            }
+            Animation projAnim = new Animation(projAct.windup() / 10, VisualAssets.Boss.get("Projectile"));
+            projAnim.setFrameDuration(10, projAct.active());
+            for (int i = 0; i < 9; ++i) projAnim.setFrameDuration(11 + i, projAct.recovery() / 9);
+            animations.put("PROJECTILE", projAnim);
 
-            animations[AnimationState.PROJECTILE.ordinal()] = new Animation(ActionState.PROJECTILE.windup / 10, VisualAssets.Boss.get("Projectile"));
-            animations[AnimationState.PROJECTILE.ordinal()].setFrameDuration(10, ActionState.PROJECTILE.active);
-            for (int i = 0; i < 9; ++i) {
-                animations[AnimationState.PROJECTILE.ordinal()].setFrameDuration(11 + i, ActionState.PROJECTILE.recovery / 9);
-            }
+            Animation spellAnim = new Animation(spellAct.windup() / 12, VisualAssets.Boss.get("Spell"));
+            spellAnim.setFrameDuration(12, spellAct.active());
+            for (int i = 0; i < 3; ++i) spellAnim.setFrameDuration(13 + i, spellAct.recovery());
+            animations.put("SPELL", spellAnim);
 
-            animations[AnimationState.SPELL.ordinal()] = new Animation(ActionState.SPELL.windup / 12, VisualAssets.Boss.get("Spell"));
-            animations[AnimationState.SPELL.ordinal()].setFrameDuration(12, ActionState.SPELL.active);
-            for (int i = 0; i < 3; ++i ) {
-                animations[AnimationState.SPELL.ordinal()].setFrameDuration(13 + i, ActionState.SPELL.recovery);
-            }
-
-            animations[AnimationState.SUMMON.ordinal()] = new Animation(ActionState.SUMMON.windup / 4, VisualAssets.Boss.get("Summon"));
-            animations[AnimationState.SUMMON.ordinal()].setFrameDuration(4, ActionState.SUMMON.active);
-            animations[AnimationState.SUMMON.ordinal()].setFrameDuration(5, ActionState.SUMMON.recovery);
+            Animation summonAnim = new Animation(summonAct.windup() / 4, VisualAssets.Boss.get("Summon"));
+            summonAnim.setFrameDuration(4, summonAct.active());
+            summonAnim.setFrameDuration(5, summonAct.recovery());
+            animations.put("SUMMON", summonAnim);
 
         } catch (Exception e) {
-            System.out.println("Eroare la setare animatii Boss: " + e.getMessage());
+            System.err.println("[EROARE]: La setarea animatiilor Boss: " + e.getMessage());
         }
     }
 }

@@ -5,7 +5,6 @@
  <tileset firstgid="2426" source="penguin.tsx"/>
  <tileset firstgid="2458" source="all.tsx"/>
  <tileset firstgid="4634" source="checkpoint.tsx"/>
- <tileset firstgid="4650" source="../../../../../../OneDrive/Desktop/tiled/fundal_nivel1.tsx"/>
  <imagelayer id="2" name="Munti spate" offsetx="-1" offsety="-262" parallaxx="0" parallaxy="0" repeatx="1">
   <image source="fundal_layer5.png" width="600" height="450"/>
  </imagelayer>

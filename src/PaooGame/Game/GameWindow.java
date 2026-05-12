@@ -1,11 +1,17 @@
 package PaooGame.Game;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import java.awt.Canvas;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 
 /**
- * Clasa care implementeaza fereastra jocului.
+ * Clasa care implementeaza fereastra jocului
  */
 public class GameWindow {
     private JFrame wndFrame;
@@ -16,10 +22,10 @@ public class GameWindow {
     private Canvas  canvas;
 
     /**
-     * Constructor cu parametrii.
-     * @param title Titlul ferestrei.
-     * @param width Latimea ferestrei.
-     * @param height Inaltimea ferestrei.
+     * Constructor care initializeaza fereasta
+     * @param title Titlul ferestrei
+     * @param width Latimea ferestrei
+     * @param height Inaltimea ferestrei
      */
     public GameWindow(String title, int width, int height) {
         wndTitle = title;
@@ -28,6 +34,10 @@ public class GameWindow {
         wndFrame = null;
     }
 
+    /**
+     * Metoda care seteaza fereastra sa fie fullscreen
+     * @param fullscreen Starea ceruta
+     */
     public void setFullScreen(boolean fullscreen) {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
@@ -50,6 +60,10 @@ public class GameWindow {
         }
         canvas.requestFocus();
     }
+
+    /**
+     * Metoda care seteaza fereastra sa fie windowed
+     */
     public void setWindowed() {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
@@ -69,6 +83,10 @@ public class GameWindow {
         }
     }
 
+    /**
+     * Metoda care ascunde cursorul
+     * @param hide Starea ceruta
+     */
     public void hideCursor(boolean hide) {
         if (canvas == null) return;
 
@@ -83,18 +101,18 @@ public class GameWindow {
     }
 
     /**
-     * Functie care construieste fereastra, aceasta: <br>
-     * 1. Verifica sa nu creeze un duplicat. <br>
-     * 2. Creeaza JFrame-ul aferent. <br>
-     * 3. Il instantiaza cu o anumita dimensiune. <br>
-     * 4. Opreste afisarea prin apasarea X. <br>
-     * 5. Isi poate schimba dimensiunea. <br>
-     * 6. Se deschide in mijlocul ecranului. <br>
-     * 7. O face vizibila. <br>
-     * 8. Creeaza panza de desen. <br>
-     * 9. Il instantiaza cu dimensiuni preferate, maxime si minime. <br>
-     * 10. Adauga panza la fereastra actuala. <br>
-     * 11. Redimensioneaza fereastra astfel incat tot continutul sa incapa perfect. <br>
+     * Metoda care construieste fereastra <br>
+     * 1. Verifica sa nu creeze un duplicat <br>
+     * 2. Creeaza JFrame-ul aferent <br>
+     * 3. Il instantiaza cu o anumita dimensiune <br>
+     * 4. Opreste afisarea prin apasarea X <br>
+     * 5. Isi poate schimba dimensiunea <br>
+     * 6. Se deschide in mijlocul ecranului <br>
+     * 7. O face vizibila <br>
+     * 8. Creeaza panza de desen <br>
+     * 9. Il instantiaza cu dimensiuni preferate, maxime si minime <br>
+     * 10. Adauga panza la fereastra actuala <br>
+     * 11. Redimensioneaza fereastra astfel incat tot continutul sa incapa perfect
      */
     public void BuildGameWindow()
     {
@@ -117,27 +135,8 @@ public class GameWindow {
         wndFrame.pack(); // 11
     }
 
-    /**
-     * Getter pentru latimea ferestrei.
-     * @return Latimea actuala.
-     */
     public int getWndWidth() { return canvas.getWidth(); }
-
-    /**
-     * Getter pentru inaltimea ferestrei.
-     * @return Inaltimea actuala.
-     */
     public int getWndHeight() { return canvas.getHeight(); }
-
-    /**
-     * Getter pentru fereastra.
-     * @return Fereastra actuala.
-     */
     public JFrame getFrame() {return wndFrame; }
-
-    /**
-     * Getter pentru panza ferestrei.
-     * @return Panza actuala.
-     */
     public Canvas getCanvas() { return canvas; }
 }
