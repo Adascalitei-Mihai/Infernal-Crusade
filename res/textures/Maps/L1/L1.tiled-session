@@ -1,10 +1,13 @@
 {
-    "activeFile": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/L2.tmx",
+    "activeFile": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/L3.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "/home/OneDrive/Desktop/tiled/fundal_nivel1.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1
@@ -76,6 +79,45 @@
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Cheeky Devil.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Female Hell Giant.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Fire sheet.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Imp.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/L3.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 15,
+            "viewCenter": {
+                "x": 3531,
+                "y": 5640
+            }
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Large Skull.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Large Statue 2.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/Large Statue.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/lava.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/lava_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/platforme_lava.tsx": {
+            "scaleInDock": 1.5
+        },
         "L1.tmx": {
             "scale": 2,
             "selectedLayer": 6,
@@ -117,16 +159,18 @@
             "scaleInEditor": 1
         }
     },
-    "last.externalTilesetPath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2",
-    "last.imagePath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2",
+    "last.externalTilesetPath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3",
+    "last.imagePath": "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3",
     "openFiles": [
-        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
-        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/L2.tmx"
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/L3.tmx",
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/lava_tileset.tsx"
     ],
     "project": "L1.tiled-project",
     "recentFiles": [
-        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/lava_tileset.tsx",
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L3/L3.tmx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/L2.tmx",
+        "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Cloud Tileset.tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Tilemap_AutoTile_128 1 (1).tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/Mossy - FloatingPlatforms.tsx",
         "/home/mihai/paoo-proiect-adascalitei_ghita/res/textures/Maps/L2/barrel.tsx",
@@ -136,5 +180,6 @@
         "platform_snow.tsx",
         "fundal_nivel1.tsx"
     ],
-    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)"
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx"
 }
