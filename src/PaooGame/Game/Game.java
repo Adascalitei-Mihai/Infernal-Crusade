@@ -128,14 +128,18 @@ public class Game implements Runnable
      * Metoda care initializeaza {@link #bs}
      */
     private void initBs() {
+        if (!wnd.getCanvas().isDisplayable()) {
+            return;
+        }
+
+        bs = wnd.getCanvas().getBufferStrategy();
+
         if (bs == null) {
-            bs = wnd.getCanvas().getBufferStrategy();
-            if (bs == null) {
-                try {
-                    wnd.getCanvas().createBufferStrategy(3);
-                } catch (Exception e) {
-                    System.err.println("[EROARE]: Afisarea ecranului de incarcare: " + e.getMessage());
-                }
+            try {
+                wnd.getCanvas().createBufferStrategy(3);
+                bs = wnd.getCanvas().getBufferStrategy();
+            } catch (Exception e) {
+                System.err.println("[EROARE]: Creare BufferStrategy: " + e.getMessage());
             }
         }
     }
@@ -150,36 +154,42 @@ public class Game implements Runnable
         if (bs == null) {
             return;
         }
-        g = bs.getDrawGraphics();
 
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
+        try {
+            g = bs.getDrawGraphics();
 
-        int barWidth = 400;
-        int barHeight = 30;
-        int x = (wnd.getWndWidth() - barWidth) / 2;
-        int y = (wnd.getWndHeight() - barHeight) / 2;
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
 
-        float progress = (float) (VisualAssets.loadPercent + SongAssets.loadPercent) / (VisualAssets.TOTAL_LOAD + SongAssets.TOTAL_LOAD);
-        progress = Math.min(1.0f, Math.max(0.0f, progress));
+            int barWidth = 400;
+            int barHeight = 30;
+            int x = (wnd.getWndWidth() - barWidth) / 2;
+            int y = (wnd.getWndHeight() - barHeight) / 2;
 
-        g.setColor(new Color(50, 50, 50));
-        g.fillRect(x, y, barWidth, barHeight);
+            float progress = (float) (VisualAssets.loadPercent + SongAssets.loadPercent) / (VisualAssets.TOTAL_LOAD + SongAssets.TOTAL_LOAD);
+            progress = Math.min(1.0f, Math.max(0.0f, progress));
 
-        g.setColor(new Color(255, 140, 0));
-        g.fillRect(x, y, (int) (barWidth * progress), barHeight);
+            g.setColor(new Color(50, 50, 50));
+            g.fillRect(x, y, barWidth, barHeight);
 
-        g.setColor(Color.WHITE);
-        g.drawRect(x, y, barWidth, barHeight);
+            g.setColor(new Color(255, 140, 0));
+            g.fillRect(x, y, (int) (barWidth * progress), barHeight);
+
+            g.setColor(Color.WHITE);
+            g.drawRect(x, y, barWidth, barHeight);
 
 
-        g.setFont(new Font("Monospaced", Font.BOLD, 18));
-        String status = "AWAKENING DANTE: " + (int)(progress * 100) + "%";
-        int textWidth = g.getFontMetrics().stringWidth(status);
-        g.drawString(status, (wnd.getWndWidth() - textWidth) / 2, y + barHeight + 25);
+            g.setFont(new Font("Monospaced", Font.BOLD, 18));
+            String status = "AWAKENING DANTE: " + (int)(progress * 100) + "%";
+            int textWidth = g.getFontMetrics().stringWidth(status);
+            g.drawString(status, (wnd.getWndWidth() - textWidth) / 2, y + barHeight + 25);
 
-        bs.show();
-        g.dispose();
+            bs.show();
+        } finally {
+            if (g != null) {
+                g.dispose();
+            }
+        }
     }
 
     /**
@@ -230,13 +240,23 @@ public class Game implements Runnable
      */
     private void Draw() {
         initBs();
-        g = bs.getDrawGraphics();
-        g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
+        if (bs == null) {
+            return;
+        }
 
-        handler.Draw(g);
+        try {
+            g = bs.getDrawGraphics();
+            g.clearRect(0, 0, wnd.getWndWidth(), wnd.getWndHeight());
+            handler.Draw(g);
 
-        bs.show();
-        g.dispose();
+            bs.show();
+        } catch (IllegalStateException e) {
+            System.err.println("[EROARE]: Frame sarit (Fereastra in tranzitie).");
+        } finally {
+            if (g != null) {
+                g.dispose();
+            }
+        }
     }
 
     public KeyManager getKeyMan() { return keyMan; }

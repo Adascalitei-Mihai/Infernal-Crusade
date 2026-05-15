@@ -19,7 +19,7 @@ public class GameWindow {
     private final int wndWidth;
     private final int wndHeight;
 
-    private Canvas  canvas;
+    private Canvas canvas;
 
     /**
      * Constructor care initializeaza fereasta
@@ -52,11 +52,7 @@ public class GameWindow {
                 canvas.requestFocusInWindow();
             }
         } else {
-            gd.setFullScreenWindow(null);
-            wndFrame.dispose();
-            wndFrame.setUndecorated(false);
-            wndFrame.setVisible(true);
-            wndFrame.setLocationRelativeTo(null);
+            setWindowed();
         }
         canvas.requestFocus();
     }
@@ -67,7 +63,7 @@ public class GameWindow {
     public void setWindowed() {
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
-        if (gd.getFullScreenWindow() != null) {
+        if (gd.getFullScreenWindow() != null || wndFrame.isUndecorated()) {
             gd.setFullScreenWindow(null);
             wndFrame.dispose();
             wndFrame.setUndecorated(false);
@@ -103,36 +99,36 @@ public class GameWindow {
     /**
      * Metoda care construieste fereastra <br>
      * 1. Verifica sa nu creeze un duplicat <br>
-     * 2. Creeaza JFrame-ul aferent <br>
-     * 3. Il instantiaza cu o anumita dimensiune <br>
-     * 4. Opreste afisarea prin apasarea X <br>
-     * 5. Isi poate schimba dimensiunea <br>
-     * 6. Se deschide in mijlocul ecranului <br>
-     * 7. O face vizibila <br>
-     * 8. Creeaza panza de desen <br>
-     * 9. Il instantiaza cu dimensiuni preferate, maxime si minime <br>
-     * 10. Adauga panza la fereastra actuala <br>
-     * 11. Redimensioneaza fereastra astfel incat tot continutul sa incapa perfect
+     * 2. Creeaza JFrame-ul aferent si opreste Repaint-ul automat <br>
+     * 3. Creeaza panza de desen si opreste Repaint-ul automat <br>
+     * 4. Asambleaza componentele si face fereastra vizibila
      */
     public void BuildGameWindow()
     {
-
-        if(wndFrame != null) { // 1
+        if(wndFrame != null) {
             return;
         }
-        wndFrame = new JFrame(wndTitle); // 2
-        wndFrame.setSize(wndWidth, wndHeight); // 3
-        wndFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 4
-        wndFrame.setResizable(true); // 5
-        wndFrame.setLocationRelativeTo(null); // 6
-        wndFrame.setVisible(true); // 7
 
-        canvas = new Canvas(); // 8
-        canvas.setPreferredSize(new Dimension(wndWidth, wndHeight)); // 9
+        wndFrame = new JFrame(wndTitle);
+        wndFrame.setSize(wndWidth, wndHeight);
+        wndFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        wndFrame.setResizable(false);
+        wndFrame.setLocationRelativeTo(null);
+
+        wndFrame.setIgnoreRepaint(true); // 2
+
+        canvas = new Canvas();
+        canvas.setPreferredSize(new Dimension(wndWidth, wndHeight));
         canvas.setMaximumSize(new Dimension(wndWidth, wndHeight));
         canvas.setMinimumSize(new Dimension(wndWidth, wndHeight));
-        wndFrame.add(canvas); // 10
-        wndFrame.pack(); // 11
+
+        canvas.setIgnoreRepaint(true); // 3
+        canvas.setFocusable(true);
+
+        wndFrame.add(canvas);
+        wndFrame.pack();
+
+        wndFrame.setVisible(true); // 4
     }
 
     public int getWndWidth() { return canvas.getWidth(); }
