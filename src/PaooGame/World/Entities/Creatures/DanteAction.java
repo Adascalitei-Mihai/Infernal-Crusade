@@ -7,7 +7,7 @@ public enum DanteAction {
     IDLE(0, 0, 0, 0),
     ATTACKING(6, 15, 10, 45),
     ICE_MORPH(3, 1, 4, 0),
-    EDEN_SHIELD(4, 0, 16, 240),
+    EDEN_SHIELD(4, 0, 16, 150),
     FIERY_JUDGEMENT(30, 30, 15, 900);
 
     public final int windup;

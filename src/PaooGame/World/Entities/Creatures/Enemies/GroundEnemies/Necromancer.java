@@ -22,11 +22,11 @@ public class Necromancer extends GroundEnemy {
 
     public static final float BASE_SPEED = 2f;
     public static final float AGGRO_SPEED = 2.5f;
-    public static final float ATTACK_RANGE = TILE_SIZE * 30;
-    public static final float AGGRO_RANGE = TILE_SIZE * 36;
+    public static final float ATTACK_RANGE = TILE_SIZE * 20;
+    public static final float AGGRO_RANGE = TILE_SIZE * 25;
     public static final float X_RANGE = TILE_SIZE * 3;
 
-    public static final float MAX_HP = 300;
+    public static final float MAX_HP = 180f;
     public static final float KNOCK_PERCENT = 0.7f;
 
     private static final int SUMMON_WINDUP = 90;

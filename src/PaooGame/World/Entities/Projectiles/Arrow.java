@@ -17,7 +17,7 @@ public class Arrow extends Projectile {
     private final static int VISUAL_HEIGHT = (int) (TILE_SIZE * 0.5f);
 
     private final static float SPEED = 10f;
-    private final static float DMG = 30f;
+    private final static float DMG = 50f;
     private final static float KNOCK_PERCENT = 1f;
 
     public Arrow(Handler handler, float x, float y, float tx, float ty, Creature owner) {

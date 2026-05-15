@@ -17,7 +17,7 @@ import java.util.HashSet;
  */
 public abstract class Spell extends Entity {
     protected final static float KNOCKBACK_FORCE = 10f;
-    protected final static float LIFESTEAL = 100f;
+    protected final static float LIFESTEAL = 80f;
 
     public enum SpellState {
         WINDUP, ACTIVE, RECOVERY, DEAD

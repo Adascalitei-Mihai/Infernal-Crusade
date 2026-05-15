@@ -7,6 +7,9 @@ import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Boss;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Necromancer;
 import java.util.Set;
 
+/**
+ * Clasa care initializeaza tile-urile si poate crea inamici pentru {@link PaooGame.World.Levels.Level3}
+ */
 public class Level3Factory extends EntityFactory {
     private static final Set<Integer> SOLID_TILES = Set.of(
             16, 49, 59, 75, 77, 109, 110, 111, 126, 127,

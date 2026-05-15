@@ -8,9 +8,11 @@ import PaooGame.World.Arena;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level2Factory;
 import java.awt.Graphics;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta nivelul 2
+ */
 public class Level2 extends Level {
     private static final float SCALE = 1.25f;
     private static final int L2_WIDTH = 200;
@@ -52,26 +54,43 @@ public class Level2 extends Level {
     };
 
     private static final int[] ARENA_COORDS = {
-            151 * TILE_SIZE, 18 * TILE_SIZE, 199 * TILE_SIZE, 51 * TILE_SIZE
+            151 * TILE_SIZE, 20 * TILE_SIZE, 199 * TILE_SIZE, 51 * TILE_SIZE
     };
     private static final int[] GATE_COORDS = {
             150 * TILE_SIZE, 45 * TILE_SIZE
     };
 
+    private static final int[][] MINOR_ENEMIES = {
+            {126 * TILE_SIZE, 277 * TILE_SIZE}, {54 * TILE_SIZE, 262 * TILE_SIZE},
+            {68 * TILE_SIZE, 245 * TILE_SIZE}, {114 * TILE_SIZE, 243 * TILE_SIZE},
+            {128 * TILE_SIZE, 235 * TILE_SIZE}, {116 * TILE_SIZE, 232 * TILE_SIZE},
+            {122 * TILE_SIZE, 222 * TILE_SIZE}, {92 * TILE_SIZE, 219 * TILE_SIZE},
+            {55 * TILE_SIZE, 213 * TILE_SIZE}, {10 * TILE_SIZE, 205 * TILE_SIZE},
+            {55 * TILE_SIZE, 198 * TILE_SIZE}, {100 * TILE_SIZE, 190 * TILE_SIZE},
+            {156 * TILE_SIZE, 172 * TILE_SIZE}, {193 * TILE_SIZE, 157 * TILE_SIZE}
+    };
+    private static final int[][] MAJOR_ENEMIES = {
+            {81 * TILE_SIZE, 136 * TILE_SIZE}, {35 * TILE_SIZE, 132 * TILE_SIZE},
+            {52 * TILE_SIZE, 115 * TILE_SIZE}, {92 * TILE_SIZE, 109 * TILE_SIZE},
+            {109 * TILE_SIZE, 103 * TILE_SIZE}, {123 * TILE_SIZE, 77 * TILE_SIZE},
+            {78 * TILE_SIZE, 78 * TILE_SIZE, 62 * TILE_SIZE, 75 * TILE_SIZE},
+            {41 * TILE_SIZE, 73 * TILE_SIZE}, {12 * TILE_SIZE, 61 * TILE_SIZE},
+            {69 * TILE_SIZE, 45 * TILE_SIZE}, {120 * TILE_SIZE, 27 * TILE_SIZE}
+    };
     private static final int[][][][] ARENA_WAVES = {
-            {{{160 * TILE_SIZE, 48 * TILE_SIZE}, {190 * TILE_SIZE, 48 * TILE_SIZE}},
-                    {{170 * TILE_SIZE, 38 * TILE_SIZE}, {180 * TILE_SIZE, 38 * TILE_SIZE}}},
-            {{{165 * TILE_SIZE, 48 * TILE_SIZE}, {175 * TILE_SIZE, 48 * TILE_SIZE}, {185 * TILE_SIZE, 48 * TILE_SIZE}},
-                    {{158 * TILE_SIZE, 35 * TILE_SIZE}, {175 * TILE_SIZE, 32 * TILE_SIZE}, {192 * TILE_SIZE, 35 * TILE_SIZE}}},
+            {{{160 * TILE_SIZE, 42 * TILE_SIZE}, {194 * TILE_SIZE, 40 * TILE_SIZE}},
+                    {{170 * TILE_SIZE, 36 * TILE_SIZE}, {180 * TILE_SIZE, 41 * TILE_SIZE}}},
+            {{{165 * TILE_SIZE, 48 * TILE_SIZE}, {175 * TILE_SIZE, 48 * TILE_SIZE}, {183 * TILE_SIZE, 33 * TILE_SIZE}},
+                    {{158 * TILE_SIZE, 35 * TILE_SIZE}, {175 * TILE_SIZE, 32 * TILE_SIZE}, {192 * TILE_SIZE, 30 * TILE_SIZE}}},
             {{{153 * TILE_SIZE, 48 * TILE_SIZE}, {197 * TILE_SIZE, 48 * TILE_SIZE}},
-                    {{168 * TILE_SIZE, 36 * TILE_SIZE}, {175 * TILE_SIZE, 34 * TILE_SIZE}, {182 * TILE_SIZE, 36 * TILE_SIZE}}},
-            {{{156 * TILE_SIZE, 48 * TILE_SIZE}, {168 * TILE_SIZE, 48 * TILE_SIZE}, {182 * TILE_SIZE, 48 * TILE_SIZE}, {194 * TILE_SIZE, 48 * TILE_SIZE}},
-                    {{160 * TILE_SIZE, 38 * TILE_SIZE}, {170 * TILE_SIZE, 33 * TILE_SIZE}, {180 * TILE_SIZE, 33 * TILE_SIZE}, {190 * TILE_SIZE, 38 * TILE_SIZE}}}
+                    {{159 * TILE_SIZE, 31 * TILE_SIZE}, {174 * TILE_SIZE, 27 * TILE_SIZE}, {193 * TILE_SIZE, 30 * TILE_SIZE}}},
+            {{{159 * TILE_SIZE, 42 * TILE_SIZE}, {169 * TILE_SIZE, 37 * TILE_SIZE}, {184 * TILE_SIZE, 44 * TILE_SIZE}, {194 * TILE_SIZE, 40 * TILE_SIZE}},
+                    {{159 * TILE_SIZE, 31 * TILE_SIZE}, {174 * TILE_SIZE, 27 * TILE_SIZE}}}
     };
     public Level2(Handler handler) {
         super(handler, new Level2Factory(handler),
                 L2_WIDTH, L2_HEIGHT, "/textures/Maps/L2/L2.tmx", SongAssets.level1,
-                RENDER_ORDER, SOLID_LAYERS);
+                RENDER_ORDER, SOLID_LAYERS, MINOR_ENEMIES, MAJOR_ENEMIES);
 
         calculateExposureMasks();
         requestRespawn();
@@ -119,7 +138,7 @@ public class Level2 extends Level {
 
         entityManager.addEntity(gate);
         entityManager.addEntity(factory.createArenaTrigger(
-                GATE_COORDS[0] + TILE_SIZE * 4, GATE_COORDS[1],
+                GATE_COORDS[0] + TILE_SIZE * 2, GATE_COORDS[1],
                 gate.getLogicWidth(), gate.getLogicHeight(),
                 arena, new Gate[]{gate}, SongAssets.arena
         ));
@@ -127,10 +146,6 @@ public class Level2 extends Level {
         setEnemies();
         handler.getDante().resetDeath();
         handler.getGameCamera().snapTo(handler.getDante());
-    }
-
-    @Override
-    public void setEnemies() {
     }
 
     @Override

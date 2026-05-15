@@ -22,6 +22,9 @@ import static PaooGame.World.Entities.Creatures.Dante.FIRE_TIMER;
 import static PaooGame.World.Entities.Creatures.Dante.ICE_TIMER;
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta logica unui nivel
+ */
 public abstract class Level {
     public static final int EXPOSED_NONE = 0;
     public static final int EXPOSED_EAST = 1;
@@ -49,14 +52,33 @@ public abstract class Level {
     protected Arena arena;
 
     private boolean pendingRespawn;
+    private final int[][] minorEnemies;
+    private final int[][] majorEnemies;
 
-    public Level(Handler handler, EntityFactory factory, int width, int height, String path, Clip bgSong, String[] layerRenderOrder, String[] solidLayerNames) {
+    /**
+     * Constructorul care initializeaza campurile, apeleaza {@link #loadLevel(String)}, {@link #calculateExposureMasks()} si {@link #setAnimations()}
+     * @param handler Handler-ul
+     * @param factory Fabrica asociata nivelului
+     * @param width Latimea nivelului
+     * @param height Inaltimea nivelului
+     * @param path Calea spre {@code "*.tmx"}-ul aferent
+     * @param bgSong Melodia de fundal
+     * @param layerRenderOrder Ordinea de afisare a straturilor nivelului
+     * @param solidLayerNames Straturile in care exista tile-uri care pot fi solide
+     * @param minorEnemies Locatiile inamicilor minori
+     * @param majorEnemies Locatiile inamicilor majori
+     */
+    public Level(Handler handler, EntityFactory factory, int width, int height,
+                 String path, Clip bgSong, String[] layerRenderOrder, String[] solidLayerNames,
+                 int[][] minorEnemies, int[][] majorEnemies) {
         this.handler = handler;
         this.factory = factory;
         this.width = width;
         this.height = height;
         this.layerRenderOrder = layerRenderOrder;
         this.solidLayerNames = solidLayerNames;
+        this.minorEnemies = minorEnemies;
+        this.majorEnemies = majorEnemies;
 
         handler.setLevel(this);
         loadLevel(path);
@@ -68,15 +90,40 @@ public abstract class Level {
         entityManager = new EntityManager(new Dante(handler, 0, 0));
     }
 
+    /**
+     * Metoda abstracta care rezolva initializarea lumii
+     */
     public abstract void spawn();
-    public abstract void setEnemies();
 
+    /**
+     * Metoda care foloseste {@link #factory} pentru a popula nivelul cu inamici
+     */
+    public void setEnemies() {
+        if (minorEnemies != null) {
+            for (int[] coords : minorEnemies) {
+                entityManager.addEntity(factory.createMinorEnemy(coords[0], coords[1]));
+            }
+        }
+        if (majorEnemies != null) {
+            for (int[] coords : majorEnemies) {
+                entityManager.addEntity(factory.createMajorEnemy(coords[0], coords[1]));
+            }
+        }
+    }
+
+    /**
+     * Metoda care incarca nivelul si initializeaza {@link #fireTimers} si {@link #iceTimers}
+     * @param path Calea spre {@code "*.tmx"}-ul aferent
+     */
     public void loadLevel(String path) {
         mapLayers = TMXParser.parseTMXLayers(path, Arrays.asList(layerRenderOrder));
         fireTimers = new int[width][height];
         iceTimers = new int[width][height];
     }
 
+    /**
+     * Metoda care actualizeaza nivelul, transmite mai departe spre {@link #entityManager}, actualizeaza logicile de foc si gheata si asculta {@link #pendingRespawn}
+     */
     public void Update() {
         entityManager.Update();
         fireAnim.Update();
@@ -95,6 +142,11 @@ public abstract class Level {
         }
     }
 
+    /**
+     * Metoda care verifica daca stratul este solid, util pentru modul debug
+     * @param layerName Numele stratului
+     * @return Daca este solid
+     */
     protected boolean isSolidLayer(String layerName) {
         if (solidLayerNames == null) return false;
         for (String solid : solidLayerNames) {
@@ -105,6 +157,10 @@ public abstract class Level {
         return false;
     }
 
+    /**
+     * Metoda care deseneaza nivelul, deseneaza straturile conform {@link #layerRenderOrder} apoi deseneaza focul si gheata dupa {@link #exposureMask}
+     * @param g Grafica de desenare
+     */
     public void Draw(Graphics g) {
         drawBackground(g);
 
@@ -183,6 +239,15 @@ public abstract class Level {
         entityManager.Draw(g);
     }
 
+    /**
+     * Metoda care deseneaza efectul
+     * @param g Grafica de desenare
+     * @param img Cadrul curent
+     * @param tileX Pozitia pe Ox
+     * @param tileY Pozitia pe Oy
+     * @param angleInRadians Unghiul de rotatie
+     * @param offset Deplasarea cadrului de pozitia actuala
+     */
     private void drawRotatedEffect(Graphics g, BufferedImage img, int tileX, int tileY, double angleInRadians, int offset) {
         if (img == null) return;
         Graphics2D g2d = (Graphics2D) g.create();
@@ -198,6 +263,9 @@ public abstract class Level {
         g2d.dispose();
     }
 
+    /**
+     * Metoda care calculeaza modalitatea de a desena focul si gheata
+     */
     protected void calculateExposureMasks() {
         exposureMask = new int[width][height];
         for (int y = 0; y < height; y++) {
@@ -219,10 +287,19 @@ public abstract class Level {
         }
     }
 
+    /**
+     * Metoda care activeaza {@link #pendingRespawn}
+     */
     public void requestRespawn() {
         pendingRespawn = true;
     }
 
+    /**
+     * Metoda care returneaza tile-ul la coordonatele date
+     * @param x Pozitia pe Ox
+     * @param y Pozitia pe Oy
+     * @return Dala ceruta
+     */
     public Tile getTile(int x, int y) {
         if (x < 0 || x >= width || y >= height) return Tile.TILES[1];
         if (y < 0) return Tile.TILES[0];
@@ -243,26 +320,53 @@ public abstract class Level {
         return Tile.TILES[0];
     }
 
+    /**
+     * Metoda care returneaza daca este foc
+     * @param x Pozitia pe Ox
+     * @param y Pozitia pe Oy
+     * @return Daca este foc
+     */
     public boolean isFire(int x, int y) {
         return (x >= 0 && y >= 0 && x < width && y < height) && fireTimers[x][y] > 0;
     }
 
+    /**
+     * Metoda care returneaza daca este gheata
+     * @param x Pozitia pe Ox
+     * @param y Pozitia pe Oy
+     * @return Daca este gheata
+     */
     public boolean isIce(int x, int y) {
         return (x >= 0 && y >= 0 && x < width && y < height) && iceTimers[x][y] > 0;
     }
 
+    /**
+     * Metoda care porneste focul
+     * @param x Pozitia pe Ox
+     * @param y Pozitia pe Oy
+     * @param time Timpul de foc aplicat
+     */
     public void setFire(int x, int y, int time) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
             if (exposureMask[x][y] > EXPOSED_NONE && !isIce(x, y)) fireTimers[x][y] = time;
         }
     }
 
+    /**
+     * Metoda care porneste gheata
+     * @param x Pozitia pe Ox
+     * @param y Pozitia pe Oy
+     * @param time Timpul de gheata aplicat
+     */
     public void setIce(int x, int y, int time) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
             if (exposureMask[x][y] > EXPOSED_NONE && !isFire(x, y)) iceTimers[x][y] = time;
         }
     }
 
+    /**
+     * Metoda care initializeaza {@link #iceAnim} si {@link #fireAnim}
+     */
     public void setAnimations() {
         iceAnim = new Animation(ICE_TIMER / 60, VisualAssets.ice);
         fireAnim = new Animation(FIRE_TIMER / 60, VisualAssets.fire);

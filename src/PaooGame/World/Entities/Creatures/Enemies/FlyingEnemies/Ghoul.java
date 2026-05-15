@@ -22,8 +22,8 @@ public class Ghoul extends FlyingEnemy {
 
     public static final float BASE_SPEED = 2f;
     public static final float AGGRO_SPEED = 2.5f;
-    public static final float ATTACK_RANGE = TILE_SIZE * 20;
-    public static final float AGGRO_RANGE = TILE_SIZE * 26;
+    public static final float ATTACK_RANGE = TILE_SIZE * 18;
+    public static final float AGGRO_RANGE = TILE_SIZE * 23;
     public static final float X_RANGE = TILE_SIZE * 3;
 
     public static final float MAX_HP = 100;

@@ -7,6 +7,9 @@ import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Cyclops;
 import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.Skeleton;
 import java.util.Set;
 
+/**
+ * Clasa care initializeaza tile-urile si poate crea inamici pentru {@link PaooGame.World.Levels.Level1}
+ */
 public class Level1Factory extends EntityFactory {
     private static final Set<Integer> SOLID_TILES = Set.of(
             1, 2, 4, 9, 10, 12, 13, 15, 20, 21,

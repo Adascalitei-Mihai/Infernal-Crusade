@@ -20,7 +20,7 @@ public class SummonCircle extends Spell {
     private final static int ACTIVE_TIME = 15;
     private final static int RECOVERY_TIME = 30;
 
-    private final static float DMG = 100f;
+    private final static float DMG = 120f;
     private final static float KNOCK_PERCENT = 1f;
 
     public SummonCircle(Handler handler, float x, float y, Creature owner) {

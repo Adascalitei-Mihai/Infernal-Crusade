@@ -8,9 +8,11 @@ import PaooGame.World.Arena;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level3Factory;
 import java.awt.Graphics;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta nivelul 3
+ */
 public class Level3 extends Level {
     private static final float SCALE = 1.25f;
 
@@ -35,6 +37,11 @@ public class Level3 extends Level {
             {84 * TILE_SIZE, 116 * TILE_SIZE},
     };
 
+    private static final int[][] MINOR_ENEMIES = {
+            {78 * TILE_SIZE, 32 * TILE_SIZE}, {40 * TILE_SIZE, 37 * TILE_SIZE},
+            {67 * TILE_SIZE, 60 * TILE_SIZE}, {78 * TILE_SIZE, 82 * TILE_SIZE},
+            {55 * TILE_SIZE, 107 * TILE_SIZE}
+    };
     private final static int[] ARENA_COORDS = {
             80 * TILE_SIZE, 111 * TILE_SIZE, 145 * TILE_SIZE, 197 * TILE_SIZE
     };
@@ -48,7 +55,7 @@ public class Level3 extends Level {
     public Level3(Handler handler) {
         super(handler, new Level3Factory(handler),
                 L3_WIDTH, L3_HEIGHT, "/textures/Maps/L3/L3.tmx", SongAssets.level3,
-                RENDER_ORDER, SOLID_LAYERS);
+                RENDER_ORDER, SOLID_LAYERS, MINOR_ENEMIES, null);
 
         calculateExposureMasks();
         requestRespawn();
@@ -83,10 +90,6 @@ public class Level3 extends Level {
         setEnemies();
         handler.getDante().resetDeath();
         handler.getGameCamera().snapTo(handler.getDante());
-    }
-
-    @Override
-    public void setEnemies() {
     }
 
     @Override

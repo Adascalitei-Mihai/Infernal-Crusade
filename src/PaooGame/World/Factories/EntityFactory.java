@@ -12,6 +12,9 @@ import java.awt.image.BufferedImage;
 import java.util.Set;
 import static PaooGame.World.Tile.NO_TILES;
 
+/**
+ * Clasa care implementeaza modelul Abstract Factory
+ */
 public abstract class EntityFactory {
     protected final Handler handler;
     protected Set<Integer> solidTiles;

@@ -2,9 +2,12 @@ package PaooGame;
 
 import PaooGame.Game.Game;
 
+/**
+ * Clasa principala
+ */
 public class Main
 {
-    public static void main(String[] args)
+    static void main()
     {
         Game paooGame = new Game();
         paooGame.StartGame();

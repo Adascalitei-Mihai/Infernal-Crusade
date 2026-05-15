@@ -32,7 +32,7 @@ public class Boss extends GroundEnemy {
     public static final float AGGRO_RANGE = TILE_SIZE * 26;
     public static final float X_RANGE = TILE_SIZE * 30;
 
-    public static final float MAX_HP = 250f;
+    public static final float MAX_HP = 500f;
     public static final float KNOCK_PERCENT = 0.05f;
 
     private final EnemyAction meleeAct = new EnemyAction("MELEE", 50, 20, 30, 150, MELEE_RANGE, false);

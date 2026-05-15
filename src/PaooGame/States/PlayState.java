@@ -41,6 +41,7 @@ public class PlayState extends State {
         if (handler.getLevel() == null) {
             handler.initLevel();
         }
+        handler.getLevel().requestRespawn();
     }
 
     /**

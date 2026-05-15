@@ -9,9 +9,11 @@ import PaooGame.World.Entities.Creatures.Enemies.GroundEnemies.*;
 import PaooGame.World.Entities.Environment.Gate;
 import PaooGame.World.Factories.Level1Factory;
 import java.awt.Graphics;
-
 import static PaooGame.World.Tile.TILE_SIZE;
 
+/**
+ * Clasa care reprezinta nivelul 1
+ */
 public class Level1 extends Level {
     private static final float SCALE = 2.5f;
     private static final int L1_WIDTH = 500;
@@ -55,7 +57,7 @@ public class Level1 extends Level {
     public Level1(Handler handler) {
         super(handler, new Level1Factory(handler),
                 L1_WIDTH, L1_HEIGHT, "/textures/Maps/L1/L1.tmx", SongAssets.level1,
-                RENDER_ORDER, SOLID_LAYERS);
+                RENDER_ORDER, SOLID_LAYERS, MINOR_ENEMIES, MAJOR_ENEMIES);
 
         calculateExposureMasks();
         requestRespawn();
@@ -111,16 +113,6 @@ public class Level1 extends Level {
         setEnemies();
         handler.getDante().resetDeath();
         handler.getGameCamera().snapTo(handler.getDante());
-    }
-
-    @Override
-    public void setEnemies() {
-        for (int[] coords : MINOR_ENEMIES) {
-            entityManager.addEntity(factory.createMinorEnemy(coords[0], coords[1]));
-        }
-        for (int[] coords : MAJOR_ENEMIES) {
-            entityManager.addEntity(factory.createMajorEnemy(coords[0], coords[1]));
-        }
     }
 
     @Override

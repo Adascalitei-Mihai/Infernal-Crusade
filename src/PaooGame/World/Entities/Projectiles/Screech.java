@@ -18,7 +18,7 @@ public class Screech extends Projectile {
     private final static int VISUAL_HEIGHT = 4 * TILE_SIZE;
 
     private final static float SPEED = 10f;
-    private final static float DMG = 40f;
+    private final static float DMG = 70f;
     private final static float KNOCK_PERCENT = 1.5f;
 
     public Screech(Handler handler, float x, float y, float tx, float ty, Creature owner) {
